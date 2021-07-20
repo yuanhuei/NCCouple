@@ -45,7 +45,7 @@
       "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
       "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
       "remoteCopySources": true,
-      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/CGAL','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
+      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
