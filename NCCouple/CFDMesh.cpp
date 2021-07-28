@@ -6,7 +6,9 @@
 CFDMesh::CFDMesh(std::string fileName) {
 	std::ifstream infile(fileName);
 	int cellNum = 0;
-	infile >> cellNum;
+	std::string cellNumStr;
+	std::getline(infile, cellNumStr);
+	cellNum = std::stoi(cellNumStr);
 	m_meshPointPtrVec.resize(cellNum);
 	
 	Logger::LogInfo("reading CFD cells...");
@@ -19,16 +21,18 @@ CFDMesh::CFDMesh(std::string fileName) {
 	{
 		std::vector<std::string> offFileLineVec;
 		int verticesNum = 0;
-		infile >> verticesNum;
-		infile.get();
+		std::string verticesNumStr;
+		std::getline(infile, verticesNumStr);
+		verticesNum = std::stoi(verticesNumStr);
 		for (int j = 0; j < verticesNum; j++) {
 			std::string verticesCordinateStr;
 			std::getline(infile, verticesCordinateStr);
 			offFileLineVec.push_back(verticesCordinateStr);
 		}
 		int faceNum = 0;
-		infile >> faceNum;
-		infile.get();
+		std::string faceNumStr;
+		std::getline(infile, faceNumStr);
+		faceNum = std::stoi(faceNumStr);
 		for (int j = 0; j < verticesNum; j++) {
 			std::string faceStr;
 			std::getline(infile, faceStr);
@@ -50,8 +54,8 @@ CFDMesh::CFDMesh(std::string fileName) {
 			if(currentConstructMeshNum % (cellNum / 10) == 0)
 				Logger::LogInfo(FormatStr("%.2lf%% completed", currentConstructMeshNum * 100.0 / cellNum));
 		};
-		//constructMeshFun();
-		futureVec.push_back(std::async(std::launch::async, constructMeshFun));
+		constructMeshFun();
+		//futureVec.push_back(std::async(std::launch::async, constructMeshFun));
 	}
 	infile.close();
 

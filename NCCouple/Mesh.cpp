@@ -1,14 +1,7 @@
 #include "Mesh.h"
 #include <fstream>
 
-MeshPoint::MeshPoint(int pointID, std::string polyFileName) : m_pointID(pointID){
-	std::ifstream ifs(polyFileName);
-	Init(pointID, ifs);
-	ifs.close();
-}
-
-void MeshPoint::Init(int pointID, std::istream& isf) {
-	isf >> m_poly;
+void MeshPoint::Init() {
 	CGAL::Polygon_mesh_processing::triangulate_faces(m_poly);
 
 	//m_poly = Nef_polyhedron(poly);

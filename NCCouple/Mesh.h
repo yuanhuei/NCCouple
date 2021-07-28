@@ -33,18 +33,24 @@ public:
 
 protected:
 	MeshPoint() = delete;
-	MeshPoint(int pointID, std::string polyFileName);
-	MeshPoint(int pointID, std::istream& isf) {
-		Init(pointID, isf);
+	MeshPoint(int pointID, std::string polyFileName) : m_pointID(pointID) {
+		std::ifstream ifs(polyFileName);
+		ifs >> m_poly;
+		ifs.close();
+		Init();
+	}
+	MeshPoint(int pointID, std::istream& isf) : m_pointID(pointID) {
+		isf >> m_poly;
+		Init();
 	}
 	virtual ~MeshPoint() {}
 
 private:
-	void Init(int pointID, std::istream& isf);
+	void Init();
 
 private:
 	int m_pointID = 0;
-	mutable Polyhedron m_poly;
+	Polyhedron m_poly;
 	double m_volume = 0.0;
 	Kernel::Point_3 m_centerPoint;
 };
