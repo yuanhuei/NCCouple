@@ -35,8 +35,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
 
-		if (!i % 100 || i == cfdMesh.GetMeshPointNum())
-			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 1.0 / cfdMesh.GetMeshPointNum()));
+		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
+			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
 	}
 	//for (int i = 0; i < 8; i++) {
 	//	double value = 0.0;
