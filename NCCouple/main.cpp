@@ -13,7 +13,7 @@ void InitCFDMeshValue(const Mesh& cfdMesh) {
 		double _y = y - 0.63;
 		double r = sqrt(_x * _x + _y * _y);
 		double value = r + z + _x / r;
-		cfdMesh.GetMeshPointPtr(i)->SetValue(value, ValueType::HEATPOWER);
+		cfdMesh.GetMeshPointPtr(i)->SetValue(value, ValueType::DENSITY);
 	}
 	
 	return;
@@ -55,9 +55,12 @@ int main()
 	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
 	MOCMesh mocMesh("pin_c1.apl");
 
-	mocMesh.OutputStatus("pin_c1.inp");
-
 	Solver solver(mocMesh, cfdMesh);
+
+	InitCFDMeshValue(cfdMesh);
+	solver.CFDtoMOCinterception(ValueType::DENSITY);
+
+	mocMesh.OutputStatus("pin_c1.inp");
 
 	return 0;
 

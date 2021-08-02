@@ -21,6 +21,7 @@ public:
 			m_heatPower = value;
 			break;
 		case ValueType::DENSITY:
+			m_density = value;
 			break;
 		default:
 			break;
@@ -36,7 +37,7 @@ public:
 		case ValueType::HEATPOWER:
 			return m_heatPower;
 		case ValueType::DENSITY:
-			break;
+			return m_density;
 		default:
 			break;
 		}
@@ -46,6 +47,7 @@ public:
 private:
 	double m_temperature = 0.0;
 	double m_heatPower = 0.0;
+	double m_density = 0.0;
 };
 
 class CFDMesh : public Mesh

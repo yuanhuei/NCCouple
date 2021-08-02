@@ -27,7 +27,7 @@ double DensityConversion(std::string mediumName, std::string element, double med
 	} Medium;
 
 	std::vector<Medium> mediumInformation{
-		{ "H20",{"H","O"},{2,1},18.0 },
+		{ "H2O",{"H","O"},{2,1},18.0 },
 		{ "UO2",{"U","O"},{1,2},270.0277 },
 		{ "He",{"He"},{1},4.002602 },
 		{ "Zr4",{"Zr"},{4},364.896 }

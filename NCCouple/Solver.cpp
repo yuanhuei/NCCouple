@@ -72,7 +72,7 @@ void Solver::Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt
 		targetValueField[i] = interValue;
 	}
 
-	m_cfdMeshPtr->SetValueVec(targetValueField, vt);
+	targetMesh->SetValueVec(targetValueField, vt);
 
 	return;
 }

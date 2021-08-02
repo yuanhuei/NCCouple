@@ -31,6 +31,7 @@ public:
 		case ValueType::HEATPOWER:
 			break;
 		case ValueType::DENSITY:
+			m_density = value;
 			break;
 		default:
 			break;
