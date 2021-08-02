@@ -2,7 +2,56 @@
 #include <iostream> 
 #include <fstream>
 using namespace std;
-#define PI 3.14159265358979323846   
+#define PI 3.14159265358979323846
+
+template <class... Args>
+static std::string FormatStr(const std::string& fmtStr, Args... args) {
+	auto size_buf = std::snprintf(nullptr, 0, fmtStr.c_str(), args ...) + 1;
+	std::unique_ptr<char[]> buf(new(std::nothrow) char[size_buf]);
+
+	if (!buf)
+		return std::string("");
+
+	std::snprintf(buf.get(), size_buf, fmtStr.c_str(), args ...);
+	return std::string(buf.get(), buf.get() + size_buf - 1);
+}
+
+double DensityConversion(std::string mediumName, std::string element, double mediumRho)
+{
+	typedef struct
+	{
+		std::string mediumName;
+		std::vector<std::string> element;
+		std::vector<int> elementNumber;
+		double relativeMolecularMass;
+	} Medium;
+
+	std::vector<Medium> mediumInformation{
+		{ "H20",{"H","O"},{2,1},18.0 },
+		{ "UO2",{"U","O"},{1,2},270.0277 },
+		{ "He",{"He"},{1},4.002602 },
+		{ "Zr4",{"Zr"},{4},364.896 }
+	};
+
+	double NA = 6.022e23;
+	double barn = 1.0e-24;
+	double rhoNuclide = 0.0;
+	for (int i = 0; i < mediumInformation.size(); i++)
+	{
+		if (mediumName == mediumInformation[i].mediumName)
+		{
+			rhoNuclide = NA * mediumRho / mediumInformation[i].relativeMolecularMass * barn;
+			for (int j = 0; j < mediumInformation[i].element.size(); j++)
+			{
+				if (mediumInformation[i].element[j] == element)
+				{
+					rhoNuclide = rhoNuclide * mediumInformation[i].elementNumber[j];
+				}
+			}
+		}
+	}
+	return rhoNuclide;
+}
 
 MOCMesh::MOCMesh(std::string meshFileName) {
 	meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
@@ -110,9 +159,19 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
 	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces);
 	m_meshPointPtrVec.resize(MeshNum);
+	static std::unordered_map<std::string, MaterialType> materialNameTypeMap{
+		{ "H2O", MaterialType::H2O},
+		{ "UO2", MaterialType::UO2 },
+		{ "He", MaterialType::He },
+		{ "Zr4", MaterialType::Zr4 }
+	};
 	for (int i = 0; i < MeshNum; i++)
 	{
-		m_meshPointPtrVec[i] = std::make_shared<MOCMeshPoint>(meshIDTemperary[i], fileNameTemperary[i], meshFaceTypeTemperary[i], meshFaceTemperatureNameTemperary[i]);
+		MaterialType faceType = MaterialType::UNKNOWN;
+		auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[i]);
+		if (iter != materialNameTypeMap.end())
+			faceType = iter->second;
+		m_meshPointPtrVec[i] = std::make_shared<MOCMeshPoint>(meshIDTemperary[i], fileNameTemperary[i], faceType, meshFaceTemperatureNameTemperary[i]);
 		const char* removeFile = fileNameTemperary[i].data();
 		if (remove(removeFile)) //删除生成的文件
 		{
@@ -380,6 +439,168 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 		}
 		outFile.close();  //close iostream
 	}
+}
+
+void MOCMesh::OutputStatus(std::string outputFileName) const {
+	std::ofstream ofs(outputFileName);
+
+	std::unordered_map<MaterialType, double> materailVolumeMap;
+	std::unordered_map<MaterialType, double> materailMassMap;
+	std::unordered_map<std::string, double> temperatureMassMap;
+	std::unordered_map<std::string, double> temperatureEnergyMap;
+	for (int i = 0; i < m_meshPointPtrVec.size(); i++) {
+		std::shared_ptr<MOCMeshPoint> pointPtr = dynamic_pointer_cast<MOCMeshPoint>(m_meshPointPtrVec[i]);
+		MaterialType pointMaterialType = pointPtr->GetMaterialType();
+		materailVolumeMap[pointMaterialType] += pointPtr->Volume();
+		materailMassMap[pointMaterialType] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY);
+
+		std::string temperatureName = pointPtr->GetTemperatureName();
+		temperatureMassMap[temperatureName] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY);
+		temperatureEnergyMap[temperatureName] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY) *
+			pointPtr->GetValue(ValueType::TEMPERAURE);
+	}
+
+	std::string materialDef = "\t\t*   material definition\n";
+	for (auto iter : materailVolumeMap) {
+		double materialAverageDensity = materailMassMap[iter.first] / (iter.second + 1E-8);
+		switch (iter.first)
+		{
+		case MaterialType::H2O:
+		{
+			std::string defTemplate = R"(
+			'H2O' = MAT (  /1001, %lf;
+							8016, %lf;
+							5000, %lf)
+			)";
+			double H_density = DensityConversion("H2O", "H", materialAverageDensity);
+			double O_density = DensityConversion("H2O", "O", materialAverageDensity);
+			std::string h2oDef = FormatStr(defTemplate, H_density, H_density, O_density);
+			materialDef += h2oDef;
+			break;
+		}
+		case MaterialType::UO2:
+		{
+			std::string defTemplate = R"(
+			'UO2' = MAT ( /92235, %lf;
+							92238, %lf;
+							8001,  %lf)
+			)";
+			double U_density = DensityConversion("U2O", "U", materialAverageDensity);
+			double O_density = DensityConversion("U2O", "O", materialAverageDensity);
+			std::string uo2Def = FormatStr(defTemplate, U_density, O_density, O_density);
+			materialDef += uo2Def;
+			break;
+		}
+		case MaterialType::He:
+		{
+			std::string defTemplate = R"(
+			'He' = MAT (/1, %lf)
+			)";
+			double He_density = DensityConversion("He", "He", materialAverageDensity);
+			std::string heDef = FormatStr(defTemplate, He_density);
+			materialDef += heDef;
+			break;
+		}
+		case MaterialType::Zr4: {
+			std::string defTemplate = R"(
+			'Zr4' = MAT (/  40000, %lf;
+							26000, %lf;
+							8016, %lf;
+							6000, %lf;
+							72178, %lf;
+							73181, %lf;
+							41093, %lf;
+							24000, %lf)
+			)";
+			double Zr_density = DensityConversion("Zr4", "Zr", materialAverageDensity);
+			std::string zrDef = FormatStr(defTemplate, Zr_density, Zr_density, Zr_density, Zr_density,
+				Zr_density, Zr_density, Zr_density, Zr_density);
+			materialDef += zrDef;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	std::string temperatureDef = "\t\t*   temperature definition\n";
+	for (auto iter : temperatureMassMap) {
+		double averageTemp = temperatureEnergyMap[iter.first] / (iter.second + 1E-8);
+		std::string curtempDef = FormatStr("\t\t\t\t'%s' = TEMP(%lf)\n", iter.first.c_str(), averageTemp);
+		temperatureDef += curtempDef;
+	}
+
+	std::string prefix = R"(
+!KYLIN-2 input file
+
+#PROGRAM  pin.hdf5
+
+	MODULE: GENERAL
+		Title  
+		Date   
+		Case_Name program
+                         
+	MODULE: ATTRIBUTION     
+	)";
+	std::string suffix = R"(
+	MODULE: RAY_TRACE
+   
+		Distance_Between_Rays              0.001 
+		Azimuth_Angle_Num  10   
+		Polar_Angle         1  3
+      
+      
+	MODULE: LIBRARY
+		Group_Num          45
+		Lib_Name       lib\hy045n18g17a.dat
+        
+	MODULE: RESONANCE
+		Nuclide_Categorization   9
+     
+	MODULE: FLUX
+   
+		Keff_Iterative_Error 1.0E-5
+		Flux_Iterative_Error 1.0E-4
+		Pn_Order              0
+     
+	MODULE: LEAKAGE
+   
+	MODULE: DEPLETION 
+   
+		Steps_Number   1
+      
+		Burnup_Type   1 1  
+      
+		Burnup_Differential_Steps  0 25   
+      
+      
+		Power_Density 20.19  20.19
+      
+		Iterary_Mode P 
+   
+	MODULE: EDIT_OUTPUT_FOR_CORCA3D
+		Output_Name pin4_edit_for_corca3d      
+      
+		Output_Group 2 6.25E-7
+		Output_Burnup_Point 2  0 25
+      
+            
+		Edit_Geometry RECTANGLAR   1 1      
+		Edit_Geometry_Size_X 1.26
+		Edit_Geometry_Size_Y 1.26
+		Type ASSEMBLY WHOLE
+		Output_Cell_Layout 
+			1                           
+              
+#PROGRAM_END
+	)";
+
+	ofs << prefix << endl;
+	ofs << materialDef << endl;
+	ofs << temperatureDef << endl;
+	ofs << suffix;
+
+	ofs.close();
 }
 
 Surface::Surface()

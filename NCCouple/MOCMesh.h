@@ -6,12 +6,20 @@
 #include <array>
 #define nFineMesh 4   //��Ϊ��������
 
+enum class MaterialType {
+	H2O,
+	UO2,
+	He,
+	Zr4,
+	UNKNOWN
+};
+
 class MOCMeshPoint : public MeshPoint
 {
 public:
 	MOCMeshPoint() = delete;
-	MOCMeshPoint(int pointID, std::string polyFileName, std::string materialName, std::string temperatureName)
-		:MeshPoint(pointID, polyFileName), m_materialName(materialName), m_temperatureName(temperatureName) {}
+	MOCMeshPoint(int pointID, std::string polyFileName, MaterialType materialType, std::string temperatureName)
+		:MeshPoint(pointID, polyFileName), m_materialType(materialType), m_temperatureName(temperatureName) {}
 
 public:
 	void SetValue(double value, ValueType vt) override {
@@ -38,24 +46,24 @@ public:
 		case ValueType::HEATPOWER:
 			break;
 		case ValueType::DENSITY:
-			break;
+			return m_density;
 		default:
 			break;
 		}
 		return 0.0;
 	}
 
-	std::string GetMaterialName() const {
-		return m_materialName;
+	MaterialType GetMaterialType() const {
+		return m_materialType;
 	}
 	std::string GetTemperatureName() const {
 		return m_temperatureName;
 	}
 
 private:
-	std::string m_materialName;
+	MaterialType m_materialType = MaterialType::H2O;
 	std::string m_temperatureName;
-	std::vector<std::pair<int, double>> m_densityInfo;
+	double m_density = 0.0;
 	double m_temperature = 0.0;
 };
 
@@ -92,6 +100,9 @@ public:
 	MOCMesh() = delete;
 	MOCMesh(std::string meshFileName);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces);   //output 3D mesh
+
+public:
+	void OutputStatus(std::string outputFileName) const override;
 
 private:
 	void setMeshInformation(std::string line); //set mesh information

@@ -58,6 +58,11 @@ private:
 class Mesh
 {
 public:
+	virtual void OutputStatus(std::string outputFileName) const {
+		return;
+	}
+
+public:
 	int GetMeshPointNum() const {
 		return m_meshPointPtrVec.size();
 	}

@@ -55,6 +55,8 @@ int main()
 	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
 	MOCMesh mocMesh("pin_c1.apl");
 
+	mocMesh.OutputStatus("pin_c1.inp");
+
 	Solver solver(mocMesh, cfdMesh);
 
 	return 0;

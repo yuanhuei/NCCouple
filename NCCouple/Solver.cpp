@@ -20,7 +20,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 				double cfdPointVolume = cfdPoint.Volume();
 				double mocPointVolume = mocPoint.Volume();
 				double intersectedVolume = 0.0;
-				if (mocPoint.GetMaterialName() == "H2O")
+				if (mocPoint.GetMaterialType() == MaterialType::H2O)
 					intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 
 				if (intersectedVolume > INTERSECT_JUDGE_LIMIT) {
