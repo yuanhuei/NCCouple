@@ -21,9 +21,9 @@ public:
 		return m_pointID;
 	}
 	std::tuple<double, double, double> CentralCoordinate() const {
-		return { CGAL::to_double(m_centerPoint.x()),
+		return std::make_tuple(CGAL::to_double(m_centerPoint.x()),
 			CGAL::to_double(m_centerPoint.y()),
-			CGAL::to_double(m_centerPoint.z()) };
+			CGAL::to_double(m_centerPoint.z()));
 	}
 	double IntersectedVolume(const MeshPoint& other) const;
 

@@ -1,11 +1,8 @@
-﻿# CMakeList.txt: 顶层 CMake 项目文件，在此处执行全局配置
-# 并包含子项目。
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.0)
 
 # set the project name and version
 set(PROJECT_NAME NCCouple)
-project (${PROJECT_NAME} VERSION 1.0)
+project (${PROJECT_NAME})
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
@@ -20,8 +17,9 @@ if(WIN32)
 	set(STATIC_LIBRARY_DIR ./tools/winlib)
 	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10")
 elseif(UNIX)
-	set(STATIC_LIBRARY_DIR)
+	set(STATIC_LIBRARY_DIR /usr/code/lib)
 	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
+	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
 endif()
 
 configure_file (
@@ -35,14 +33,22 @@ configure_file (
   COPYONLY
 )
 
-# 将源代码添加到此项目的可执行文件。
-add_executable (${PROJECT_NAME} ${SOURCE_FILE})
+if (${CMAKE_VERSION} VERSION_LESS 3.8)
+	message("Include directories: ${INCLUDE_DIR}")
+	include_directories(${INCLUDE_DIR})
+	link_directories(${STATIC_LIBRARY_DIR})
+	link_libraries(${STATIC_LIBRARY_NAME})
+	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
+	add_executable (MYTEST "./test/main.cpp")
+else()
+	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
+	add_executable (MYTEST "./test/main.cpp")
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
-target_link_directories(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_NAME})
+	target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
+	target_link_directories(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_DIR})
+	target_link_libraries(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_NAME})
 
-add_executable (MYTEST "./test/main.cpp")
-target_include_directories(MYTEST PUBLIC ${INCLUDE_DIR})
-target_link_directories(MYTEST PUBLIC ${STATIC_LIBRARY_DIR})
-target_link_libraries(MYTEST PUBLIC ${STATIC_LIBRARY_NAME})
+	target_include_directories(MYTEST PUBLIC ${INCLUDE_DIR})
+	target_link_directories(MYTEST PUBLIC ${STATIC_LIBRARY_DIR})
+	target_link_libraries(MYTEST PUBLIC ${STATIC_LIBRARY_NAME})
+endif()

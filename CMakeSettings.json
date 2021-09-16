@@ -32,8 +32,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
       "name": "Linux-Debug",
@@ -53,8 +52,7 @@
       "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
-      "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "addressSanitizerRuntimeFlags": "detect_leaks=0"
     },
     {
       "name": "Linux-Release",
@@ -66,13 +64,12 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "linux_x64" ],
-      "variables": [],
-      "remoteMachineName": "-1040121245;127.0.0.1 (username=xiangyue, port=1025, authentication=Password)",
+      "remoteMachineName": "881459168;127.0.0.1 (username=root, port=1000, authentication=Password)",
       "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
       "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
       "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
       "remoteCopySources": true,
-      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
+      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/boost','tools/CGAL','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
       "addressSanitizerRuntimeFlags": "detect_leaks=0"

@@ -4,7 +4,7 @@
 #include "Mesh.h"
 #include <algorithm>
 #include <array>
-#define nFineMesh 4   //��Ϊ��������
+#define nFineMesh 4
 
 enum class MaterialType {
 	H2O,

@@ -2,6 +2,7 @@
 #include <iostream> 
 #include <fstream>
 #include <unordered_map>
+#include <map>
 using namespace std;
 #define PI 3.14159265358979323846
 
@@ -445,8 +446,8 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 void MOCMesh::OutputStatus(std::string outputFileName) const {
 	std::ofstream ofs(outputFileName);
 
-	std::unordered_map<MaterialType, double> materailVolumeMap;
-	std::unordered_map<MaterialType, double> materailMassMap;
+	std::map<MaterialType, double> materailVolumeMap;
+	std::map<MaterialType, double> materailMassMap;
 	std::unordered_map<std::string, double> temperatureMassMap;
 	std::unordered_map<std::string, double> temperatureEnergyMap;
 	for (int i = 0; i < m_meshPointPtrVec.size(); i++) {

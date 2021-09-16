@@ -4,6 +4,7 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
+#include <CGAL/centroid.h>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
@@ -75,6 +76,9 @@ int main()
     CGAL::copy_face_graph(poly2, mesh2);
 	CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(mesh1, mesh2, interMesh);
     double volume = CGAL::to_double(CGAL::Polygon_mesh_processing::volume(interMesh));
+    double volume2 = CGAL::to_double(CGAL::Polygon_mesh_processing::volume(poly1));
+    Kernel::Point_3 centerPoint = CGAL::centroid(poly1.points_begin(), poly1.points_end());
+    double a = CGAL::to_double(centerPoint.x());
 
 	return 0;
 }
