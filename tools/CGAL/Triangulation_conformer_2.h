@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_2/include/CGAL/Triangulation_conformer_2.h $
-// $Id: Triangulation_conformer_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_2/include/CGAL/Triangulation_conformer_2.h $
+// $Id: Triangulation_conformer_2.h fb51a69 2018-01-17T16:50:21+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Laurent RINEAU
 
@@ -79,9 +88,9 @@ private:
         return false;
     return true;
   }
-
+  
 public:  /** \name ACCESS TO CLUSTERS */
-  typedef typename Mesh_2::Clusters<Tr>::Cluster_vertices_iterator
+  typedef typename Mesh_2::Clusters<Tr>::Cluster_vertices_iterator 
     Cluster_vertices_iterator;
   typedef typename Mesh_2::Clusters<Tr>::Vertices_in_cluster_iterator
     Vertices_in_cluster_iterator;
@@ -203,7 +212,7 @@ public:
   bool is_conforming_done()
     // This function cannot be "const" because, as edges_to_be_conformed is
     // filtred, its empty() method is not const.
-  { return ( edges_level_Gabriel.no_longer_element_to_refine()
+  { return ( edges_level_Gabriel.no_longer_element_to_refine() 
              && edges_level_Delaunay.no_longer_element_to_refine() );
   }
 
@@ -215,9 +224,9 @@ public:
   {
     return edges_level_Delaunay.one_step(null_visitor);
   }
-
+  
   bool try_one_step_conforming_Gabriel()
-  {
+  {  
     return edges_level_Gabriel.one_step(null_visitor);
   }
 

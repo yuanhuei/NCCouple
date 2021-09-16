@@ -1,10 +1,19 @@
 // Copyright (c) 2015  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/BGL/include/CGAL/boost/graph/io.h $
-// $Id: io.h d567a0d 2020-07-16T09:52:32+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/BGL/include/CGAL/boost/graph/io.h $
+// $Id: io.h aa47744 2019-07-28T22:30:17+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Andreas Fabri
@@ -13,6 +22,7 @@
 #define CGAL_BOOST_GRAPH_IO_H
 
 #include <boost/container/flat_map.hpp>
+#include <boost/foreach.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -27,27 +37,16 @@
 #include <CGAL/IO/write_vtk.h>
 
 namespace CGAL {
-
-/*!
- \ingroup PkgBGLIOFct
-
-  writes the graph `g` in the wrl format (VRML 2.0).
-
-  \param os the output stream
-  \param g the graph to be written
-  \param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
-
-  \cgalNamedParamsBegin
-    \cgalParamNBegin{vertex_point_map}
-      \cgalParamDescription{a property map associating points to the vertices of `g`}
-      \cgalParamType{a class model of `ReadablePropertyMap` with `boost::graph_traits<FaceGraph>::%vertex_descriptor`
-                     as key type and `%Point_3` as value type}
-      \cgalParamDefault{`boost::get(CGAL::vertex_point, g)`}
-      \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-                      must be available in `FaceGraph`.}
-    \cgalParamNEnd
-  \cgalNamedParamsEnd
-*/
+  /*!
+   \ingroup PkgBGLIOFct
+    writes the graph `g` in the wrl format (VRML 2.0).
+    
+    \cgalNamedParamsBegin
+    *    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `g`.
+    *       If this parameter is omitted, an internal property map for
+    *       `CGAL::vertex_point_t` should be available in `FaceGraph`\cgalParamEnd
+    * \cgalNamedParamsEnd
+    */ 
 template <typename FaceGraph, typename NamedParameters>
 bool write_wrl(std::ostream& os,
                const FaceGraph& g,
@@ -59,14 +58,14 @@ bool write_wrl(std::ostream& os,
 
   using parameters::get_parameter;
   using parameters::choose_parameter;
-
-  typename CGAL::GetVertexPointMap<FaceGraph, NamedParameters>::const_type
+  
+  typename Polygon_mesh_processing::GetVertexPointMap<FaceGraph, NamedParameters>::const_type
       vpm = choose_parameter(get_parameter(np, internal_np::vertex_point),
                              get_const_property_map(CGAL::vertex_point, g));
 
   boost::container::flat_map<vertex_descriptor,vertices_size_type> reindex;
   int n = 0;
-
+  
   os << "#VRML V2.0 utf8\n"
     "Group {\n"
     "children [\n"
@@ -91,15 +90,15 @@ bool write_wrl(std::ostream& os,
     "coord  Coordinate {\n"
     "point [\n";
 
-  for(vertex_descriptor v : vertices(g)){
+  BOOST_FOREACH(vertex_descriptor v, vertices(g)){
     os <<  get(vpm,v) << ",\n";
       reindex[v]=n++;
   }
   os << "] #point\n"
     "} #coord Coordinate\n"
     "coordIndex  [\n";
-   for(face_descriptor f : faces(g)){
-    for(vertex_descriptor v : vertices_around_face(halfedge(f,g),g)){
+   BOOST_FOREACH(face_descriptor f, faces(g)){
+    BOOST_FOREACH(vertex_descriptor v, vertices_around_face(halfedge(f,g),g)){
       os << reindex[v] << ",";
     }
     os << "-1,\n";
@@ -120,32 +119,23 @@ template <typename FaceGraph>
 bool write_wrl(std::ostream& os,
                const FaceGraph& g)
 {
-  return write_wrl(os, g,
+  return write_wrl(os, g, 
                    parameters::all_default());
 }
-
+  
 /*!
- \ingroup PkgBGLIOFct
+   \ingroup PkgBGLIOFct
+    writes the graph `g` in the OFF format.
+    
+    \cgalNamedParamsBegin
+    *    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `g`.
+    *       If this parameter is omitted, an internal property map for
+    *       `CGAL::vertex_point_t` should be available in `FaceGraph`\cgalParamEnd
+    * \cgalNamedParamsEnd
+    
+    \sa Overloads of this function for specific models of the concept `FaceGraph`.
 
-  writes the graph `g` in the OFF format.
-
-  \param os the output stream
-  \param g the graph to be written
-  \param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
-
-  \cgalNamedParamsBegin
-    \cgalParamNBegin{vertex_point_map}
-      \cgalParamDescription{a property map associating points to the vertices of `g`}
-      \cgalParamType{a class model of `ReadablePropertyMap` with `boost::graph_traits<FaceGraph>::%vertex_descriptor`
-                     as key type and `%Point_3` as value type}
-      \cgalParamDefault{`boost::get(CGAL::vertex_point, g)`}
-      \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-                      must be available in `FaceGraph`.}
-    \cgalParamNEnd
-  \cgalNamedParamsEnd
-
-  \sa Overloads of this function for specific models of the concept `FaceGraph`.
-*/
+  */ 
 template <typename FaceGraph, typename NamedParameters>
 bool write_off(std::ostream& os,
                const FaceGraph& g,
@@ -158,8 +148,8 @@ bool write_off(std::ostream& os,
 
   using parameters::choose_parameter;
   using parameters::get_parameter;
-
-  typename CGAL::GetVertexPointMap<FaceGraph, NamedParameters>::const_type
+  
+  typename Polygon_mesh_processing::GetVertexPointMap<FaceGraph, NamedParameters>::const_type
       vpm = choose_parameter(get_parameter(np, internal_np::vertex_point),
                              get_const_property_map(CGAL::vertex_point, g));
   vertices_size_type nv = static_cast<vertices_size_type>(std::distance(vertices(g).first, vertices(g).second));
@@ -168,14 +158,14 @@ bool write_off(std::ostream& os,
   os << "OFF\n" << nv << " " << nf << " 0\n";
   boost::container::flat_map<vertex_descriptor,vertices_size_type> reindex;
   int n = 0;
-  for(vertex_descriptor v : vertices(g)){
+  BOOST_FOREACH(vertex_descriptor v, vertices(g)){
     os << get(vpm,v) << '\n';
     reindex[v]=n++;
   }
-
-  for(face_descriptor f : faces(g)){
+  
+  BOOST_FOREACH(face_descriptor f, faces(g)){
     os << degree(f,g);
-    for(vertex_descriptor v : vertices_around_face(halfedge(f,g),g)){
+    BOOST_FOREACH(vertex_descriptor v, vertices_around_face(halfedge(f,g),g)){
       os << " " << reindex[v];
     }
     os << '\n';
@@ -189,7 +179,7 @@ bool write_off(std::ostream& os,
     writes the graph `g` in the OFF format into a file named `fname`.
     \sa Overloads of this function for specific models of the concept `FaceGraph`.
 
-  */
+  */ 
 template <typename FaceGraph, typename NamedParameters>
 bool write_off(const char* fname,
                const FaceGraph& g,
@@ -213,7 +203,7 @@ template <typename FaceGraph>
 bool write_off(std::ostream& os,
                const FaceGraph& g)
 {
-  return write_off(os, g,
+  return write_off(os, g, 
                    parameters::all_default());
 }
 template <typename FaceGraph>
@@ -227,11 +217,11 @@ bool write_off(const char* fname,
 template <typename FaceGraph>
 bool write_off(const std::string& fname,
                const FaceGraph& g)
-{ return write_off(fname, g,
+{ return write_off(fname, g, 
                    parameters::all_default()); }
 
   namespace internal { namespace read_off_tools {
-
+  
   inline bool is_whitespace(const std::string& s)
   {
     for(unsigned int i=0; i < s.size(); i++){
@@ -241,7 +231,7 @@ bool write_off(const std::string& fname,
     }
     return true;
   }
-
+  
 inline std::string next_non_comment(std::istream& is)
 {
   std::string line;
@@ -256,30 +246,19 @@ inline std::string next_non_comment(std::istream& is)
 
 
 /*!
- \ingroup PkgBGLIOFct
+   \ingroup PkgBGLIOFct
+    reads the graph `g` from data in the OFF format. Ignores comment lines which start with a hash, and lines with whitespace.
+    
+    \cgalNamedParamsBegin
+    *    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `g`.
+    *       If this parameter is omitted, an internal property map for
+    *       `CGAL::vertex_point_t` should be available in `FaceGraph`\cgalParamEnd
+    * \cgalNamedParamsEnd
+    \sa Overloads of this function for specific models of the concept `FaceGraph`.
+    \pre The data must represent a 2-manifold
+    \attention The graph `g` is not cleared, and the data from the stream are added.
 
- reads the graph `g` from data in the OFF format. Ignores comment lines which start with a hash, and lines with whitespace.
-
- \param is the input stream
- \param g the graph to be read
- \param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
-
- \cgalNamedParamsBegin
-   \cgalParamNBegin{vertex_point_map}
-     \cgalParamDescription{a property map associating points to the vertices of `g`}
-     \cgalParamType{a class model of `WritablePropertyMap` with `boost::graph_traits<FaceGraph>::%vertex_descriptor`
-                    as key type and `%Point_3` as value type}
-     \cgalParamDefault{`boost::get(CGAL::vertex_point, g)`}
-     \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-                     must be available in `FaceGraph`.}
-   \cgalParamNEnd
- \cgalNamedParamsEnd
-
- \sa Overloads of this function for specific models of the concept `FaceGraph`.
- \pre The data must represent a 2-manifold
-
- \attention The graph `g` is not cleared, and the data from the stream are added.
-*/
+  */ 
 template <typename FaceGraph, typename NamedParameters>
 bool read_off(std::istream& is,
               FaceGraph& g,
@@ -293,15 +272,15 @@ bool read_off(std::istream& is,
   typedef typename boost::graph_traits<FaceGraph>::vertices_size_type vertices_size_type;
   typedef typename boost::graph_traits<FaceGraph>::faces_size_type faces_size_type;
 
-  typedef typename CGAL::GetVertexPointMap<FaceGraph, NamedParameters>::type Vpm;
+  typedef typename Polygon_mesh_processing::GetVertexPointMap<FaceGraph, NamedParameters>::type Vpm;
   typedef  typename boost::property_traits<Vpm>::value_type Point_3;
-
+  
   Vpm vpm = choose_parameter(get_parameter(np, internal_np::vertex_point),
                              get_property_map(CGAL::vertex_point, g));
   vertices_size_type nv, nvf;
   faces_size_type nf;
   int ignore;
-
+  
   std::string line = next_non_comment(is);
   {
     std::istringstream iss(line);
@@ -314,7 +293,7 @@ bool read_off(std::istream& is,
     std::istringstream iss(line);
     iss >> nv >> nf >> ignore;
   }
-
+  
   std::vector<vertex_descriptor> vertices(nv);
   Point_3 p;
   for(vertices_size_type i=0; i < nv; i++){
@@ -354,7 +333,7 @@ bool read_off(std::istream& is,
     \pre The data must represent a 2-manifold
     \attention The graph `g` is not cleared, and the data from the stream are added.
 
-  */
+  */ 
 template <typename FaceGraph, typename NamedParameters>
 bool read_off(const char* fname,
               FaceGraph& g,
@@ -378,12 +357,12 @@ template <typename FaceGraph, typename NamedParameters>
 bool read_off(const std::string& fname,
               FaceGraph& g,
               NamedParameters np)
-{ return read_off(fname.c_str(), g, np); }
+{ return read_off(fname.c_str(), g, np); }  
 
 template <typename FaceGraph>
 bool read_off(const std::string& fname,
               FaceGraph& g)
-{ return read_off(fname, g, parameters::all_default()); }
+{ return read_off(fname, g, parameters::all_default()); }  
 
 template <typename FaceGraph, typename NamedParameters>
 bool write_inp(std::ostream& os,
@@ -396,7 +375,7 @@ bool write_inp(std::ostream& os,
   typedef typename boost::graph_traits<FaceGraph>::face_descriptor face_descriptor;
   typedef typename boost::graph_traits<FaceGraph>::vertices_size_type vertices_size_type;
 
-  typedef typename CGAL::GetVertexPointMap<FaceGraph, NamedParameters>::const_type VPM;
+  typedef typename Polygon_mesh_processing::GetVertexPointMap<FaceGraph, NamedParameters>::const_type VPM;
   typedef typename boost::property_traits<VPM>::value_type Point_3;
 
   using parameters::choose_parameter;
@@ -408,16 +387,16 @@ bool write_inp(std::ostream& os,
   os << "*Part, name=" << name << "\n*Node\n";
   boost::container::flat_map<vertex_descriptor,vertices_size_type> reindex;
   int n = 1;
-  for(vertex_descriptor v : vertices(g)){
+  BOOST_FOREACH(vertex_descriptor v, vertices(g)){
     Point_3 p =  get(vpm,v);
     os << n << ", " << p.x() << ", " << p.y() << ", " << p.z() << '\n';
     reindex[v]=n++;
   }
   n = 1;
   os << "*Element, type=" << type << std::endl;
-  for(face_descriptor f : faces(g)){
+  BOOST_FOREACH(face_descriptor f, faces(g)){
     os << n++;
-    for(vertex_descriptor v : vertices_around_face(halfedge(f,g),g)){
+    BOOST_FOREACH(vertex_descriptor v, vertices_around_face(halfedge(f,g),g)){
       os << ", " << reindex[v];
     }
     os << '\n';
@@ -448,9 +427,11 @@ write_polys(std::ostream& os,
 {
   typedef typename boost::graph_traits<Mesh>::vertex_descriptor vertex_descriptor;
   typedef typename boost::graph_traits<Mesh>::face_iterator face_iterator;
-
-  typedef typename CGAL::GetInitializedVertexIndexMap<Mesh, NamedParameters>::const_type Vimap;
-  Vimap V = CGAL::get_initialized_vertex_index_map(mesh, np);
+  typedef typename CGAL::Polygon_mesh_processing::GetVertexIndexMap<Mesh, NamedParameters>::type Vimap;
+  using parameters::get_parameter;
+  using parameters::choose_parameter;
+  Vimap V = choose_parameter(get_parameter(np, internal_np::vertex_index),
+                             get_const_property_map(boost::vertex_index, mesh));
 
   std::vector<std::size_t> connectivity_table;
   std::vector<std::size_t> offsets;
@@ -463,7 +444,7 @@ write_polys(std::ostream& os,
   {
     off += 3;
     offsets.push_back(off);
-    for(vertex_descriptor v :
+    BOOST_FOREACH(vertex_descriptor v,
                   vertices_around_face(halfedge(*fit, mesh), mesh))
         connectivity_table.push_back(V[v]);
   }
@@ -483,9 +464,11 @@ write_polys_tag(std::ostream& os,
 {
   typedef typename boost::graph_traits<Mesh>::vertex_descriptor vertex_descriptor;
   typedef typename boost::graph_traits<Mesh>::face_iterator face_iterator;
-
-  typedef typename CGAL::GetInitializedVertexIndexMap<Mesh, NamedParameters>::const_type Vimap;
-  Vimap V = CGAL::get_initialized_vertex_index_map(mesh, np);
+  typedef typename CGAL::Polygon_mesh_processing::GetVertexIndexMap<Mesh, NamedParameters>::type Vimap;
+  using parameters::get_parameter;
+  using parameters::choose_parameter;
+  Vimap V = choose_parameter(get_parameter(np, internal_np::vertex_index),
+                             get_const_property_map(boost::vertex_index, mesh));
 
   std::string formatattribute =
     binary ? " format=\"appended\"" : " format=\"ascii\"";
@@ -513,7 +496,7 @@ write_polys_tag(std::ostream& os,
          fit != faces(mesh).end() ;
          ++fit )
     {
-      for(vertex_descriptor v :
+      BOOST_FOREACH(vertex_descriptor v,
                     vertices_around_face(halfedge(*fit, mesh), mesh))
           os << V[v] << " ";
     }
@@ -572,7 +555,7 @@ write_points_tag(std::ostream& os,
                  const NamedParameters& np)
 {
   typedef typename boost::graph_traits<Mesh>::vertex_iterator vertex_iterator;
-  typedef typename CGAL::GetVertexPointMap<Mesh, NamedParameters>::const_type Vpmap;
+  typedef typename CGAL::Polygon_mesh_processing::GetVertexPointMap<Mesh, NamedParameters>::const_type Vpmap;
   using parameters::get_parameter;
   using parameters::choose_parameter;
   Vpmap vpm = choose_parameter(get_parameter(np, internal_np::vertex_point),
@@ -617,7 +600,7 @@ write_polys_points(std::ostream& os,
                    const NamedParameters& np)
 {
   typedef typename boost::graph_traits<Mesh>::vertex_iterator vertex_iterator;
-  typedef typename CGAL::GetVertexPointMap<Mesh, NamedParameters>::const_type Vpmap;
+  typedef typename CGAL::Polygon_mesh_processing::GetVertexPointMap<Mesh, NamedParameters>::const_type Vpmap;
   using parameters::get_parameter;
   using parameters::choose_parameter;
   Vpmap vpm = choose_parameter(get_parameter(np, internal_np::vertex_point),
@@ -645,34 +628,25 @@ write_polys_points(std::ostream& os,
  * \brief  writes a triangulated surface mesh in the `PolyData` XML format.
  *
  * \tparam TriangleMesh a model of `FaceListGraph` with only triangle faces.
- * \tparam NamedParameters a sequence of \ref bgl_namedparameters "Named Parameters"
+ * \tparam NamedParameters a sequence of \ref pmp_namedparameters "Named Parameters"
  *
  * \param os the stream used for writing.
  * \param mesh the triangle mesh to be written.
- * \param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
+ * \param np optional sequence of \ref pmp_namedparameters "Named Parameters" among the
+ * ones listed below
  *
  * \cgalNamedParamsBegin
- *   \cgalParamNBegin{use_binary_mode}
- *     \cgalParamDescription{Boolean indicating if the data should be written in binary (`true`) or in ASCII (`false`)}
- *     \cgalParamType{Boolean}
- *     \cgalParamDefault{`true`}
- *   \cgalParamNEnd
- *
- *   \cgalParamNBegin{vertex_point_map}
- *     \cgalParamDescription{a property map associating points to the vertices of `mesh`}
- *     \cgalParamType{a class model of `ReadablePropertyMap` with `boost::graph_traits<TriangleMesh>::%vertex_descriptor`
- *                    as key type and `%Point_3` as value type}
- *     \cgalParamDefault{`boost::get(CGAL::vertex_point, mesh)`}
- *     \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
- *                     must be available in `TriangleMesh`.}
- *   \cgalParamNEnd
- *
- *   \cgalParamNBegin{vertex_index_map}
- *     \cgalParamDescription{a property map associating to each vertex of `mesh` a unique index between `0` and `num_vertices(mesh) - 1`}
- *     \cgalParamType{a class model of `ReadablePropertyMap` with `boost::graph_traits<TriangleMesh>::%vertex_descriptor`
- *                    as key type and `std::size_t` as value type}
- *     \cgalParamDefault{an automatically indexed internal map}
- *   \cgalParamNEnd
+ *    \cgalParamBegin{use_binary_mode} a Boolean indicating if the
+ *    data should be written in binary (`true`, the default) or in ASCII (`false`).
+ *     \cgalParamEnd
+ *    \cgalParamBegin{vertex_point_map} the property map with the points associated to
+ * the vertices of `mesh`. If this parameter is omitted, an internal property map for
+ *       `CGAL::vertex_point_t` must be available in `TriangleMesh`.
+ *     \cgalParamEnd
+ *    \cgalParamBegin{vertex_index_map} the property map with the indices associated to
+ * the vertices of `mesh`. If this parameter is omitted, an internal property map for
+ *       `CGAL::vertex_index_t` must be available in `TriangleMesh`.
+ *     \cgalParamEnd
  * \cgalNamedParamsEnd
  */
 template<class TriangleMesh,

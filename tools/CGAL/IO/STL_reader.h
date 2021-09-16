@@ -1,10 +1,19 @@
 // Copyright (c) 2015 GeometryFactory
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron_IO/include/CGAL/IO/STL_reader.h $
-// $Id: STL_reader.h 8bb22d5 2020-03-26T14:23:37+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron_IO/include/CGAL/IO/STL_reader.h $
+// $Id: STL_reader.h ef6a6af 2018-08-03T14:21:17+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Andreas Fabri,
 //                 Mael Rouxel-Labbé
@@ -15,9 +24,7 @@
 #include <CGAL/IO/io.h>
 #include <CGAL/IO/reader_helpers.h>
 
-#include <CGAL/Container_helper.h>
-
-#include <boost/cstdint.hpp>
+#include <boost/cstdint.hpp> 
 
 #include <cctype>
 #include <iostream>
@@ -45,7 +52,7 @@ bool read_ASCII_facet(std::istream& input,
   double x,y,z;
   Point p;
   Triangle ijk;
-  CGAL::internal::resize(ijk, 3);
+  IO::internal::resize(ijk, 3);
 
   while(input >> s)
   {
@@ -215,7 +222,7 @@ bool parse_binary_STL(std::istream& input,
     }
 
     Triangle ijk;
-    CGAL::internal::resize(ijk, 3);
+    IO::internal::resize(ijk, 3);
 
     for(int j=0; j<3; ++j)
     {
@@ -292,7 +299,7 @@ bool read_STL(std::istream& input,
   int pos = 0;
 
   // Ignore all initial whitespace
-  unsigned char c;
+  char c;
 
   while(input.read(reinterpret_cast<char*>(&c), sizeof(c)))
   {

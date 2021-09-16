@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_3_triangulation_3/include/CGAL/internal/Static_filters/Periodic_3_orientation_3.h $
-// $Id: Periodic_3_orientation_3.h 5c8df66 2020-09-25T14:25:14+02:00 Jane Tournois
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_3_triangulation_3/include/CGAL/internal/Static_filters/Periodic_3_orientation_3.h $
+// $Id: Periodic_3_orientation_3.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
@@ -53,7 +62,21 @@ public:
    : Base(o3b), _dom(dom)
  { }
 
+#ifndef CGAL_CFG_MATCHING_BUG_6
   using Base::operator();
+#else
+  result_type
+  operator()(const Vector_3& u, const Vector_3& v, const Vector_3& w) const
+  {
+    return Base::operator()(u,v,w);
+  }
+
+  result_type
+  operator()(const Sphere_3& s) const
+  {
+    return Base::operator()(s);
+  }
+#endif
 
   result_type
   operator()(const Point_3 &p, const Point_3 &q,

@@ -1,18 +1,18 @@
 #include <CGAL/Polyhedron_3.h>
-#include <CGAL/Nef_polyhedron_3.h>
+#include <CGAL/Surface_mesh.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
-#include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/centroid.h>
+#include <CGAL/Polygon_mesh_processing/measure.h>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+typedef CGAL::Exact_predicates_exact_constructions_kernel Other_kernel;
+typedef Other_kernel::Point_3                             Point;
 
 void fill_cube1(Polyhedron& poly)
 {
-	std::string input = R"(
+    std::string input = R"(
 OFF
 5 5 0
 0.63	1.105	0.5
@@ -26,14 +26,14 @@ OFF
 3	0	1	4
 3	1	2	4
 )";
-	std::stringstream ss;
-	ss << input;
-	ss >> poly;
+    std::stringstream ss;
+    ss << input;
+    ss >> poly;
 }
 
 void fill_cube2(Polyhedron& poly)
 {
-	std::string input = R"(
+    std::string input = R"(
 OFF
 14      6       0
 1.26    1.26    0
@@ -57,20 +57,24 @@ OFF
 10      2       3       4       5       6       13      12      11      10      9
 4       6       0       7       13
 )";
-	std::stringstream ss;
-	ss << input;
-	ss >> poly;
+    std::stringstream ss;
+    ss << input;
+    ss >> poly;
 }
 
-int main() {
-	Polyhedron poly1, poly2, interPoly;
+
+int main()
+{
+	Polyhedron poly1, poly2;
 	fill_cube1(poly1);
 	fill_cube2(poly2);
+    CGAL::Surface_mesh<Point> mesh1, mesh2, interMesh;
 	CGAL::Polygon_mesh_processing::triangulate_faces(poly1);
+    CGAL::copy_face_graph(poly1, mesh1);
 	CGAL::Polygon_mesh_processing::triangulate_faces(poly2);
-	CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(poly1, poly2, interPoly);
-	double volume = CGAL::to_double(CGAL::Polygon_mesh_processing::volume(interPoly));
-	std::cout << volume << std::endl;
+    CGAL::copy_face_graph(poly2, mesh2);
+	CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(mesh1, mesh2, interMesh);
+    double volume = CGAL::to_double(CGAL::Polygon_mesh_processing::volume(interMesh));
 
 	return 0;
 }

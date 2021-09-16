@@ -1,12 +1,21 @@
 // Copyright (c) 2001,2004  INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Filtered_kernel/include/CGAL/internal/Static_filters/Orientation_3.h $
-// $Id: Orientation_3.h 5c8df66 2020-09-25T14:25:14+02:00 Jane Tournois
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Filtered_kernel/include/CGAL/internal/Static_filters/Orientation_3.h $
+// $Id: Orientation_3.h f2391a3 2017-12-19T16:29:53+01:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Sylvain Pion
 
@@ -36,11 +45,31 @@ class Orientation_3
 public:
  typedef typename Base::result_type  result_type;
 
+#ifndef CGAL_CFG_MATCHING_BUG_6
   using Base::operator();
+#else 
+  result_type
+  operator()(const Vector_3& u, const Vector_3& v, const Vector_3& w) const
+  { 
+    return Base::operator()(u,v,w);
+  }  
 
   result_type
+  operator()(const Sphere_3& s) const
+  { 
+    return Base::operator()(s);
+  }
+
+  result_type
+  operator()(const Tetrahedron_3& t) const
+  { 
+    return Base::operator()(t);
+  }
+#endif
+
+  result_type 
   operator()(const Point_3 &p, const Point_3 &q,
-             const Point_3 &r, const Point_3 &s) const
+	     const Point_3 &r, const Point_3 &s) const
   {
       CGAL_BRANCH_PROFILER_3("semi-static failures/attempts/calls to   : Orientation_3", tmp);
 
@@ -55,7 +84,7 @@ public:
           fit_in_double(s.x(), sx) && fit_in_double(s.y(), sy) &&
           fit_in_double(s.z(), sz))
       {
-          CGAL_BRANCH_PROFILER_BRANCH_1(tmp);
+	  CGAL_BRANCH_PROFILER_BRANCH_1(tmp);
 
           double pqx = qx - px;
           double pqy = qy - py;
@@ -83,7 +112,7 @@ public:
           double aprz = CGAL::abs(prz);
           double apsz = CGAL::abs(psz);
 #ifdef CGAL_USE_SSE2_MAX
-          CGAL::Max<double> mmax;
+          CGAL::Max<double> mmax; 
 
           maxx = mmax(maxx, aprx, apsx);
           maxy = mmax(maxy, apry, apsy);
@@ -101,14 +130,14 @@ public:
                                          psx, psy, psz);
 
           double eps = 5.1107127829973299e-15 * maxx * maxy * maxz;
-
+          
 #ifdef CGAL_USE_SSE2_MAX
 #if 0
-          CGAL::Min<double> mmin;
+          CGAL::Min<double> mmin; 
           double tmp = mmin(maxx, maxy, maxz);
           maxz = mmax(maxx, maxy, maxz);
           maxx = tmp;
-#else
+#else 
           sse2minmax(maxx,maxy,maxz);
           // maxy can contain ANY element
 #endif
@@ -132,7 +161,7 @@ public:
             if (det > eps)  return POSITIVE;
             if (det < -eps) return NEGATIVE;
           }
-          CGAL_BRANCH_PROFILER_BRANCH_2(tmp);
+	  CGAL_BRANCH_PROFILER_BRANCH_2(tmp);
       }
 
       return Base::operator()(p, q, r, s);

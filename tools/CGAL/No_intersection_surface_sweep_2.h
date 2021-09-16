@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_sweep_2/include/CGAL/No_intersection_surface_sweep_2.h $
-// $Id: No_intersection_surface_sweep_2.h 21c48c5 2020-11-04T20:46:18+01:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_sweep_2/include/CGAL/No_intersection_surface_sweep_2.h $
+// $Id: No_intersection_surface_sweep_2.h 33d3aba 2018-04-17T16:42:59+02:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Baruch Zukerman <baruchzu@post.tau.ac.il>
 //             Efi Fogel <efifogel@gmail.com>
@@ -143,8 +152,7 @@ protected:
 public:
   typedef CGAL::Surface_sweep_2::Event_comparer<Traits_adaptor_2, Event>
                                                         Event_comparer;
-  typedef Multiset<Event*, Event_comparer, Allocator, Tag_true>
-                                                        Event_queue;
+  typedef Multiset<Event*, Event_comparer, Allocator>   Event_queue;
   typedef typename Event_queue::iterator                Event_queue_iterator;
 
   typedef typename Event::Subcurve_iterator
@@ -159,12 +167,28 @@ public:
                                                         Status_line;
   typedef typename Status_line::iterator                Status_line_iterator;
 
+#ifdef CGAL_CXX11
   typedef std::allocator_traits<Allocator> Allocator_traits;
+  typedef typename Allocator_traits::template rebind_alloc<Event> Event_alloc;
   typedef typename Allocator_traits::template rebind_alloc<Subcurve> Subcurve_alloc;
+#else // not CGAL_CXX11
+  typedef typename Allocator::template rebind<Event>    Event_alloc_rebind;
+  typedef typename Event_alloc_rebind::other            Event_alloc;
 
+  typedef typename Allocator::template rebind<Subcurve> Subcurve_alloc_rebind;
+  typedef typename Subcurve_alloc_rebind::other         Subcurve_alloc;
+#endif // not CGAL_CXX11
+  
 protected:
+  /*! \struct
+   * An auxiliary functor for comparing event pointers.
+   */
+  struct CompEventPtr {
+    Comparison_result operator()(Event* e1, Event* e2) const
+    { return (e1 < e2) ? SMALLER : ((e1 > e2) ? LARGER : EQUAL); }
+  };
 
-  typedef Compact_container<Event>                 Allocated_events_set;
+  typedef Multiset<Event*, CompEventPtr>           Allocated_events_set;
   typedef typename Allocated_events_set::iterator  Allocated_events_iterator;
 
   // Data members:
@@ -197,6 +221,7 @@ protected:
                                     // may happen only with events that are
                                     // associated with isolated query points.
 
+  Event_alloc m_eventAlloc;         // An allocator for the events objects.
   Subcurve_alloc m_subCurveAlloc;   // An allocator for the subcurve objects.
 
   Event m_masterEvent;              // A master Event (created once by the
@@ -272,7 +297,7 @@ public:
   /*! Run the sweep-line alogrithm on a range of x-monotone curves, a range
    * of action event points (if a curve passed through an action point, it will
    * be split) and a range of query points (if a curve passed through a
-   * query point,it will not be split).
+   * query point,it will not be splitted).
    * \param curves_begin An iterator for the first x-monotone curve in the
    *                     range.
    * \param curves_end A past-the-end iterator for this range.
@@ -296,77 +321,6 @@ public:
     _init_points(action_points_begin, action_points_end, Event::ACTION);
     _init_points(query_points_begin, query_points_end, Event::QUERY);
     //m_visitor->after_init();
-    _sweep();
-    _complete_sweep();
-    m_visitor->after_sweep();
-  }
-
-  /*!
-    runs the indexed sweep-line algorithm on a given range of
-    x-monotone curves and accessor. The main difference from the
-    original `sweep()` function is that the accessor allows to get
-    indices of end-points and avoid checking several times in the
-    event queue when the same vertex has several incident edges.
-
-    \param edges A range of edges
-    \param accessor An object providing, for a value_type `e` of
-           range `edges`, the following methods:
-     - size_t             min_end_index(e) -> the index of the min end of curve c
-     - size_t             max_end_index(e) -> the index of the max end of curve c
-     - X_monotone_curve_2 curve(e)         -> the x-monotone curve associated to e
-     - size_t             nb_vertices()    -> the total number of points/events
-     - void               before_init()    -> called before initialization
-     - void               after_init()     -> called after initialization
-   */
-  template <typename EdgeRange, typename Accessor>
-  void indexed_sweep (const EdgeRange& edges,
-                      const Accessor& accessor)
-  {
-    m_visitor->before_sweep();
-    accessor.before_init();
-    _init_indexed_sweep(edges, accessor);
-    accessor.after_init();
-    _sweep();
-    _complete_sweep();
-    m_visitor->after_sweep();
-  }
-
-  /*!
-    runs the indexed sweep-line algorithm on a given range of
-    x-monotone curves and accessor. The main difference from the
-    original `sweep()` function is that the accessor allows to get
-    indices of end-points and avoid checking several times in the
-    event queue when the same vertex has several incident edges.
-
-    Variant with action event points (if a curve passed through an
-    action point, it will be split).
-
-    \param edges A range of edges
-    \param accessor An object providing, for a value_type `e` of
-           range `edges`, the following methods:
-     - size_t             min_end_index(e) -> the index of the min end of curve c
-     - size_t             max_end_index(e) -> the index of the max end of curve c
-     - X_monotone_curve_2 curve(e)         -> the x-monotone curve associated to e
-     - size_t             nb_vertices()    -> the total number of points/events
-     - void               before_init()    -> called before initialization
-     - void               after_init()     -> called after initialization
-    \param points_begin An iterator for the first point in the range.
-    \param points_end A past-the-end iterator for this range.
-    \pre The value-type of PointInputIterator is the
-         traits-class Point_2.
-  */
-  template <typename EdgeRange, typename Accessor,
-            typename PointInputIterator>
-  void indexed_sweep (const EdgeRange& edges,
-                      const Accessor& accessor,
-                      PointInputIterator action_points_begin,
-                      PointInputIterator action_points_end)
-  {
-    m_visitor->before_sweep();
-    accessor.before_init();
-    _init_indexed_sweep(edges, accessor);
-    accessor.after_init();
-    _init_points(action_points_begin, action_points_end, Event::ACTION);
     _sweep();
     _complete_sweep();
     m_visitor->after_sweep();
@@ -439,32 +393,6 @@ protected:
       _init_curve(*cit, index);
   }
 
-  /*! Create a Subcurve object and two Event objects for each curve. */
-  template <typename EdgeRange, typename Accessor>
-  void _init_indexed_curves(const EdgeRange& edges,
-                            const Accessor& accessor)
-  {
-    std::vector<Event_queue_iterator> events (accessor.nb_vertices());
-
-    unsigned int index = 0;
-    for (const auto& e : edges)
-    {
-      std::size_t max_end = accessor.max_end_index(e);
-      std::size_t min_end = accessor.min_end_index(e);
-      const X_monotone_curve_2& curve = accessor.curve (e);
-
-      // Construct and initialize a subcurve object.
-      std::allocator_traits<Subcurve_alloc>::construct(m_subCurveAlloc, m_subCurves + index, m_masterSubcurve );
-      (m_subCurves + index)->set_hint(this->m_statusLine.end());
-      (m_subCurves + index)->init (curve);
-
-      _init_curve_end(curve, ARR_MAX_END, m_subCurves + index, events, max_end);
-      _init_curve_end(curve, ARR_MIN_END, m_subCurves + index, events, min_end);
-
-      ++ index;
-    }
-  }
-
   /*! Initiliaze the sweep algorithm. */
   template <typename CurveInputIterator>
   void _init_sweep(CurveInputIterator curves_begin,
@@ -474,17 +402,6 @@ protected:
       static_cast<unsigned int>(std::distance(curves_begin, curves_end));
     _init_structures();
     _init_curves(curves_begin, curves_end);     // initialize the curves
-  }
-
-  /*! Initiliaze the sweep algorithm. */
-  template <typename EdgeRange, typename Accessor>
-  void _init_indexed_sweep(const EdgeRange& edges,
-                           const Accessor& accessor)
-  {
-    m_num_of_subCurves =
-      static_cast<unsigned int>(std::distance(edges.begin(), edges.end()));
-    _init_structures();
-    _init_indexed_curves(edges, accessor);     // initialize the curves
   }
 
   /*! Initialize the data structures for the sweep-line algorithm. */
@@ -513,11 +430,6 @@ protected:
   void _init_curve_end(const X_monotone_curve_2& cv, Arr_curve_end ind,
                        Subcurve* sc);
 
-  // Variant keeping track of indexed events
-  void _init_curve_end(const X_monotone_curve_2& cv, Arr_curve_end ind,
-                       Subcurve* sc,
-                       std::vector<Event_queue_iterator>& events, std::size_t index);
-
   /*! Handle the subcurves that are to the left of the event point (i.e.,
    * subcurves that we are done with).
    */
@@ -540,7 +452,7 @@ protected:
   /*! Add a subcurve to the right of an event point.
    * \param event The event point.
    * \param curve The subcurve to add.
-   * \return (true) if an overlap occurred; (false) otherwise.
+   * \return (true) if an overlap occured; (false) otherwise.
    */
   virtual bool _add_curve_to_right(Event* event, Subcurve* curve);
 
@@ -588,15 +500,7 @@ protected:
   std::pair<Event*, bool> _push_event(const Point_2& pt, Attribute type,
                                       Arr_parameter_space ps_x,
                                       Arr_parameter_space ps_y,
-                                      Subcurve* sc = nullptr);
-
-  // Variant keeping track of indexed events
-  std::pair<Event*, bool> _push_event(const Point_2& pt, Attribute type,
-                                      Arr_parameter_space ps_x,
-                                      Arr_parameter_space ps_y,
-                                      Subcurve* sc,
-                                      std::vector<Event_queue_iterator>& events,
-                                      std::size_t index);
+                                      Subcurve* sc = NULL);
 
   /*! Push an event point associated with a curve end into the event queue.
    * \param cv The x-monotone curve.
@@ -614,18 +518,7 @@ protected:
                                       Attribute type,
                                       Arr_parameter_space ps_x,
                                       Arr_parameter_space ps_y,
-                                      Subcurve* sc = nullptr);
-
-  // Variant keeping track of indexed events
-  std::pair<Event*, bool> _push_event(const X_monotone_curve_2& cv,
-                                      Arr_curve_end ind,
-                                      Attribute type,
-                                      Arr_parameter_space ps_x,
-                                      Arr_parameter_space ps_y,
-                                      Subcurve* sc,
-                                      const Point_2& pt,
-                                      std::vector<Event_queue_iterator>& events,
-                                      std::size_t index);
+                                      Subcurve* sc = NULL);
 
   void _update_event_at_open_boundary(Event* e,
                                       const X_monotone_curve_2& cv,

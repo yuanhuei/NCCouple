@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Three/include/CGAL/Three/Scene_draw_interface.h $
-// $Id: Scene_draw_interface.h af7e1a8 2020-10-16T14:32:12+02:00 Maxime Gimeno
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Three/include/CGAL/Three/Scene_draw_interface.h $
+// $Id: Scene_draw_interface.h 3c6640b 2017-12-05T18:20:05+01:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent RINEAU
@@ -16,7 +25,6 @@
 #include <CGAL/license/Three.h>
 
 #include <QPoint>
-#include <QVector3D>
 class QKeyEvent;
 class QPoint;
 namespace CGAL
@@ -52,7 +60,7 @@ public:
   //!\brief print theTextItems.
   virtual void printPrimitiveId(QPoint point, CGAL::Three::Viewer_interface*) = 0;
   //!\brief update theTextItems.
-  virtual void updatePrimitiveIds(CGAL::Three::Scene_item*) = 0;
+  virtual void updatePrimitiveIds(CGAL::Three::Viewer_interface* , CGAL::Three::Scene_item*) = 0;
 
   /*!
    * \brief checks if the text at position (x,y,z) is visible or not.
@@ -64,15 +72,15 @@ public:
   virtual bool  testDisplayId(double x, double y, double z, CGAL::Three::Viewer_interface* viewer) = 0;
 
   ///\brief displays all the vertices ids if there are less than max_textItems.
-  virtual void printVertexIds() = 0;
+  virtual void printVertexIds(CGAL::Three::Viewer_interface*) = 0;
   ///\brief displays all the edges ids if there are less than max_textItems.
-  virtual void printEdgeIds() = 0;
+  virtual void printEdgeIds(CGAL::Three::Viewer_interface*) = 0;
   ///\brief displays all the faces ids if there are less than max_textItems.
-  virtual void printFaceIds() = 0;
+  virtual void printFaceIds(CGAL::Three::Viewer_interface*) = 0;
   ///\brief displays all the primitive ids if there are less than max_textItems.
-  virtual void printAllIds() = 0;
+  virtual void printAllIds(CGAL::Three::Viewer_interface*) = 0;
 
-  //!\brief moves the camera orthogonally to the picked face.
+  //!\brief moves the camera orthogonally to the picked sface.
   //!
   //! \param point the picked point
   //! \param viewer the active viewer

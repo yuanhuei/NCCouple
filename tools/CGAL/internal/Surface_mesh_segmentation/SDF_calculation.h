@@ -1,16 +1,25 @@
+#ifndef CGAL_SURFACE_MESH_SEGMENTATION_SDF_CALCULATION_H
 // Copyright (c) 2014  GeometryFactory Sarl (France).
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_segmentation/include/CGAL/internal/Surface_mesh_segmentation/SDF_calculation.h $
-// $Id: SDF_calculation.h e893ac1 2020-08-18T10:06:51+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_segmentation/include/CGAL/internal/Surface_mesh_segmentation/SDF_calculation.h $
+// $Id: SDF_calculation.h 4fbd1ed 2020-01-16T14:14:13+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Ilker O. Yaz
 
 
-#ifndef CGAL_SURFACE_MESH_SEGMENTATION_SDF_CALCULATION_H
 #define CGAL_SURFACE_MESH_SEGMENTATION_SDF_CALCULATION_H
 
 #include <CGAL/license/Surface_mesh_segmentation.h>
@@ -147,7 +156,7 @@ public:
     centroid_functor(traits.construct_centroid_3_object()),
     collinear_functor(traits.collinear_3_object()),
     tree(create_traits(mesh, vertex_point_map)),
-    use_diagonal(use_diagonal)
+    use_diagonal(use_diagonal) 
   {
     typedef typename boost::property_traits<VertexPointPmap>::reference Point_ref;
     face_iterator it, end;
@@ -163,10 +172,11 @@ public:
         if(!test)
           tree.insert(Primitive(it, mesh, vertex_point_map));
     }
-    if(!build_kd_tree) {
-      tree.do_not_accelerate_distance_queries();
-    }
     tree.build();
+
+    if(build_kd_tree) {
+      tree.accelerate_distance_queries();
+    }
 
     if(use_diagonal) {
       CGAL::Bbox_3 bbox = tree.bbox();
@@ -318,7 +328,7 @@ public:
         Segment segment(center, target_point);
 
         if(traits.is_degenerate_3_object()(segment)) {
-          CGAL_warning_msg(false,
+          CGAL_warning_msg(false, 
                        "A degenerate segment is constructed. Most probable reason is using CGAL_PI as cone_angle parameter and also picking center of disk as a sample.");
         }
 
@@ -374,7 +384,7 @@ private:
     double cone_angle,
     bool accept_if_acute,
     const Disk_samples_list& disk_samples) const {
-
+    
     const Point p1 = get(vertex_point_map,target(halfedge(facet,mesh),mesh));
     const Point p2 = get(vertex_point_map,target(next(halfedge(facet,mesh),mesh),mesh));
     const Point p3 = get(vertex_point_map,target(prev(halfedge(facet,mesh),mesh),mesh));

@@ -1,11 +1,20 @@
 // Copyright (c) 2011 GeometryFactory Sarl (France)
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Filtered_kernel/include/CGAL/internal/Static_filters/Equal_3.h $
-// $Id: Equal_3.h 5c8df66 2020-09-25T14:25:14+02:00 Jane Tournois
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Filtered_kernel/include/CGAL/internal/Static_filters/Equal_3.h $
+// $Id: Equal_3.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Andreas Fabri
@@ -39,7 +48,18 @@ public:
 
   typedef typename Base::result_type  result_type;
 
+
+#ifndef CGAL_CFG_MATCHING_BUG_6
   using Base::operator();
+#else // CGAL_CFG_MATCHING_BUG_6
+  template <typename T>
+  result_type
+  operator()(const T& t1, const T& t2) const
+  {
+    return Base()(t1,t2);
+  }
+#endif // CGAL_CFG_MATCHING_BUG_6
+
 
   result_type operator()(const Point_3 &p, const Point_3& q) const
   {

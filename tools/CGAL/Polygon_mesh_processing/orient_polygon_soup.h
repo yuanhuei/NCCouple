@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/orient_polygon_soup.h $
-// $Id: orient_polygon_soup.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/orient_polygon_soup.h $
+// $Id: orient_polygon_soup.h 028fcd7 2019-04-10T11:06:26+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent Rineau and Sebastien Loriot
@@ -21,6 +30,7 @@
 #include <CGAL/tuple.h>
 #include <CGAL/array.h>
 #include <CGAL/assertions.h>
+#include <boost/foreach.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
 
@@ -84,7 +94,7 @@ struct Polygon_soup_orienter
     marked_edges.insert(canonical_edge(i,j));
   }
 
-  static std::array<V_ID,3>
+  static cpp11::array<V_ID,3>
   get_neighbor_vertices(V_ID v_id, P_ID polygon_index, const Polygons& polygons)
   {
     std::size_t nbv = polygons[polygon_index].size(), pvid=0;
@@ -129,7 +139,7 @@ struct Polygon_soup_orienter
     V_ID old_index,
     V_ID new_index)
   {
-    for(V_ID& i : polygons[polygon_id])
+    BOOST_FOREACH(V_ID& i, polygons[polygon_id])
       if( i==old_index )
         i=new_index;
   }
@@ -142,7 +152,7 @@ struct Polygon_soup_orienter
     P_ID nb_polygons=polygons.size();
     for(P_ID ip=0; ip<nb_polygons; ++ip)
     {
-      for(V_ID iv : polygons[ip])
+      BOOST_FOREACH(V_ID iv, polygons[ip])
         incident_polygons_per_vertex[iv].push_back(ip);
     }
   }
@@ -323,7 +333,7 @@ struct Polygon_soup_orienter
       std::set<P_ID> visited_polygons;
 
       bool first_pass = true;
-      for(P_ID p_id : incident_polygons)
+      BOOST_FOREACH(P_ID p_id, incident_polygons)
       {
         if ( !visited_polygons.insert(p_id).second ) continue; // already visited
 
@@ -333,7 +343,7 @@ struct Polygon_soup_orienter
           vertices_to_duplicate.back().first=v_id;
         }
 
-        const std::array<V_ID,3>& neighbors = get_neighbor_vertices(v_id,p_id,polygons);
+        const cpp11::array<V_ID,3>& neighbors = get_neighbor_vertices(v_id,p_id,polygons);
 
         V_ID next = neighbors[2];
 
@@ -342,7 +352,7 @@ struct Polygon_soup_orienter
 
         do{
           P_ID other_p_id;
-          std::tie(next, other_p_id) = next_cw_vertex_around_source(v_id, next, polygons, edges, marked_edges);
+          cpp11::tie(next, other_p_id) = next_cw_vertex_around_source(v_id, next, polygons, edges, marked_edges);
           if (next==v_id) break;
           visited_polygons.insert(other_p_id);
           if( !first_pass)
@@ -355,7 +365,7 @@ struct Polygon_soup_orienter
           next = neighbors[0];
           do{
             P_ID other_p_id;
-            std::tie(next, other_p_id) = next_ccw_vertex_around_target(next, v_id, polygons, edges, marked_edges);
+            cpp11::tie(next, other_p_id) = next_ccw_vertex_around_target(next, v_id, polygons, edges, marked_edges);
             if (next==v_id) break;
             visited_polygons.insert(other_p_id);
             if( !first_pass)
@@ -370,11 +380,11 @@ struct Polygon_soup_orienter
     /// now duplicate the vertices
     typedef std::pair<V_ID, std::vector<P_ID> > V_ID_and_Polygon_ids;
     edges.resize(edges.size()+vertices_to_duplicate.size());
-    for(const V_ID_and_Polygon_ids& vid_and_pids : vertices_to_duplicate)
+    BOOST_FOREACH(const V_ID_and_Polygon_ids& vid_and_pids, vertices_to_duplicate)
     {
       V_ID new_index = static_cast<V_ID>(points.size());
       points.push_back( points[vid_and_pids.first] );
-      for(P_ID polygon_id : vid_and_pids.second)
+      BOOST_FOREACH(P_ID polygon_id, vid_and_pids.second)
         replace_vertex_index_in_polygon(polygon_id, vid_and_pids.first, new_index);
     }
   }
@@ -398,20 +408,20 @@ struct Polygon_soup_orienter
       std::set<P_ID> visited_polygons;
 
       bool first_pass = true;
-      for(P_ID p_id : incident_polygons)
+      BOOST_FOREACH(P_ID p_id, incident_polygons)
       {
         if ( !visited_polygons.insert(p_id).second ) continue; // already visited
 
         if (!first_pass)
           return false; //there will be duplicate vertices
 
-        const std::array<V_ID,3>& neighbors = get_neighbor_vertices(v_id,p_id,polygons);
+        const cpp11::array<V_ID,3>& neighbors = get_neighbor_vertices(v_id,p_id,polygons);
 
         V_ID next = neighbors[2];
 
         do{
           P_ID other_p_id;
-          std::tie(next, other_p_id) = next_cw_vertex_around_source(v_id, next, polygons, edges, marked_edges);
+          cpp11::tie(next, other_p_id) = next_cw_vertex_around_source(v_id, next, polygons, edges, marked_edges);
           if (next==v_id) break;
           visited_polygons.insert(other_p_id);
         }
@@ -422,7 +432,7 @@ struct Polygon_soup_orienter
           next = neighbors[0];
           do{
             P_ID other_p_id;
-            std::tie(next, other_p_id) = next_ccw_vertex_around_target(next, v_id, polygons, edges, marked_edges);
+            cpp11::tie(next, other_p_id) = next_ccw_vertex_around_target(next, v_id, polygons, edges, marked_edges);
             if (next==v_id) break;
             visited_polygons.insert(other_p_id);
           }
@@ -447,7 +457,7 @@ struct Polygon_soup_orienter
  * amounts to duplicate the polygon to which it belongs.
  *
  * These points are either an endpoint of an edge incident to more
- * than two polygons, an endpoint of an edge between
+ * than two polygons, an endpoint of an edge between 
  * two polygons with incompatible orientations (during the re-orientation process),
  * or more generally a point \a p at which the intersection
  * of an infinitesimally small ball centered at \a p

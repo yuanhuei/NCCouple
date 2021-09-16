@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron_IO/include/CGAL/IO/Polyhedron_scan_OFF.h $
-// $Id: Polyhedron_scan_OFF.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron_IO/include/CGAL/IO/Polyhedron_scan_OFF.h $
+// $Id: Polyhedron_scan_OFF.h 22bd281 2018-01-17T17:13:53+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>
 

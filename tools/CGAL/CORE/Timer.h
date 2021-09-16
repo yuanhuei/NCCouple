@@ -4,6 +4,17 @@
  * All rights reserved.
  *
  * This file is part of CGAL (www.cgal.org).
+ * You can redistribute it and/or modify it under the terms of the GNU
+ * Lesser General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * Licensees holding a valid commercial license may use this file in
+ * accordance with the commercial license agreement provided with the
+ * software.
+ *
+ * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ *
  *
  * File: Timer.h
  * Synopsis:
@@ -11,7 +22,7 @@
  *
  *      Here is an example of how to use it:
  *
- *                Timer timer;
+ *		Timer timer;
  *
  *              timer.start();
  *              .. do some tasks for timing ..
@@ -20,15 +31,15 @@
  *              long clock = timer.getClocks();     // get CPU clocks
  *              long seconds = time.getSeconds();   // get seconds
  *
- * Written by
+ * Written by 
  *       Zilin Du <zilin@cs.nyu.edu>
  *
  * WWW URL: http://cs.nyu.edu/exact/
  * Email: exact@cs.nyu.edu
  *
- * $URL: https://github.com/CGAL/cgal/blob/v5.2.1/CGAL_Core/include/CGAL/CORE/Timer.h $
- * $Id: Timer.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
- * SPDX-License-Identifier: LGPL-3.0-or-later
+ * $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/CGAL_Core/include/CGAL/CORE/Timer.h $
+ * $Id: Timer.h 6b568a8 2017-11-11T21:06:17+01:00 Sébastien Loriot
+ * SPDX-License-Identifier: LGPL-3.0+
  ***************************************************************************/
 
 #ifndef _CORE_TIMER_H_
@@ -37,7 +48,7 @@
 #include <CGAL/CORE/Impl.h>
 #include <ctime>
 
-namespace CORE {
+namespace CORE { 
 
 class Timer {
 private:

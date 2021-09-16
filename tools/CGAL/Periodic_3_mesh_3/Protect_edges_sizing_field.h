@@ -3,10 +3,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_3_mesh_3/include/CGAL/Periodic_3_mesh_3/Protect_edges_sizing_field.h $
-// $Id: Protect_edges_sizing_field.h f69be33 2021-01-29T18:44:50+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_3_mesh_3/include/CGAL/Periodic_3_mesh_3/Protect_edges_sizing_field.h $
+// $Id: Protect_edges_sizing_field.h 8e75d21 2018-12-10T08:00:57+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Stephane Tayeb, Laurent Rineau, Mael Rouxel-Labbé
 //
@@ -40,16 +49,18 @@
 #include <CGAL/Mesh_3/Triangulation_helpers.h>
 
 #include <CGAL/enum.h>
+#include <CGAL/Has_timestamp.h>
+#include <CGAL/Hash_handles_with_or_without_timestamps.h>
 #include <CGAL/internal/Has_member_visited.h>
 #include <CGAL/iterator.h>
 #include <CGAL/number_utils.h>
 #include <CGAL/Periodic_3_Delaunay_triangulation_traits_3.h>
 #include <CGAL/Periodic_3_Delaunay_triangulation_3.h>
-#include <CGAL/Time_stamper.h>
 
 #include <CGAL/boost/iterator/transform_iterator.hpp>
 
-#include <boost/iterator/function_output_iterator.hpp>
+#include <boost/bind.hpp>
+#include <boost/function_output_iterator.hpp>
 #ifndef CGAL_NO_ASSERTIONS
 #  include <boost/math/special_functions/next.hpp> // for float_prior
 #endif
@@ -308,7 +319,7 @@ private:
                       Curve_index curve_index) const;
 
   /// Walk along the edge from \c start, following the direction \c start to
-  /// \c next, and fills \c out with the vertices which do not fulfill
+  /// \c next, and fills \c out with the vertices which do not fullfill
   /// the sampling conditions.
   ///
   /// \param orientation Orientation of the curve segment between \c v1 and
@@ -475,7 +486,7 @@ private:
   void insert_in_correspondence_map(const Vertex_handle v,
                                     const Bare_point& p,
                                     const Curve_index_container& curve_indices,
-                                    typename Curve_index_container::const_iterator* /*sfinae*/ = nullptr);
+                                    typename Curve_index_container::const_iterator* /*sfinae*/ = NULL);
 
   void insert_in_correspondence_map(const Vertex_handle v,
                                     const Bare_point& p,
@@ -1876,7 +1887,7 @@ Protect_edges_sizing_field<C3T3, MD, Sf>::
 insert_balls_on_edges()
 {
   // Get features
-  typedef std::tuple<Curve_index,
+  typedef CGAL::cpp11::tuple<Curve_index,
                              std::pair<Bare_point,Index>,
                              std::pair<Bare_point,Index> >    Feature_tuple;
   typedef std::vector<Feature_tuple>                          Input_features;
@@ -1888,18 +1899,18 @@ insert_balls_on_edges()
   for(typename Input_features::iterator fit = input_features.begin(),
        end = input_features.end() ; fit != end ; ++fit)
   {
-    const Curve_index& curve_index = std::get<0>(*fit);
+    const Curve_index& curve_index = CGAL::cpp11::get<0>(*fit);
     if(! is_treated(curve_index))
     {
 #if CGAL_MESH_3_PROTECTION_DEBUG & 1
       std::cerr << "** treat curve #" << curve_index << std::endl;
       std::cerr << "is it a loop? " << domain_.is_loop(curve_index) << std::endl;
 #endif
-      const Bare_point& p = std::get<1>(*fit).first;
-      const Bare_point& q = std::get<2>(*fit).first;
+      const Bare_point& p = CGAL::cpp11::get<1>(*fit).first;
+      const Bare_point& q = CGAL::cpp11::get<2>(*fit).first;
 
-      const Index& p_index = std::get<1>(*fit).second;
-      const Index& q_index = std::get<2>(*fit).second;
+      const Index& p_index = CGAL::cpp11::get<1>(*fit).second;
+      const Index& q_index = CGAL::cpp11::get<2>(*fit).second;
 
       Vertex_handle vp,vq;
       if(! domain_.is_loop(curve_index))
@@ -2891,7 +2902,7 @@ next_vertex_along_curve(const Vertex_handle& start,
   adjacent_vertices.erase
     (std::remove_if(adjacent_vertices.begin(),
                     adjacent_vertices.end(),
-                    [curve_index](const auto& p){ return p.second != curve_index;}),
+                    boost::bind(&Adjacent_vertices::value_type::second, _1) != curve_index),
      adjacent_vertices.end());
 
 //  typename Adjacent_vertices::const_iterator iv = adjacent_vertices.begin();

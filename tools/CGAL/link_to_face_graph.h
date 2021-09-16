@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Triangulation_3/include/CGAL/link_to_face_graph.h $
-// $Id: link_to_face_graph.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Triangulation_3/include/CGAL/link_to_face_graph.h $
+// $Id: link_to_face_graph.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Andreas Fabri
 //
@@ -18,6 +27,7 @@
 #include <CGAL/license/Triangulation_3.h>
 
 
+#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 #include <CGAL/array.h>
 #include <CGAL/boost/graph/Euler_operations.h>
@@ -30,7 +40,7 @@ template<class Triangulation_3,class FG>
 typename boost::graph_traits<FG>::vertex_descriptor
 link_to_face_graph(const Triangulation_3& t,
                    typename Triangulation_3::Vertex_handle vh,
-                   FG& fg,
+                   FG& fg, 
                    bool no_infinite_faces = true)
 {
   typedef typename Triangulation_3::Cell_handle Cell_handle;
@@ -45,12 +55,12 @@ link_to_face_graph(const Triangulation_3& t,
   Vertex_map vertex_map;
   std::vector<Cell_handle>  cells;
   t.incident_cells(t.infinite_vertex(),std::back_inserter(cells));
-  std::array<vertex_descriptor,3> face;
+  CGAL::cpp11::array<vertex_descriptor,3> face;
 
   typename boost::property_map<FG, CGAL::vertex_point_t>::type vpm
     = get(CGAL::vertex_point, fg);
 
-  for(Cell_handle ch : cells){
+  BOOST_FOREACH(Cell_handle ch, cells){
     bool infinite_face = false;
     int vhi = ch->index(vh);
     for(int i=0; i<3; i++){
@@ -59,7 +69,7 @@ link_to_face_graph(const Triangulation_3& t,
       if(no_infinite_faces && t.is_infinite(vhj)){
         infinite_face = true;
       } else {
-        std::pair<typename Vertex_map::iterator,bool> res
+        std::pair<typename Vertex_map::iterator,bool> res 
           = vertex_map.insert(std::make_pair(vhj,nullvertex));
         if(res.second){
           res.first->second = add_vertex(fg);

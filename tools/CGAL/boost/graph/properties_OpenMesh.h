@@ -1,10 +1,19 @@
 // Copyright (c) 2014  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/BGL/include/CGAL/boost/graph/properties_OpenMesh.h $
-// $Id: properties_OpenMesh.h bd3f47c 2020-03-24T11:02:57+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/BGL/include/CGAL/boost/graph/properties_OpenMesh.h $
+// $Id: properties_OpenMesh.h 915c3e7 2018-10-25T16:55:43+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Philipp Möller
@@ -188,7 +197,7 @@ public:
   typedef typename boost::graph_traits<OpenMesh>::vertex_descriptor key_type;
 
   OM_point_pmap()
-    : sm_(nullptr)
+    : sm_(NULL)
   {}
 
   OM_point_pmap(const OpenMesh& sm)
@@ -204,7 +213,7 @@ public:
 #if defined(CGAL_USE_OM_POINTS)
     return sm_->point(v);
 #else
-    CGAL_assertion(sm_!=nullptr);
+    CGAL_assertion(sm_!=NULL);
     typename OpenMesh::Point const& omp = sm_->point(v);
     return value_type(omp[0], omp[1], omp[2]);
 #endif
@@ -212,11 +221,11 @@ public:
 
   inline friend reference get(const OM_point_pmap<OpenMesh,P>& pm, key_type v)
   {
-    CGAL_precondition(pm.sm_!=nullptr);
+    CGAL_precondition(pm.sm_!=NULL);
 #if defined(CGAL_USE_OM_POINTS)
     return pm.sm_->point(v);
 #else
-    CGAL_assertion(pm.sm_!=nullptr);
+    CGAL_assertion(pm.sm_!=NULL);
     typename OpenMesh::Point const& omp = pm.sm_->point(v);
     return value_type(omp[0], omp[1], omp[2]);
 #endif
@@ -224,7 +233,7 @@ public:
 
   inline friend void put(const OM_point_pmap<OpenMesh,P>& pm, key_type v, const value_type& p)
   {
-    CGAL_precondition(pm.sm_!=nullptr);
+    CGAL_precondition(pm.sm_!=NULL);
 #if defined(CGAL_USE_OM_POINTS)
     const_cast<OpenMesh&>(*pm.sm_).set_point(v,p);
 #else
@@ -423,11 +432,7 @@ template<typename K>
 void
 put(boost::vertex_point_t p, OPEN_MESH_CLASS& g,
     typename boost::graph_traits< OPEN_MESH_CLASS >::vertex_descriptor vd,
-#if defined(CGAL_USE_OM_POINTS)
     const typename K::Point& point)
-#else
-    const CGAL::Exact_predicates_inexact_constructions_kernel::Point_3& point)
-#endif
 {
   put(get(p,g), vd, point);
 }

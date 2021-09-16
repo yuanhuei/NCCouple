@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Feature/Cluster_mean_of_feature.h $
-// $Id: Cluster_mean_of_feature.h 0e934b1 2020-08-04T13:16:13+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Feature/Cluster_mean_of_feature.h $
+// $Id: Cluster_mean_of_feature.h 29433bc 2018-06-15T14:10:07+02:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -36,11 +45,11 @@ namespace Feature {
 class Cluster_mean_of_feature : public CGAL::Classification::Feature_base
 {
   std::vector<float> m_values;
-
+    
 public:
 
   /*!
-    \brief constructs the feature.
+    \brief Constructs the feature.
 
     \tparam ClusterRange model of `ConstRange`. Its iterator type
     is `RandomAccessIterator` and its value type is the key type of

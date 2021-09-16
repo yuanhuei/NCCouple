@@ -2,10 +2,16 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_deformation/include/CGAL/internal/Surface_mesh_deformation/Spokes_and_rims_iterator.h $
-// $Id: Spokes_and_rims_iterator.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_deformation/include/CGAL/internal/Surface_mesh_deformation/Spokes_and_rims_iterator.h $
+// $Id: Spokes_and_rims_iterator.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Ilker O. Yaz
 

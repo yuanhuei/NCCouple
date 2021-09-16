@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Mean_value_coordinates_parameterizer_3.h $
-// $Id: Mean_value_coordinates_parameterizer_3.h 93a70d3 2020-07-21T16:46:50+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Mean_value_coordinates_parameterizer_3.h $
+// $Id: Mean_value_coordinates_parameterizer_3.h 5806b88 2020-01-03T11:07:43+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent Saboret, Pierre Alliez, Bruno Levy
 
@@ -45,8 +54,8 @@ namespace Surface_mesh_parameterization {
 /// `Fixed_border_parameterizer_3::parameterize()`.
 /// - It provides default `BorderParameterizer_` and `SolverTraits_` template
 ///   parameters.
-/// - It implements `compute_w_ij()` to compute `w_ij`, the `(i,j)` coefficient of matrix `A`
-///   for `j` neighbor vertex of `i` based on Floater Mean Value Coordinates parameterization.
+/// - It implements `compute_w_ij()` to compute w_ij = (i, j) coefficient of matrix A
+///   for j neighbor vertex of i based on Floater Mean Value Coordinates parameterization.
 /// - It implements an optimized version of `is_one_to_one_mapping()`.
 ///
 /// \cgalModels `Parameterizer_3`
@@ -110,48 +119,39 @@ public:
   #endif
   >::type                                                     Solver_traits;
 #else
-  /// The border parameterizer
   typedef Border_parameterizer_                               Border_parameterizer;
-
-  /// Solver traits type
   typedef SolverTraits_                                       Solver_traits;
 #endif
 
-  /// Triangle mesh type
-  typedef TriangleMesh_                                       Triangle_mesh;
-
   typedef TriangleMesh_                                       TriangleMesh;
-
-  /// Mesh vertex type
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor    vertex_descriptor;
-
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<Triangle_mesh>::halfedge_descriptor  halfedge_descriptor;
 
 // Private types
 private:
   // Superclass
-  typedef Fixed_border_parameterizer_3<Triangle_mesh,
-                                       Border_parameterizer,
-                                       Solver_traits>          Base;
+  typedef Fixed_border_parameterizer_3<TriangleMesh,
+                                      Border_parameterizer,
+                                      Solver_traits>          Base;
 
 // Private types
 private:
-  typedef typename boost::graph_traits<Triangle_mesh>::face_descriptor     face_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor   vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor halfedge_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::face_descriptor     face_descriptor;
 
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_iterator     vertex_iterator;
-  typedef typename boost::graph_traits<Triangle_mesh>::face_iterator       face_iterator;
-  typedef CGAL::Vertex_around_target_circulator<Triangle_mesh>             vertex_around_target_circulator;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_iterator     vertex_iterator;
+  typedef typename boost::graph_traits<TriangleMesh>::face_iterator       face_iterator;
+  typedef CGAL::Vertex_around_target_circulator<TriangleMesh> vertex_around_target_circulator;
 
   // Mesh_TriangleMesh_3 subtypes:
-  typedef typename Base::PPM                                  PPM;
-  typedef typename Base::Kernel                               Kernel;
-  typedef typename Base::NT                                   NT;
-  typedef typename Base::Point_3                              Point_3;
-  typedef typename Base::Vector_3                             Vector_3;
+  typedef typename Base::PPM              PPM;
+  typedef typename Base::Kernel           Kernel;
+  typedef typename Base::NT               NT;
+  typedef typename Base::Point_3          Point_3;
+  typedef typename Base::Vector_3         Vector_3;
 
-  typedef typename Solver_traits::Vector                      Vector;
-  typedef typename Solver_traits::Matrix                      Matrix;
+  // Solver traits subtypes:
+  typedef typename Solver_traits::Vector      Vector;
+  typedef typename Solver_traits::Matrix      Matrix;
 
 // Public operations
 public:
@@ -160,16 +160,16 @@ public:
                                          ///< Object that maps the surface's border to 2D space.
                                          Solver_traits sparse_la = Solver_traits())
                                          ///< Traits object to access a sparse linear system.
-  : Fixed_border_parameterizer_3<Triangle_mesh,
+  : Fixed_border_parameterizer_3<TriangleMesh,
                                  Border_parameterizer,
                                  Solver_traits>(border_param, sparse_la)
   { }
 
     // Default copy constructor and operator =() are fine
 
-  /// returns whether the 3D -> 2D mapping is one-to-one.
+  /// Check if the 3D -> 2D mapping is one-to-one.
   template <typename VertexUVMap>
-  bool is_one_to_one_mapping(const Triangle_mesh& mesh,
+  bool is_one_to_one_mapping(const TriangleMesh& mesh,
                              halfedge_descriptor bhd,
                              const VertexUVMap uvmap) const
   {
@@ -185,14 +185,14 @@ public:
 
 // Protected operations
 protected:
-  /// computes `w_ij`, the `(i, j)`-coefficient of matrix A for j neighbor vertex of i.
+  /// Compute w_ij = (i, j) coefficient of matrix A for j neighbor vertex of i.
   ///
   /// \param mesh a triangulated surface.
   /// \param main_vertex_v_i the vertex of `mesh` with index `i`
   /// \param neighbor_vertex_v_j the vertex of `mesh` with index `j`
-  virtual NT compute_w_ij(const Triangle_mesh& mesh,
+  virtual NT compute_w_ij(const TriangleMesh& mesh,
                           vertex_descriptor main_vertex_v_i,
-                          Vertex_around_target_circulator<Triangle_mesh> neighbor_vertex_v_j) const
+                          vertex_around_target_circulator neighbor_vertex_v_j) const
   {
     const PPM ppmap = get(vertex_point, mesh);
 

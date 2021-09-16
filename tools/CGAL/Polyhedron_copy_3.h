@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron/include/CGAL/Polyhedron_copy_3.h $
-// $Id: Polyhedron_copy_3.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron/include/CGAL/Polyhedron_copy_3.h $
+// $Id: Polyhedron_copy_3.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>)
 
@@ -46,8 +55,8 @@ Polyhedron_copy_3<Poly,HDS,clear_target_before>::operator()(HDS& target) {
     typedef typename Poly::Vertex_const_iterator  Vertex_const_iterator;
     typedef typename Poly::Facet_const_iterator   Facet_const_iterator;
     typedef Inverse_index< Vertex_const_iterator> Index;
-
-    Cartesian_converter<
+  
+    Cartesian_converter< 
       typename Kernel_traits<typename Poly::Vertex::Point>::Kernel,
       typename Kernel_traits<typename HDS::Vertex::Point>::Kernel
     > convert;
@@ -74,7 +83,7 @@ Polyhedron_copy_3<Poly,HDS,clear_target_before>::operator()(HDS& target) {
             Halfedge_around_facet_const_circulator;
         Halfedge_around_facet_const_circulator hc = fi->facet_begin();
         Halfedge_around_facet_const_circulator hc_end = hc;
-        CGAL_assertion( hc != nullptr);
+        CGAL_assertion( hc != NULL);
         do {
             B.add_vertex_to_facet( index[ hc->vertex()]);
             ++hc;

@@ -1,16 +1,25 @@
-// Copyright (c) 1997
+// Copyright (c) 1997  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/HalfedgeDS/include/CGAL/HalfedgeDS_list.h $
-// $Id: HalfedgeDS_list.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/HalfedgeDS/include/CGAL/HalfedgeDS_list.h $
+// $Id: HalfedgeDS_list.h 6a2d925 2019-01-10T17:58:48+01:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>
 
@@ -37,9 +46,11 @@ public:
     HalfedgeDS_in_place_list_vertex() {}
     HalfedgeDS_in_place_list_vertex( const VertexBase& v)   // down cast
         : VertexBase(v) {}
-
-    HalfedgeDS_in_place_list_vertex(const HalfedgeDS_in_place_list_vertex&)=default;
-
+  
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
+  HalfedgeDS_in_place_list_vertex(const HalfedgeDS_in_place_list_vertex&)=default;
+#endif
+  
     Self& operator=( const Self& v) {
         // This self written assignment avoids that assigning vertices will
         // overwrite the list linking of the target vertex.
@@ -60,9 +71,11 @@ public:
     HalfedgeDS_in_place_list_halfedge() {}                   // down cast
     HalfedgeDS_in_place_list_halfedge( const HalfedgeBase& h)
         : HalfedgeBase(h) {}
-
-    HalfedgeDS_in_place_list_halfedge(const HalfedgeDS_in_place_list_halfedge&)=default;
-
+  
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
+  HalfedgeDS_in_place_list_halfedge(const HalfedgeDS_in_place_list_halfedge&)=default;
+#endif
+  
     Self& operator=( const Self& h) {
         // This self written assignment avoids that assigning halfedges will
         // overwrite the list linking of the target halfedge.
@@ -81,9 +94,11 @@ public:
     typedef typename FaceBase::Face_const_handle Face_const_handle;
     HalfedgeDS_in_place_list_face() {}                   // down cast
     HalfedgeDS_in_place_list_face( const FaceBase& f) : FaceBase(f) {}
-
-    HalfedgeDS_in_place_list_face(const HalfedgeDS_in_place_list_face&)=default;
-
+  
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
+  HalfedgeDS_in_place_list_face(const HalfedgeDS_in_place_list_face&)=default;
+#endif
+  
     Self& operator=( const Self& f) {
         // This self written assignment avoids that assigning faces will
         // overwrite the list linking of the target face.
@@ -104,7 +119,7 @@ public:
 
     typedef typename Items::template Vertex_wrapper<Self,Traits>
                                                        Vertex_wrapper;
-    typedef typename Items::template Halfedge_wrapper<Self,Traits>
+    typedef typename Items::template Halfedge_wrapper<Self,Traits> 
                                                        Halfedge_wrapper;
     typedef typename Items::template Face_wrapper<Self,Traits>
                                                        Face_wrapper;
@@ -116,10 +131,20 @@ public:
     typedef typename Face_wrapper::Face                Face_base;
     typedef HalfedgeDS_in_place_list_face< Face_base>  Face;
 
+#ifdef CGAL_CXX11
     typedef std::allocator_traits<Allocator> Allocator_traits;
     typedef typename Allocator_traits::template rebind_alloc<Vertex> Vertex_allocator;
     typedef typename Allocator_traits::template rebind_alloc<Halfedge> Halfedge_allocator;
     typedef typename Allocator_traits::template rebind_alloc<Face> Face_allocator;
+#else // CGAL_CXX11
+    typedef typename Allocator::template rebind< Vertex> Vertex_alloc_rebind;
+    typedef typename Vertex_alloc_rebind::other        Vertex_allocator;
+    typedef typename Allocator::template rebind< Halfedge>
+                                                       Halfedge_alloc_rebind;
+    typedef typename Halfedge_alloc_rebind::other      Halfedge_allocator;
+    typedef typename Allocator::template rebind< Face> Face_alloc_rebind;
+    typedef typename Face_alloc_rebind::other          Face_allocator;
+#endif // not CGAL_CXX11
 
     typedef In_place_list<Vertex,false,Vertex_allocator>  Vertex_list;
     typedef typename Vertex_list::iterator             Vertex_handle;
@@ -137,7 +162,7 @@ public:
                                                        Edge_iterator;
     typedef N_step_adaptor_derived<Halfedge_const_iterator, 2>
                                                        Edge_const_iterator;
-
+  
     typedef In_place_list<Face,false,Face_allocator>   Face_list;
     typedef typename Face_list::iterator               Face_handle;
     typedef typename Face_list::const_iterator         Face_const_handle;
@@ -185,7 +210,7 @@ public:
     }
 };
 
-template < class Traits_, class HalfedgeDSItems,
+template < class Traits_, class HalfedgeDSItems, 
            class Alloc = CGAL_ALLOCATOR(int)>
 class HalfedgeDS_list
     : public HalfedgeDS_list_types<Traits_, HalfedgeDSItems, Alloc> {
@@ -239,8 +264,14 @@ public:
 
     // Halfedges are allocated in pairs. Here is the type for that.
     typedef std::pair<Halfedge,Halfedge>              Halfedge_pair;
+#ifdef CGAL_CXX11
     typedef std::allocator_traits<Allocator> Allocator_traits;
     typedef typename Allocator_traits::template rebind_alloc<Halfedge_pair> Edge_allocator;
+#else
+    typedef typename Allocator::template rebind< Halfedge_pair>
+                                                       Edge_alloc_rebind;
+    typedef typename Edge_alloc_rebind::other          Edge_allocator;
+#endif
 
 protected:
     // Changed from static to local variable
@@ -251,12 +282,20 @@ protected:
     template <typename A, typename T>
     void destroy(A& a, const T& t)
     {
+#ifdef CGAL_CXX11
         std::allocator_traits<A>::destroy(a,t);
+#else
+        a.destroy(t);
+#endif
     }
 
     Vertex* get_vertex_node( const Vertex& t) {
         Vertex* p = vertex_allocator.allocate(1);
+#ifdef CGAL_CXX11
         std::allocator_traits<Vertex_allocator>::construct(vertex_allocator, p,t);
+#else
+        vertex_allocator.construct(p, t);
+#endif
         return p;
     }
     void put_vertex_node( Vertex* p) {
@@ -267,7 +306,11 @@ protected:
     Halfedge* get_edge_node( const Halfedge& h, const Halfedge& g) {
         // creates a new pair of opposite border halfedges.
         Halfedge_pair* hpair = edge_allocator.allocate(1);
+#ifdef CGAL_CXX11
         std::allocator_traits<Edge_allocator>::construct(edge_allocator, hpair, h, g);
+#else
+        edge_allocator.construct(hpair, Halfedge_pair( h, g));
+#endif
         Halfedge* h2 = &(hpair->first);
         Halfedge* g2 = &(hpair->second);
         CGAL_assertion( h2 == (Halfedge*)hpair);
@@ -289,7 +332,11 @@ protected:
 
     Face* get_face_node( const Face& t) {
         Face* p = face_allocator.allocate(1);
+#ifdef CGAL_CXX11
         std::allocator_traits<Face_allocator>::construct(face_allocator, p, t);
+#else
+        face_allocator.construct(p, t);
+#endif
         return p;
     }
 
@@ -325,7 +372,7 @@ private:
         typedef Unique_hash_map< Face_const_iterator, Face_iterator>     F_map;
         // initialize maps.
         H_map h_map( hds.halfedges_begin(), hds.halfedges_end(),
-                     halfedges_begin(), Halfedge_iterator(),
+                     halfedges_begin(), Halfedge_iterator(), 
                      3 * hds.size_of_halfedges() / 2);
         Vertex_iterator vii;
         V_map v_map( vii, 3 * hds.size_of_vertices() / 2);
@@ -605,7 +652,7 @@ public:
         // number of border halfedges. An edge with no incident face
         // counts as two border halfedges. Precondition: `normalize_border()'
         // has been called and no halfedge insertion or removal and no
-        // change in border status of the halfedges have occurred since
+        // change in border status of the halfedges have occured since
         // then.
 
     size_type size_of_border_edges() const { return nb_border_edges;}
@@ -614,7 +661,7 @@ public:
         // face on one side and to a hole on the other side.
         // Precondition: `normalize_border()' has been called and no
         // halfedge insertion or removal and no change in border status of
-        // the halfedges have occurred since then.
+        // the halfedges have occured since then.
 
     Halfedge_iterator border_halfedges_begin() {
         // halfedge iterator starting with the border edges. The range [
@@ -623,7 +670,7 @@ public:
         // halfedges_end()') denotes all border edges. Precondition:
         // `normalize_border()' has been called and no halfedge insertion
         // or removal and no change in border status of the halfedges have
-        // occurred since then.
+        // occured since then.
         return border_halfedges;
     }
 

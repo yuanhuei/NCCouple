@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Label.h $
-// $Id: Label.h 250ab87 2020-10-12T08:10:41+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Label.h $
+// $Id: Label.h f2f919c 2018-12-11T11:44:11+01:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -13,89 +22,38 @@
 #define CGAL_CLASSIFICATION_LABEL_H
 
 #include <CGAL/license/Classification.h>
-#include <CGAL/IO/Color.h>
 
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace CGAL {
 
 namespace Classification {
 
-/// \cond SKIP_IN_MANUAL
-class Label_set;
-/// \endcond
-
 /*!
 \ingroup PkgClassificationLabel
 
-\brief %Classification label (for example: vegetation, ground, etc.).
+\brief %Classification label (for example: vegetation, ground, etc.)
+defined as a set of relationships with classification features.
 
-\note Labels should always be constructed from a `CGAL::Classification::Label_set` object.
 */
 class Label
 {
 private:
 
   std::string m_name;
-  std::size_t m_index;
-  std::size_t m_standard_index;
-  CGAL::Color m_color;
-
-  friend Label_set;
 
 public:
 
-  /// \cond SKIP_IN_MANUAL
-  // Undocumented: Labels should be created by the set
-  Label (std::string name, std::size_t index, std::size_t standard_index,
-         const CGAL::Color& color)
-    : m_name (name), m_index (index), m_standard_index (standard_index)
-    , m_color (color)
-  { }
-  /// \endcond
+  /*! 
+    \param name name of the classification label (e.g. vegetation).
+  */ 
+  Label (std::string name) : m_name (name) { }
 
-  /// \name Access
-  /// @{
-
-  /*!
-    returns the name of the classification label (\a e.g. vegetation).
-  */
   const std::string& name() const { return m_name; }
 
-  /*!
-    returns the index of the classification label in the label set.
-
-    \note This index cannot be changed by the user and is handled directly by the label set.
-  */
-  std::size_t index() const { return m_index; }
-
-  /*!
-    returns the standard index of the classification label (\a e.g. index in the ASPRS standard).
-
-    \note This index is purely user-oriented and is not used by the classification algorithms.
-  */
-  std::size_t standard_index() const { return m_standard_index; }
-
-  /*!
-    returns the color used to represent the label.
-
-    \note The color is purely user-oriented and is not used by the
-    classification algorithms. It is not to be confused with a color
-    attribute embedded in a data set which _can_ be used (see
-    `Color_channel`).
-  */
-  const CGAL::Color& color() const { return m_color; }
-
-  /// @}
-
-  /// \name Modification
-  /// @{
-
+  /// \cond SKIP_IN_MANUAL
   void set_name (const std::string& name) { m_name = name; }
-  void set_standard_index(std::size_t idx) { m_standard_index = idx; }
-  void set_color (const Color& color) { m_color = color; }
-
-  /// @}
+  /// \endcond
 };
 
 #ifdef DOXYGEN_RUNNING
@@ -108,7 +66,7 @@ public:
 */
 class Label_handle { };
 #else
-typedef std::shared_ptr<Label> Label_handle;
+typedef boost::shared_ptr<Label> Label_handle;
 #endif
 
 } // namespace Classification

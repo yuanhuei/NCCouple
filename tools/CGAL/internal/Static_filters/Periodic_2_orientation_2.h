@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_2_triangulation_2/include/CGAL/internal/Static_filters/Periodic_2_orientation_2.h $
-// $Id: Periodic_2_orientation_2.h 5c8df66 2020-09-25T14:25:14+02:00 Jane Tournois
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_2_triangulation_2/include/CGAL/internal/Static_filters/Periodic_2_orientation_2.h $
+// $Id: Periodic_2_orientation_2.h cbde108 2017-12-13T11:23:12+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Nico Kruithof <Nico@nghk.nl>
 
@@ -103,7 +112,21 @@ public:
     : Base(o2b), _dom(dom)
   { }
 
+#ifndef CGAL_CFG_MATCHING_BUG_6
   using Base::operator();
+#else
+  result_type
+  operator()(const Vector_2& u, const Vector_2& v) const
+  {
+    return Base::operator()(u, v);
+  }
+
+  result_type
+  operator()(const Circle_2& c) const
+  {
+    return Base::operator()(c);
+  }
+#endif
 
   /// Normal static orientation test, copied from Orientation_2
   result_type operator()(const Point_2 &p, const Point_2 &q, const Point_2 &r) const

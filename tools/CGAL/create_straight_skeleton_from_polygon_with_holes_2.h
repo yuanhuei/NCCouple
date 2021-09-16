@@ -1,11 +1,20 @@
 // Copyright (c) 2006-2008 Fernando Luis Cacciola Carballal. All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
+//
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //
 
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Straight_skeleton_2/include/CGAL/create_straight_skeleton_from_polygon_with_holes_2.h $
-// $Id: create_straight_skeleton_from_polygon_with_holes_2.h 9051fc1 2020-10-08T22:54:11+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Straight_skeleton_2/include/CGAL/create_straight_skeleton_from_polygon_with_holes_2.h $
+// $Id: create_straight_skeleton_from_polygon_with_holes_2.h 599e201 2018-01-18T14:08:08+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Fernando Cacciola <fernando_cacciola@ciudad.com.ar>
 //
@@ -14,37 +23,29 @@
 
 #include <CGAL/license/Straight_skeleton_2.h>
 
+#include <CGAL/disable_warnings.h>
+
 #include <CGAL/create_straight_skeleton_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
-#include <CGAL/Straight_skeleton_2/Polygon_iterators.h>
-
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-
-#include <boost/shared_ptr.hpp>
-
-#include <type_traits>
 
 namespace CGAL {
 
-template<class K, class Polygon>
+template<class K, class C>
 boost::shared_ptr< Straight_skeleton_2<K> >
 inline
-create_interior_straight_skeleton_2 ( Polygon const& aPolyWithHoles,
-                                      K const& k,
-                                      typename std::enable_if<
-                                        CGAL_SS_i::has_Hole_const_iterator<Polygon>::value>::type* = nullptr)
+create_interior_straight_skeleton_2 ( Polygon_with_holes_2<K,C> const& aPolyWithHoles )
 {
   return create_interior_straight_skeleton_2(aPolyWithHoles.outer_boundary().vertices_begin()
                                             ,aPolyWithHoles.outer_boundary().vertices_end  ()
                                             ,aPolyWithHoles.holes_begin   ()
                                             ,aPolyWithHoles.holes_end     ()
-                                            ,k
+                                            ,K()
                                             );
 }
 
-// create_exterior_straight_skeleton_2() for polygon with holes is simply in create_straight_skeleton_2.h
-// as the holes do not matter.
-
 } // end namespace CGAL
 
+#include <CGAL/enable_warnings.h>
+
 #endif // CGAL_STRAIGHT_SKELETON_BUILDER_2_H //
+// EOF //

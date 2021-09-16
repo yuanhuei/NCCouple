@@ -1,16 +1,25 @@
-// Copyright (c) 2000
+// Copyright (c) 2000  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_2/include/CGAL/Intersections_2/Circle_2_Line_2.h $
-// $Id: Circle_2_Line_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_2/include/CGAL/Intersections_2/Circle_2_Line_2.h $
+// $Id: Circle_2_Line_2.h e23d76c 2019-05-17T14:47:31+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Geert-Jan Giezeman
 
@@ -29,7 +38,7 @@ namespace internal {
 
 template <class K>
 bool
-do_intersect(const typename K::Circle_2 & c,
+do_intersect(const typename K::Circle_2 & c, 
              const typename K::Line_2& l,
              const K&)
 {
@@ -38,7 +47,7 @@ do_intersect(const typename K::Circle_2 & c,
 
 template <class K>
 bool
-do_intersect(const typename K::Line_2& l,
+do_intersect(const typename K::Line_2& l, 
              const typename K::Circle_2 & c,
              const K&)
 {

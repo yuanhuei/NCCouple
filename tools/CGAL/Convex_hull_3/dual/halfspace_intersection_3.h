@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Convex_hull_3/include/CGAL/Convex_hull_3/dual/halfspace_intersection_3.h $
-// $Id: halfspace_intersection_3.h 278a26d 2020-05-18T18:01:56+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Convex_hull_3/include/CGAL/Convex_hull_3/dual/halfspace_intersection_3.h $
+// $Id: halfspace_intersection_3.h 643aaf2 2018-03-29T10:43:52+01:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Jocelyn Meyron
@@ -26,11 +35,12 @@
 #include <CGAL/assertions.h>
 #include <CGAL/boost/graph/Euler_operations.h>
 // For interior_polyhedron_3
-#include <CGAL/Convex_hull_3/dual/halfspace_intersection_interior_point_3.h>
+#include <CGAL/Convex_hull_3/dual/interior_polyhedron_3.h>
 #include <CGAL/internal/Exact_type_selector.h>
 
 #include <boost/unordered_map.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
+#include <boost/foreach.hpp>
 #include <deque>
 
 namespace CGAL
@@ -52,7 +62,7 @@ namespace CGAL
 
               // Typedefs for dual
 
-              typedef typename boost::graph_traits<Polyhedron_dual>::face_descriptor
+              typedef typename boost::graph_traits<Polyhedron_dual>::face_descriptor 
                 Facet_const_handle;
               typedef typename boost::graph_traits<Polyhedron_dual>::vertex_descriptor
                 Vertex_const_descriptor;
@@ -71,12 +81,12 @@ namespace CGAL
                                                        Line_3,
                                                        Plane_3 > > result_inter;
 
-
+                           
               boost::unordered_map <Facet_const_handle, vertex_descriptor> primal_vertices;
               size_t n = 0;
 
               // First, computing the primal vertices
-              for(Facet_const_handle fd : faces(_dual)){
+              BOOST_FOREACH (Facet_const_handle fd, faces(_dual)){               
                 Halfedge_const_descriptor h = fd->halfedge();
                 // Build the dual plane corresponding to the current facet
                 Plane_3 p1 = h->vertex()->point();
@@ -98,7 +108,7 @@ namespace CGAL
                 result_inter result = CGAL::intersection(pp1, pp2, pp3);
                 CGAL_assertion_msg(bool(result),
                                    "halfspace_intersection_3: no intersection");
-                CGAL_assertion_msg(boost::get<Point_3>(& *result) != nullptr,
+                CGAL_assertion_msg(boost::get<Point_3>(& *result) != NULL,
                                    "halfspace_intersection_3: intersection is not a point");
 
                 const Point_3* pp = boost::get<Point_3>(& *result);
@@ -118,9 +128,9 @@ namespace CGAL
               // To do this, for each dual vertex, we circulate around this vertex
               // and we add an edge between each facet we encounter
 
-              for(Vertex_const_descriptor vd : vertices( _dual)) {
+              BOOST_FOREACH (Vertex_const_descriptor vd, vertices( _dual)) {
                 std::deque<vertex_descriptor> vertices;
-                for(Halfedge_const_descriptor hd : halfedges_around_target(vd, _dual)){
+                BOOST_FOREACH(Halfedge_const_descriptor hd, halfedges_around_target(vd, _dual)){
                   vertices.push_front(primal_vertices[face(hd, _dual)]);
                 }
                 Euler::add_face(vertices,primal);
@@ -134,10 +144,10 @@ namespace CGAL
             // Compute the equations of the facets of the polyhedron
             typedef typename boost::graph_traits<Polyhedron>::face_descriptor face_descriptor;
             typedef typename boost::graph_traits<Polyhedron>::halfedge_descriptor halfedge_descriptor;
-
+            
             typename boost::property_map<Polyhedron, vertex_point_t>::const_type vpmap  = get(CGAL::vertex_point, P);
 
-            for(face_descriptor fd : faces(P))
+            BOOST_FOREACH(face_descriptor fd, faces(P))
                 {
                   halfedge_descriptor h = halfedge(fd,P), done(h);
                   Point const& p1 = get(vpmap, target(h,P));
@@ -200,7 +210,7 @@ namespace CGAL
 
                 // Look for two non-parallel planes
                 PlaneIterator plane1_it = planes.begin();
-                PlaneIterator plane2_it = std::next(planes.begin());
+                PlaneIterator plane2_it = cpp11::next(planes.begin());
 
                 while (plane2_it != planes.end() &&
                        collinear_plane(*plane1_it, *plane2_it)) {
@@ -209,7 +219,7 @@ namespace CGAL
 
                 if (plane2_it == planes.end()) return false;
 
-                PlaneIterator plane3_it = std::next(plane2_it);
+                PlaneIterator plane3_it = cpp11::next(plane2_it);
 
                 // Look for a triple of planes intersecting in a point
                 while (plane3_it != planes.end() &&
@@ -241,12 +251,16 @@ namespace CGAL
 
         // if a point inside is not provided find one using linear programming
         if (!origin) {
-          // find a point inside the intersection
-          origin = halfspace_intersection_interior_point_3(begin, end);
+          // choose exact integral type
+          typedef typename internal::Exact_field_selector<void*>::Type ET;
 
-          CGAL_assertion_msg(origin!=boost::none, "halfspace_intersection_3: problem when determing a point inside the intersection");
-          if (origin==boost::none)
-            return;
+          // find a point inside the intersection
+          typedef Interior_polyhedron_3<K, ET> Interior_polyhedron;
+          Interior_polyhedron interior;
+          CGAL_assertion_code(bool interior_point_found = )
+          interior.find(begin, end);
+          CGAL_assertion_msg(interior_point_found, "halfspace_intersection_3: problem when determing a point inside the intersection");
+          origin = boost::make_optional(interior.inside_point());
         }
 
         // make sure the origin is on the negative side of all the planes

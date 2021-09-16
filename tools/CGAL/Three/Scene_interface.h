@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Three/include/CGAL/Three/Scene_interface.h $
-// $Id: Scene_interface.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Three/include/CGAL/Three/Scene_interface.h $
+// $Id: Scene_interface.h f3e4183 2018-11-19T12:00:00+01:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent RINEAU
@@ -32,7 +41,6 @@ enum RenderingMode
   Flat, //!Renders only faces, with a lighting per face.
   FlatPlusEdges, //!Renders flat faces and edges.
   Gouraud, //!Renders only faces, with a lighting per vertex.
-  GouraudPlusEdges, //!Renders faces with a lighting per vertex, and edges.
   ShadedPoints, //!Renders only points with lighting.
   NumberOfRenderingMode //!Number of values in this enum.
 };
@@ -70,8 +78,6 @@ public:
   //!Adds an item to the Geometric Objects list.
   //!@returns the index of the new item.
   virtual Item_id addItem(CGAL::Three::Scene_item* item) = 0;
-  //!Adds a CGAL::Three::Scene_item* to the list of children.
-  virtual void addChild(Scene_item* item)=0;
   //! \brief Replaces an item by a new one in the scene.
   //! The item which id is `id` is replaced by `item`.
   //! The first one is deleted and gives its index to the second one.
@@ -144,8 +150,8 @@ public:
   //! Used to update the selection in the Geometric Objects view.
   virtual void setSelectedItem(Item_id) = 0;
   //! \brief ignore data updating.
-  //!
-  //! This will ignore all the individual calls to `itemChanged()` until
+  //! 
+  //! This will ignore all the individual calls to `itemChanged()` until 
   //! `setUpdatesEnabled()` is called whith `b` being `true`.
   //!
   virtual void setUpdatesEnabled(bool b) =0;

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Point_set_processing_3/include/CGAL/IO/write_off_points.h $
-// $Id: write_off_points.h c253679 2020-04-18T16:27:58+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Point_set_processing_3/include/CGAL/IO/write_off_points.h $
+// $Id: write_off_points.h 2f81a21 2019-07-28T18:38:59+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Pierre Alliez and Laurent Saboret
 
@@ -32,7 +41,7 @@ namespace CGAL {
    The function writes for each point a line with the x y z position
    followed by the nx ny nz normal (if available).
 
-   \note The <A HREF="https://en.cppreference.com/w/cpp/io/ios_base/precision">`precision()`</A>
+   \note The <A HREF="https://en.cppreference.com/w/cpp/io/ios_base/precision">`precision()`</A> 
          of the output stream might not be sufficient depending on the data to be written.
 
    \tparam PointRange is a model of `ConstRange`. The value type of
@@ -40,26 +49,15 @@ namespace CGAL {
 
    \param stream output stream.
    \param points input point range.
-   \param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
+   \param np optional sequence of \ref psp_namedparameters "Named Parameters" among the ones listed below.
 
    \cgalNamedParamsBegin
-     \cgalParamNBegin{point_map}
-       \cgalParamDescription{a property map associating points to the elements of the point range}
-       \cgalParamType{a model of `ReadablePropertyMap` with value type `geom_traits::Point_3`}
-       \cgalParamDefault{`CGAL::Identity_property_map<geom_traits::Point_3>`}
-     \cgalParamNEnd
-
-     \cgalParamNBegin{normal_map}
-       \cgalParamDescription{a property map associating normals to the elements of the poing range}
-       \cgalParamType{a model of `ReadablePropertyMap` with value type `geom_traits::Vector_3`}
-       \cgalParamDefault{If this parameter is omitted, normals are not written in the output stream.}
-     \cgalParamNEnd
-
-     \cgalParamNBegin{geom_traits}
-       \cgalParamDescription{an instance of a geometric traits class}
-       \cgalParamType{a model of `Kernel`}
-       \cgalParamDefault{a \cgal Kernel deduced from the point type, using `CGAL::Kernel_traits`}
-     \cgalParamNEnd
+     \cgalParamBegin{point_map} a model of `ReadablePropertyMap` with value type `geom_traits::Point_3`.
+     If this parameter is omitted, `CGAL::Identity_property_map<geom_traits::Point_3>` is used.\cgalParamEnd
+     \cgalParamBegin{normal_map} a model of `ReadablePropertyMap` with value type
+     `geom_traits::Vector_3`.\cgalParamEnd If this parameter is omitted, normals are not written to the
+     output stream.\cgalParamEnd
+     \cgalParamBegin{geom_traits} an instance of a geometric traits class, model of `Kernel`\cgalParamEnd
    \cgalNamedParamsEnd
 
    \return `true` on success.
@@ -77,15 +75,15 @@ write_off_points(
   using parameters::get_parameter;
 
   // basic geometric types
-  typedef typename CGAL::GetPointMap<PointRange, NamedParameters>::type PointMap;
+  typedef typename Point_set_processing_3::GetPointMap<PointRange, NamedParameters>::type PointMap;
   typedef typename Point_set_processing_3::GetNormalMap<PointRange, NamedParameters>::type NormalMap;
 
   bool has_normals = !(boost::is_same<NormalMap,
                        typename Point_set_processing_3::GetNormalMap<PointRange, NamedParameters>::NoMap>::value);
 
-  PointMap point_map = choose_parameter<PointMap>(get_parameter(np, internal_np::point_map));
-  NormalMap normal_map = choose_parameter<NormalMap>(get_parameter(np, internal_np::normal_map));
-
+  PointMap point_map = choose_parameter(get_parameter(np, internal_np::point_map), PointMap());
+  NormalMap normal_map = choose_parameter(get_parameter(np, internal_np::normal_map), NormalMap());
+  
   CGAL_point_set_processing_precondition(points.begin() != points.end());
 
   if(!stream)
@@ -123,7 +121,7 @@ write_off_points(
 }
 
 #ifndef CGAL_NO_DEPRECATED_CODE
-// deprecated API
+// deprecated API  
 template <typename ForwardIterator,
           typename PointMap,
           typename NormalMap,
@@ -225,7 +223,7 @@ write_off_points(
      CGAL::parameters::point_map (point_map));
 }
 
-// deprecated API
+// deprecated API  
 template <typename ForwardIterator
 >
 CGAL_DEPRECATED_MSG("you are using the deprecated V1 API of CGAL::write_off_points(), please update your code")

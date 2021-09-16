@@ -1,15 +1,25 @@
+#ifndef CGAL_SURFACE_MESH_SEGMENTATION_MESH_SEGMENTATION_H
 // Copyright (c) 2014  GeometryFactory Sarl (France).
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_segmentation/include/CGAL/mesh_segmentation.h $
-// $Id: mesh_segmentation.h e893ac1 2020-08-18T10:06:51+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_segmentation/include/CGAL/mesh_segmentation.h $
+// $Id: mesh_segmentation.h 2f9408f 2018-09-04T12:01:27+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Ilker O. Yaz
 
-#ifndef CGAL_SURFACE_MESH_SEGMENTATION_MESH_SEGMENTATION_H
+
 #define CGAL_SURFACE_MESH_SEGMENTATION_MESH_SEGMENTATION_H
 
 #include <CGAL/license/Surface_mesh_segmentation.h>
@@ -62,7 +72,7 @@ sdf_values( const TriangleMesh& triangle_mesh,
  * \ingroup PkgSurfaceMeshSegmentationRef
  * @brief Function computing the Shape Diameter Function over a surface mesh.
  *
- * This function implements the Shape Diameter Function (SDF) as described in \cgalCite{Shapira2008Consistent}.
+ * This function implements the Shape Diameter Function (SDF) as described in \cgalCite{shapira2008consistent}.
  * It is possible to compute raw SDF values (without post-processing). In such a case,
  * -1 is used to indicate when no SDF value could be computed for a facet.
  *
@@ -150,7 +160,7 @@ sdf_values_postprocessing(const TriangleMesh& triangle_mesh,
  * A segment is a set of connected facets which are placed under the same cluster (see \cgalFigureRef{Cluster_vs_segment}).
  *
  * \note Log-normalization is applied on `sdf_values_map` before segmentation.
- *       As described in the original paper \cgalCite{Shapira2008Consistent},
+ *       As described in the original paper \cgalCite{shapira2008consistent},
  *       this normalization is done to preserve thin parts of the mesh
  *       by increasing the distance between smaller SDF values and reducing
  *       it between larger ones.
@@ -197,7 +207,8 @@ segmentation_from_sdf_values( const TriangleMesh& triangle_mesh,
                               PointPropertyMap ppmap=PointPropertyMap(),
                               GeomTraits traits=GeomTraits())
 {
-  internal::Surface_mesh_segmentation<TriangleMesh, GeomTraits, PointPropertyMap> algorithm(triangle_mesh, traits, ppmap);
+  typedef typename boost::property_map<TriangleMesh, boost::vertex_point_t>::type VPMap;
+  internal::Surface_mesh_segmentation<TriangleMesh, GeomTraits, VPMap> algorithm(triangle_mesh, traits, ppmap);
   return algorithm.partition(number_of_clusters, smoothing_lambda, sdf_values_map,
                              segment_ids, !output_cluster_ids);
 }

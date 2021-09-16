@@ -1,11 +1,20 @@
 // Copyright (c) 2009  GeometryFactory (France), INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_3/include/CGAL/Intersections_3/internal/Triangle_3_Ray_3_intersection.h $
-// $Id: Triangle_3_Ray_3_intersection.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_3/include/CGAL/Intersections_3/internal/Triangle_3_Ray_3_intersection.h $
+// $Id: Triangle_3_Ray_3_intersection.h 4111e3e 2018-02-20T16:48:11+00:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     :  Laurent Rineau, Stephane Tayeb
@@ -19,9 +28,9 @@
 #include <CGAL/intersections.h>
 
 namespace CGAL {
-
+  
 namespace Intersections {
-
+  
 namespace internal {
 
 template <class K>
@@ -424,7 +433,7 @@ t3r3_intersection_aux(const typename K::Triangle_3 &t,
                       const K& k)
 {
   typename Intersection_traits<K, typename K::Line_3, typename K::Plane_3>
-    ::result_type
+    ::result_type 
     v = internal::intersection(r.supporting_line(),t.supporting_plane(), k);
 
   if(v) {

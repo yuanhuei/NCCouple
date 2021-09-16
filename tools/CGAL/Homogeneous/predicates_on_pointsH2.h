@@ -3,17 +3,26 @@
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Homogeneous_kernel/include/CGAL/Homogeneous/predicates_on_pointsH2.h $
-// $Id: predicates_on_pointsH2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Homogeneous_kernel/include/CGAL/Homogeneous/predicates_on_pointsH2.h $
+// $Id: predicates_on_pointsH2.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Stefan Schirra, Olivier Devillers, Mariette Yvinec
-
+ 
 
 #ifndef CGAL_PREDICATES_ON_POINTSH2_H
 #define CGAL_PREDICATES_ON_POINTSH2_H
@@ -55,10 +64,10 @@ _where_wrt_L_wedge( const PointH2<R>& p, const PointH2<R>& q )
 template <class RT>
 Comparison_result
 compare_power_distanceH2(const RT& phx, const RT& phy, const RT& phw,
-                         const Quotient<RT>& pwt,
-                         const RT& qhx, const RT& qhy, const RT& qhw,
-                         const Quotient<RT>& qwt,
-                         const RT& rhx, const RT& rhy, const RT& rhw)
+			 const Quotient<RT>& pwt,
+			 const RT& qhx, const RT& qhy, const RT& qhw,
+			 const Quotient<RT>& qwt,
+			 const RT& rhx, const RT& rhy, const RT& rhw)
 {
   // returns SMALLER if r is closer to p w.r.t. the power metric
   RT dphx = rhx * phw - phx * rhw;
@@ -122,9 +131,9 @@ power_testH2( const RT &phx, const RT &phy, const RT &phw, const Quotient<RT> &p
     dthw *= dtwt;
 
     return sign_of_determinant(dphx, dphy, dpz, dphw,
-                               dqhx, dqhy, dqz, dqhw,
-                               drhx, drhy, drz, drhw,
-                               dthx, dthy, dtz, dthw);
+	                       dqhx, dqhy, dqz, dqhw,
+	                       drhx, drhy, drz, drhw,
+	                       dthx, dthy, dtz, dthw);
 }
 
 
@@ -147,15 +156,15 @@ power_testH2( const RT &phx, const RT &phy, const RT &phw, const Quotient<RT> &p
 
     if (phx * qhw != qhx * phw )
     {
-        pa = phx*phw;
-        qa = qhx*qhw;
-        ta = thx*thw;
+	pa = phx*phw;
+	qa = qhx*qhw;
+	ta = thx*thw;
     }
     else
-    {
-        pa = phy*phw;
-        qa = qhy*qhw;
-        ta = thy*thw;
+    {   
+	pa = phy*phw;
+	qa = qhy*qhw;
+	ta = thy*thw;
     }
 
     RT dphw = CGAL_NTS square(phw);
@@ -172,8 +181,8 @@ power_testH2( const RT &phx, const RT &phy, const RT &phw, const Quotient<RT> &p
     ta *= dtwt;
 
     return CGAL_NTS compare(pa, qa) * sign_of_determinant(pa, dpz, dphw,
-                                                          qa, dqz, dqhw,
-                                                          ta, dtz, dthw);
+				                          qa, dqz, dqhw,
+				                          ta, dtz, dthw);
 }
 
 #if 0

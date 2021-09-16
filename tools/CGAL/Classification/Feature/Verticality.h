@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Feature/Verticality.h $
-// $Id: Verticality.h 0e934b1 2020-08-04T13:16:13+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Feature/Verticality.h $
+// $Id: Verticality.h bfb89cc 2018-05-28T16:43:01+02:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -43,10 +52,10 @@ class Verticality : public Feature_base
   const typename GeomTraits::Vector_3 vertical;
   std::vector<compressed_float> verticality_feature;
   const Local_eigen_analysis* eigen;
-
+  
 public:
   /*!
-    \brief constructs the feature using local eigen analysis.
+    \brief Constructs the feature using local eigen analysis.
 
     \tparam InputRange model of `ConstRange`. Its iterator type
     is `RandomAccessIterator`.
@@ -64,7 +73,7 @@ public:
 
 
   /*!
-    \brief constructs the feature using provided normals of points.
+    \brief Constructs the feature using provided normals of points.
 
     \tparam PointRange model of `ConstRange`. Its iterator type
     is `RandomAccessIterator` and its value type is the key type of
@@ -78,7 +87,7 @@ public:
   template <typename PointRange, typename VectorMap>
   Verticality (const PointRange& input,
                VectorMap normal_map)
-    : vertical (0., 0., 1.), eigen(nullptr)
+    : vertical (0., 0., 1.), eigen(NULL)
   {
     this->set_name ("verticality");
     for (std::size_t i = 0; i < input.size(); i++)
@@ -93,7 +102,7 @@ public:
   /// \cond SKIP_IN_MANUAL
   virtual float value (std::size_t pt_index)
   {
-    if (eigen != nullptr)
+    if (eigen != NULL)
     {
       typename GeomTraits::Vector_3 normal = eigen->normal_vector<GeomTraits>(pt_index);
       normal = normal / CGAL::sqrt (normal * normal);

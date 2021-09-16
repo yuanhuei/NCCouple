@@ -1,16 +1,25 @@
-// Copyright (c) 1999
+// Copyright (c) 1999  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Homogeneous_kernel/include/CGAL/Homogeneous/Aff_transformationH3.h $
-// $Id: Aff_transformationH3.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Homogeneous_kernel/include/CGAL/Homogeneous/Aff_transformationH3.h $
+// $Id: Aff_transformationH3.h 23d701c 2018-10-12T16:34:19+02:00 Maxime Gimeno
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Stefan Schirra
 
@@ -355,7 +364,7 @@ public:
   RT
   hm(int i, int j) const
   { return this->Ptr()->homogeneous(i,j); }
-
+  
   bool operator==(const Aff_transformationH3 &t)const
   {
     for(int i=0; i<3; ++i)
@@ -364,7 +373,7 @@ public:
           return false;
     return true;
   }
-
+  
   bool operator!=(const Aff_transformationH3 &t)const
   {
     return !(*this == t);
@@ -534,7 +543,7 @@ bool
 Aff_transformation_repH3<R>::is_even() const
 {
   return (CGAL_NTS sign<RT>( t33 *
-                            determinant(t00, t01, t02,
+	                    determinant(t00, t01, t02,
                                               t10, t11, t12,
                                               t20, t21, t22 ) ) == POSITIVE );
 }
@@ -792,7 +801,7 @@ template < class R >
 CGAL_KERNEL_INLINE
 Aff_transformationH3<R>::
 Aff_transformationH3(const Translation&,
-                     const typename Aff_transformationH3<R>::Vector_3& v)
+	             const typename Aff_transformationH3<R>::Vector_3& v)
 { initialize_with(Translation_repH3<R>( v )); }
 
 template < class R >

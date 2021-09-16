@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Skin_surface_3/include/CGAL/make_skin_surface_mesh_3.h $
-// $Id: make_skin_surface_mesh_3.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Skin_surface_3/include/CGAL/make_skin_surface_mesh_3.h $
+// $Id: make_skin_surface_mesh_3.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Nico Kruithof <Nico@cs.rug.nl>
 
@@ -26,8 +35,8 @@
 namespace CGAL {
 
 template <class WP_iterator,
-          class Polyhedron_3>
-void make_skin_surface_mesh_3(Polyhedron_3 &p,
+	  class Polyhedron_3>
+void make_skin_surface_mesh_3(Polyhedron_3 &p, 
                               WP_iterator begin, WP_iterator end,
                               double shrink_factor=.5,
                               int nSubdivisions=0,
@@ -39,10 +48,10 @@ void make_skin_surface_mesh_3(Polyhedron_3 &p,
 
   typedef typename WP_iterator::value_type               Weighted_point;
   typedef typename Kernel_traits<Weighted_point>::Kernel K;
-
+  
   typedef Skin_surface_traits_3<K>                       Traits;
   typedef Skin_surface_3<Traits>                         Skin_surface;
-
+  
   Skin_surface skin_surface(begin, end, shrink_factor, grow_balls);
 
   mesh_skin_surface_3(skin_surface, p);

@@ -3,17 +3,26 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_3/io_signature.h $
-// $Id: io_signature.h b64a171 2020-06-16T17:47:00+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_3/io_signature.h $
+// $Id: io_signature.h d82cdbc 2018-10-05T17:02:38+02:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent RINEAU
 
 #ifndef CGAL_MESH_3_IO_SIGNATURE_H
 #define CGAL_MESH_3_IO_SIGNATURE_H
 
-#include <CGAL/license/Triangulation_3.h>
+#include <CGAL/license/Mesh_3.h>
 
 #define CGAL_MESH_3_IO_H // the old include macro, tested by other files
 
@@ -219,10 +228,12 @@ struct Get_io_signature<Weighted_point_3<K> >
 };
 
 #ifdef CGAL_TRIANGULATION_3_H
-template <class Gt, class Tds>
+template <class Gt, class Vb, class Cb, class C_tag>
 struct
-Get_io_signature<Triangulation_3<Gt, Tds > >
+Get_io_signature<Triangulation_3<Gt, Triangulation_data_structure_3<Vb, Cb, C_tag> > >
 {
+  typedef Triangulation_data_structure_3<Vb, Cb, C_tag> Tds;
+
   std::string operator()() {
     return std::string("Triangulation_3(") +
       Get_io_signature<typename Tds::Vertex::Point>()() +

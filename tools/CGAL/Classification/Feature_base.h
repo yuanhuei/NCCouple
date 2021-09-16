@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Feature_base.h $
-// $Id: Feature_base.h 627584f 2020-09-30T08:38:45+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Feature_base.h $
+// $Id: Feature_base.h 676a198 2018-04-13T16:32:14+02:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -14,14 +23,14 @@
 
 #include <CGAL/license/Classification.h>
 
-#include <memory>
-#include <string>
+#include <boost/shared_ptr.hpp>
+
 #include <vector>
 
 namespace CGAL {
 
 namespace Classification {
-
+  
 /*!
   \ingroup PkgClassificationFeature
 
@@ -33,7 +42,7 @@ namespace Classification {
 class Feature_base
 {
   std::string m_name;
-
+  
 public:
 
   /// \cond SKIP_IN_MANUAL
@@ -42,18 +51,18 @@ public:
   /// \endcond
 
   /*!
-    \brief returns the name of the feature (initialized to
+    \brief Returns the name of the feature (initialized to
     `abstract_feature` for `Feature_base`).
   */
   const std::string& name() const { return m_name; }
 
   /*!
-    \brief changes the name of the feature.
+    \brief Changes the name of the feature.
   */
   void set_name (const std::string& name) { m_name = name; }
-
+  
   /*!
-    \brief returns the value taken by the feature for at the item for
+    \brief Returns the value taken by the feature for at the item for
     the item at position `index`. This method must be implemented by
     inherited classes.
   */
@@ -72,30 +81,27 @@ public:
 */
 class Feature_handle { };
 #else
+//typedef boost::shared_ptr<Feature_base> Feature_handle;
 
 class Feature_set;
-
+  
 class Feature_handle
 {
   friend Feature_set;
+  
+  boost::shared_ptr<boost::shared_ptr<Feature_base> > m_base;
 
-  using Feature_base_ptr = std::unique_ptr<Feature_base>;
-  std::shared_ptr<Feature_base_ptr> m_base;
+  template <typename Feature>
+  Feature_handle (Feature* f) : m_base (new boost::shared_ptr<Feature_base>(f)) { }
 
-  template <typename Feature_ptr>
-  Feature_handle (Feature_ptr f)
-    : m_base (std::make_shared<Feature_base_ptr>(std::move(f)))
+  template <typename Feature>
+  void attach (Feature* f) const
   {
-  }
-
-  template <typename Feature_ptr>
-  void attach (Feature_ptr f)
-  {
-    *m_base = std::move(f);
+    *m_base = boost::shared_ptr<Feature_base>(f);
   }
 public:
 
-  Feature_handle() : m_base (std::make_shared<Feature_base_ptr>()) { }
+  Feature_handle() : m_base (new boost::shared_ptr<Feature_base>()) { }
 
   Feature_base& operator*() { return **m_base; }
 
@@ -107,19 +113,8 @@ public:
   bool operator< (const Feature_handle& other) const { return *m_base < *(other.m_base); }
   bool operator== (const Feature_handle& other) const { return *m_base == *(other.m_base); }
 };
-
+  
 #endif
-
-/*!
-  \ingroup PkgClassificationFeature
-
-  \brief casts a feature handle to a specialized feature pointer.
-*/
-template <typename FeatureType>
-FeatureType* feature_cast (Feature_handle fh)
-{
-  return dynamic_cast<FeatureType*>(&*(fh));
-}
 
 
 } // namespace Classification

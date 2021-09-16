@@ -1,16 +1,25 @@
-// Copyright (c) 2000
+// Copyright (c) 2000  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_2/include/CGAL/Intersections_2/Ray_2_Ray_2.h $
-// $Id: Ray_2_Ray_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_2/include/CGAL/Intersections_2/Ray_2_Ray_2.h $
+// $Id: Ray_2_Ray_2.h 43f8490 2018-03-04T17:27:28+00:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Geert-Jan Giezeman
 
@@ -28,7 +37,7 @@
 
 
 namespace CGAL {
-
+  
 namespace Intersections {
 
 namespace internal {
@@ -38,8 +47,8 @@ class Ray_2_Ray_2_pair {
 public:
     enum Intersection_results {NO_INTERSECTION, POINT, SEGMENT, RAY};
     Ray_2_Ray_2_pair(typename K::Ray_2 const *ray1,
-                     typename K::Ray_2 const *ray2)
-            : _ray1(ray1), _ray2(ray2), _known(false) {}
+		     typename K::Ray_2 const *ray2)
+	    : _ray1(ray1), _ray2(ray2), _known(false) {}
 
     Intersection_results intersection_type() const;
 
@@ -138,7 +147,7 @@ Ray_2_Ray_2_pair<K>::intersection_type() const
                     return _result;
                 }
             }
-
+            
         } else {
             typedef typename K::FT FT;
             if (dir1.y() > FT(0)) {
@@ -182,9 +191,9 @@ Ray_2_Ray_2_pair<K>::intersection_type() const
                     return _result;
                 }
             }
-
+            
         }
-        }
+        } 
     default:
         CGAL_kernel_assertion(false); // should not be reached:
         return _result;
@@ -229,9 +238,9 @@ Ray_2_Ray_2_pair<K>::intersection_ray() const
 template <class K>
 typename CGAL::Intersection_traits
   <K, typename K::Ray_2, typename K::Ray_2>::result_type
-intersection(const typename K::Ray_2 &ray1,
-             const typename K::Ray_2 &ray2,
-             const K&)
+intersection(const typename K::Ray_2 &ray1, 
+	     const typename K::Ray_2 &ray2,
+	     const K&)
 {
     typedef Ray_2_Ray_2_pair<K> is_t;
     is_t ispair(&ray1, &ray2);

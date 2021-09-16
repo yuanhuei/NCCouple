@@ -2,13 +2,23 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_unb_planar_topology_traits_2.h $
-// $Id: Arr_unb_planar_topology_traits_2.h 3849f5e 2020-06-14T00:41:25+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
-// Author(s): Ron Wein   <wein@post.tau.ac.il>
-//            Efi Fogel  <efif@post.tau.ac.il>
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_unb_planar_topology_traits_2.h $
+// $Id: Arr_unb_planar_topology_traits_2.h 18acb2e 2018-01-18T15:05:34+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
+//
+//
+// Author(s)     : Ron Wein   <wein@post.tau.ac.il>
+//                 Efi Fogel  <efif@post.tau.ac.il>
 
 #ifndef CGAL_ARR_UNB_PLANAR_TOPOLOGY_TRAITS_2_H
 #define CGAL_ARR_UNB_PLANAR_TOPOLOGY_TRAITS_2_H
@@ -216,6 +226,82 @@ public:
   // defining a type that inherits from the template we need to alias.  However,
   // the non-C++11 code requires the (re)definition of all constructors of the
   // derived class.
+#if defined(CGAL_CFG_NO_CPP0X_TEMPLATE_ALIASES)
+  // Type definition for the construction surface-sweep visitor.
+  template <typename Evt, typename Crv>
+  struct Construction_helper :
+    public Arr_unb_planar_construction_helper<Gt2, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_construction_helper<Gt2, Arr, Evt, Crv>
+                                                                Base;
+    Construction_helper(Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the no-intersection construction surface-sweep visitor.
+  template <typename Evt, typename Crv>
+  struct No_intersection_construction_helper :
+    public Arr_unb_planar_construction_helper<Gt2, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_construction_helper<Gt2, Arr, Evt, Crv>
+                                                                Base;
+    No_intersection_construction_helper(Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the insertion surface-sweep visitor.
+  typedef Arr_insertion_traits_2<Gt2, Arr>                      I_traits;
+  template <typename Evt, typename Crv>
+  struct Insertion_helper :
+    public Arr_unb_planar_insertion_helper<I_traits, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_insertion_helper<I_traits, Arr, Evt, Crv>
+                                                                Base;
+    Insertion_helper(Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the no-intersection insertion surface-sweep visitor.
+  typedef Arr_basic_insertion_traits_2<Gt2, Arr>                Nxi_traits;
+  template <typename Evt, typename Crv>
+  struct No_intersection_insertion_helper :
+    public Arr_unb_planar_insertion_helper<Nxi_traits, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_insertion_helper<Nxi_traits, Arr, Evt, Crv>
+                                                                Base;
+    No_intersection_insertion_helper(Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the batched point-location surface-sweep visitor.
+  typedef Arr_batched_point_location_traits_2<Arr>              Bpl_traits;
+  template <typename Evt, typename Crv>
+  struct Batched_point_location_helper :
+    public Arr_unb_planar_batched_pl_helper<Bpl_traits, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_batched_pl_helper<Bpl_traits, Arr, Evt, Crv>
+                                                                Base;
+    Batched_point_location_helper(const Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the vertical decomposition surface-sweep visitor.
+  typedef Arr_batched_point_location_traits_2<Arr>              Vd_traits;
+  template <typename Evt, typename Crv>
+  struct Vertical_decomposition_helper :
+    public Arr_unb_planar_vert_decomp_helper<Vd_traits, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_vert_decomp_helper<Vd_traits, Arr, Evt, Crv>
+                                                                Base;
+    Vertical_decomposition_helper(const Arr* arr) : Base(arr) {}
+  };
+
+  // Type definition for the overlay surface-sweep visitor.
+  template <typename Gt, typename Evt, typename Crv,
+            typename ArrA, typename ArrB>
+  struct Overlay_helper :
+    public Arr_unb_planar_overlay_helper<Gt, ArrA, ArrB, Arr, Evt, Crv>
+  {
+    typedef Arr_unb_planar_overlay_helper<Gt, ArrA, ArrB, Arr, Evt, Crv>
+                                                                Base;
+    Overlay_helper(const ArrA* arr_a, const ArrB* arr_b) : Base(arr_a, arr_b) {}
+  };
+#else
   // Type definition for the construction surface-sweep visitor.
   template <typename Evt, typename Crv>
   using Construction_helper =
@@ -255,6 +341,7 @@ public:
             typename ArrA, typename ArrB>
   using Overlay_helper =
     Arr_unb_planar_overlay_helper<Gt, ArrA, ArrB, Arr, Evt, Crv>;
+#endif
   //@}
 
 public:
@@ -307,12 +394,11 @@ public:
    * \return An object that contains the curve end.
    *         In our case this object always wraps a fictitious edge.
    */
-  boost::optional<boost::variant<Vertex*, Halfedge*> >
-  place_boundary_vertex(Face* f,
-                        const X_monotone_curve_2& cv,
-                        Arr_curve_end ind,
-                        Arr_parameter_space ps_x,
-                        Arr_parameter_space ps_y);
+  CGAL::Object place_boundary_vertex(Face* f,
+                                     const X_monotone_curve_2& cv,
+                                     Arr_curve_end ind,
+                                     Arr_parameter_space ps_x,
+                                     Arr_parameter_space ps_y);
 
   /*! Locate the predecessor halfedge for the given curve around a given
    * vertex with boundary conditions.
@@ -333,7 +419,7 @@ public:
                                 Arr_parameter_space /* ps_y */) const
   {
     CGAL_error();
-    return (nullptr);
+    return (NULL);
   }
 
   /*! Locate a DCEL feature that contains the given unbounded curve end.
@@ -346,11 +432,10 @@ public:
    *         In our case this object may either wrap an unbounded face,
    *         or an edge with an end-vertex at infinity (in case of an overlap).
    */
-  boost::variant<Vertex*, Halfedge*, Face*>
-  locate_curve_end(const X_monotone_curve_2& cv,
-                   Arr_curve_end ind,
-                   Arr_parameter_space ps_x,
-                   Arr_parameter_space ps_y);
+  CGAL::Object locate_curve_end(const X_monotone_curve_2& cv,
+                                Arr_curve_end ind,
+                                Arr_parameter_space ps_x,
+                                Arr_parameter_space ps_y);
 
   /*! Split a fictitious edge using the given vertex.
    * \param e The edge to split (one of the pair of halfedges).
@@ -484,7 +569,7 @@ protected:
    * \param ind Output: ARR_MIN_END if the vertex is induced by the minimal end;
    *                    ARR_MAX_END if it is induced by the curve's maximal end.
    * \pre v is a valid (not fictitious) boundary.
-   * \return The curve that induces v, or nullptr if v has no incident curves yet.
+   * \return The curve that induces v, or NULL if v has no incident curves yet.
    */
   const X_monotone_curve_2* _curve(const Vertex* v, Arr_curve_end& ind) const;
 

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/AABB_tree/include/CGAL/internal/AABB_tree/AABB_search_tree.h $
-// $Id: AABB_search_tree.h 49465bb 2020-03-06T16:28:21+02:00 Ahmed Essam
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/AABB_tree/include/CGAL/internal/AABB_tree/AABB_search_tree.h $
+// $Id: AABB_search_tree.h 81d4227 2019-01-10T18:40:10+01:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s) : Pierre Alliez, Camille Wormser
@@ -56,7 +65,9 @@ namespace CGAL
                           m_id = rhs.m_id;
                     }
 
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
                   Decorated_point& operator=(const Decorated_point&)=default;
+#endif
                 private:
                     Id m_id;
 
@@ -83,7 +94,7 @@ namespace CGAL
                 typedef typename CGAL::Orthogonal_k_neighbor_search<TreeTraits> Neighbor_search;
                 typedef typename Neighbor_search::Tree Tree;
         private:
-                Tree m_tree;
+                Tree* m_p_tree;
 
 
                 Point_and_primitive_id get_p_and_p(const Point_and_primitive_id& p)
@@ -98,22 +109,30 @@ namespace CGAL
         public:
                 template <class ConstPointIterator>
                 AABB_search_tree(ConstPointIterator begin, ConstPointIterator beyond)
-                    : m_tree{}
+                    : m_p_tree(NULL)
                 {
-                        typedef typename Add_decorated_point<Traits,typename Traits::Primitive::Id>::Point_3 Decorated_point;
+                        typedef typename Add_decorated_point<Traits, typename Traits::Primitive::Id>::Point_3 Decorated_point;
                         std::vector<Decorated_point> points;
                         while(begin != beyond) {
                                 Point_and_primitive_id pp = get_p_and_p(*begin);
-                                points.emplace_back(pp.first, pp.second);
+                                points.push_back(Decorated_point(pp.first,pp.second));
                                 ++begin;
                         }
-                        m_tree.insert(points.begin(), points.end());
-                        m_tree.build();
+                        m_p_tree = new Tree(points.begin(), points.end());
+                        if(m_p_tree != NULL)
+                                m_p_tree->build();
+                        else
+                                std::cerr << "unable to build the search tree!" << std::endl;
                 }
+
+                ~AABB_search_tree() {
+                        delete m_p_tree;
+                }
+
 
                 Point_and_primitive_id closest_point(const Point& query) const
                 {
-                        Neighbor_search search(m_tree, query, 1);
+                        Neighbor_search search(*m_p_tree, query, 1);
                         return Point_and_primitive_id(static_cast<Point>(search.begin()->first), search.begin()->first.id());
                 }
         };

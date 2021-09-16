@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_approximation/include/CGAL/Surface_mesh_approximation/L21_metric_plane_proxy.h $
-// $Id: L21_metric_plane_proxy.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_approximation/include/CGAL/Surface_mesh_approximation/L21_metric_plane_proxy.h $
+// $Id: L21_metric_plane_proxy.h 0a52d10 2019-02-28T20:10:58+08:00 Lingjie Zhu
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Pierre Alliez and Lingjie Zhu
@@ -86,7 +95,7 @@ public:
     m_collinear_functor = traits.collinear_3_object();
 
     // construct internal face normal & area map
-    for(face_descriptor f : faces(tm)) {
+    BOOST_FOREACH(face_descriptor f, faces(tm)) {
       const halfedge_descriptor he = halfedge(f, tm);
       const Point_3 &p0 = vpmap[source(he, tm)];
       const Point_3 &p1 = vpmap[target(he, tm)];
@@ -127,7 +136,7 @@ public:
 
     // fitting normal
     Vector_3 norm = CGAL::NULL_VECTOR;
-    for(const face_descriptor f : faces) {
+    BOOST_FOREACH(const face_descriptor f, faces) {
       norm = m_sum_functor(norm,
         m_scale_functor(get(m_fnmap, f), get(m_famap, f)));
     }

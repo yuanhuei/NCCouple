@@ -1,16 +1,25 @@
-// Copyright (c) 2003
+// Copyright (c) 2003  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Kernel_23/include/CGAL/Exact_predicates_exact_constructions_kernel.h $
-// $Id: Exact_predicates_exact_constructions_kernel.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Kernel_23/include/CGAL/Exact_predicates_exact_constructions_kernel.h $
+// $Id: Exact_predicates_exact_constructions_kernel.h f2391a3 2017-12-19T16:29:53+01:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Menelaos Karavelas, Sylvain Pion
 
@@ -55,7 +64,7 @@ class Epeck
   : public Type_equality_wrapper<
              Lazy_kernel_base< Simple_cartesian<Epeck_ft>,
                                Simple_cartesian<Interval_nt_advanced>,
-                               Cartesian_converter< Simple_cartesian<Epeck_ft>,
+	                       Cartesian_converter< Simple_cartesian<Epeck_ft>,
                                                     Simple_cartesian<Interval_nt_advanced> >,
                                Epeck>,
              Epeck >

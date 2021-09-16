@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_3_triangulation_3/include/CGAL/internal/Periodic_3_regular_triangulation_remove_traits_3.h $
-// $Id: Periodic_3_regular_triangulation_remove_traits_3.h 2e8a59d 2020-07-21T15:25:54+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_3_triangulation_3/include/CGAL/internal/Periodic_3_regular_triangulation_remove_traits_3.h $
+// $Id: Periodic_3_regular_triangulation_remove_traits_3.h adfdc70 2017-12-12T20:53:10+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Monique Teillaud <Monique.Teillaud@inria.fr>
@@ -49,15 +58,7 @@ public:
 
   using Base::operator(); // for K::Weighted_point_3 to Point_3
 
-  template<typename F>
-  struct result : Base::template result<F> {};
-
-  template<typename F>
-  struct result<F(Weighted_point_3)> {
-    typedef Point_3 type;
-  };
-
-  Point_3 operator()(const Weighted_point_3& wp) const {
+  Point_3 operator()(const Weighted_point_3& wp) {
     return std::make_pair(operator()(wp.first), wp.second /* offset */);
   }
 };

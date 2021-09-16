@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Nef_2/include/CGAL/Filtered_extended_homogeneous.h $
-// $Id: Filtered_extended_homogeneous.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Nef_2/include/CGAL/Filtered_extended_homogeneous.h $
+// $Id: Filtered_extended_homogeneous.h fa92aa4 2018-01-18T10:43:57+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Michael Seel <seel@mpi-sb.mpg.de>
@@ -90,12 +99,12 @@ public:
 
 
   // only for visualization:
-
+  
   static RT& R()
   {
     CGAL_STATIC_THREAD_LOCAL_VARIABLE(RT,R_,0);
   }
-
+  
   static void set_R(const RT& r) { R() = r; }
   RT eval_at(const RT& r) const { return _m*r+_n; }
   RT eval_at_R() const { return _m*R()+_n; }
@@ -1253,7 +1262,7 @@ void determine_frame_radius(Forward_iterator start, Forward_iterator end,
     Point_2 p = *start;
     if ( is_standard(p) ) {
       R = (CGAL::max)(CGAL_NTS abs(p.mx())/p.hw(),
-                      CGAL_NTS abs(p.my())/p.hw());
+		      CGAL_NTS abs(p.my())/p.hw());
     } else {
       RT rx = CGAL_NTS abs(p.hx()), ry = CGAL_NTS abs(p.hy());
       if ( rx[1] > ry[1] )      R = CGAL_NTS abs(ry[0]-rx[0])/(rx[1]-ry[1]);

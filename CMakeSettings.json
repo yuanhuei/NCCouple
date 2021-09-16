@@ -15,6 +15,11 @@
           "name": "CMAKE_CXX_FLAGS",
           "value": "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /utf-8 /bigobj",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_RC_FLAGS",
+          "value": "-DWIN32",
+          "type": "STRING"
         }
       ]
     },

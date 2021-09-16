@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Cluster.h $
-// $Id: Cluster.h 43014ba 2020-04-02T10:28:50+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Cluster.h $
+// $Id: Cluster.h 2a96d5b 2019-07-01T14:54:31+02:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -46,7 +55,7 @@ class Cluster
 {
 public:
 
-  using Item = typename boost::property_traits<ItemMap>::value_type;
+  typedef typename ItemMap::value_type Item;
 
   /// \cond SKIP_IN_MANUAL
   struct Neighbor_query
@@ -59,14 +68,14 @@ public:
   };
   std::shared_ptr<std::vector<std::size_t> > neighbors;
   /// \endcond
-
+  
   /// \cond SKIP_IN_MANUAL
   class Point_idx_to_point_unary_function
   {
   public:
-    using argument_type = std::size_t;
-    using result_type = typename boost::property_traits<ItemMap>::reference;
-    using category = boost::readable_property_map_tag;
+    typedef std::size_t argument_type;
+    typedef typename ItemMap::reference result_type;
+    typedef boost::readable_property_map_tag category;
 
     const ItemRange* m_range;
     ItemMap m_item_map;
@@ -81,16 +90,16 @@ public:
     }
   };
   /// \endcond
-
+  
 private:
   const ItemRange* m_range;
   ItemMap m_item_map;
-
+  
   std::shared_ptr<std::vector<std::size_t> > m_inliers;
   mutable CGAL::Bbox_3 m_bounding_box;
   int m_training;
   int m_label;
-
+  
 public:
 
   /// \name Constructor
@@ -105,9 +114,9 @@ public:
     \param item_map property map to access the input items.
   */
   Cluster (const ItemRange& range, ItemMap item_map)
-    : neighbors (std::make_shared<std::vector<std::size_t> >())
+    : neighbors (new std::vector<std::size_t>())
     , m_range (&range), m_item_map (item_map)
-    , m_inliers (std::make_shared<std::vector<std::size_t> >())
+    , m_inliers (new std::vector<std::size_t>())
     , m_training(-1), m_label(-1)
   { }
 
@@ -120,7 +129,7 @@ public:
     \brief Clears the cluster.
   */
   void clear () { m_inliers->clear(); }
-
+  
   /*!
     \brief Inserts element of index `idx` in the cluster.
   */
@@ -130,7 +139,7 @@ public:
 
   /// \name Access
   /// @{
-
+  
   /*!
     \brief Returns the number of items in the cluster.
   */
@@ -140,7 +149,7 @@ public:
     \brief Returns the index (in the input range) of the i^{th} element of the cluster.
   */
   std::size_t index (std::size_t i) const { return (*m_inliers)[i]; }
-
+  
   /*!
     \brief Returns the i^{th} item of the cluster.
   */
@@ -171,17 +180,17 @@ public:
     \brief Returns the input classification value used for training.
   */
   int training() const { return m_training; }
-
+  
   /*!
     \brief Returns a reference to the input classification value used for training.
   */
   int& training() { return m_training; }
-
+  
   /*!
     \brief Returns the output classification value.
   */
   int label() const { return m_label; }
-
+  
   /*!
     \brief Returns a reference to the output classification value.
   */
@@ -228,7 +237,7 @@ std::size_t create_clusters_from_indices (const ItemRange& range,
   {
     int c = int(get (index_map, idx));
     if (c == -1)
-      continue;
+      continue;  
     if (std::size_t(c) >= clusters.size())
     {
       clusters.reserve (c + 1);
@@ -237,7 +246,7 @@ std::size_t create_clusters_from_indices (const ItemRange& range,
     }
     clusters[std::size_t(c)].insert (idx);
   }
-
+  
   return clusters.size();
 }
 

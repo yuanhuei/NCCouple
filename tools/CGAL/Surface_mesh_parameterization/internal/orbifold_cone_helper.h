@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/orbifold_cone_helper.h $
-// $Id: orbifold_cone_helper.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/orbifold_cone_helper.h $
+// $Id: orbifold_cone_helper.h dea2ce0 2018-07-20T13:05:25+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mael Rouxel-Labbé
 
@@ -20,6 +29,7 @@
 
 #include <CGAL/boost/graph/properties.h>
 
+#include <boost/foreach.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -223,7 +233,7 @@ bool check_cone_validity(const SeamMesh& mesh,
   // count how many times vertices on a seam appear
   boost::unordered_map<TM_vertex_descriptor, int> seam_vertices_counter;
 
-  for(halfedge_descriptor hdaf : halfedges_around_face(bhd, mesh)) {
+  BOOST_FOREACH(halfedge_descriptor hdaf, halfedges_around_face(bhd, mesh)) {
     CGAL_precondition(mesh.has_on_seam(hdaf));
     TM_vertex_descriptor tm_vds = source(hdaf, mesh.mesh());
     TM_vertex_descriptor tm_vdt = target(hdaf, mesh.mesh());

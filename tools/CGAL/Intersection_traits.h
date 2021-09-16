@@ -1,12 +1,21 @@
 // Copyright (c) 2011 GeometryFactory (France). All rights reserved.
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_2/include/CGAL/Intersection_traits.h $
-// $Id: Intersection_traits.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_2/include/CGAL/Intersection_traits.h $
+// $Id: Intersection_traits.h 1622410 2018-05-17T11:52:58+01:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Philipp Möller
 
@@ -22,13 +31,32 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/variant.hpp>
 
+// The macro CGAL_INTERSECTION_VERSION controls which version of the
+// intersection is used.
+// Currently two values are supported:
+// - 1, which means intersections with CGAL::Object
+// - 2, which means intersections with Intersection_traits and the 
+//      corresponding APIs in other modules
+// The default value is 2.
+
+#if !defined(CGAL_INTERSECTION_VERSION)
+#define CGAL_INTERSECTION_VERSION 2
+#endif
+
+#if CGAL_INTERSECTION_VERSION < 2
+
+#define CGAL_INTERSECTION_TRAITS_2(A, B, R1, R2)
+#define CGAL_INTERSECTION_TRAITS_3(A, B, R1, R2, R3)
+
+#else
+
 #define CGAL_INTERSECTION_TRAITS_2(A, B, R1, R2)                \
   template<typename K>     \
   struct Intersection_traits<K, typename K::A, typename K::B>  { \
     typedef typename boost::variant<typename K::R1, typename K::R2 >    \
                      variant_type;                                      \
     typedef typename boost::optional< variant_type > result_type;       \
-  };
+  };  
 
 #define CGAL_INTERSECTION_TRAITS_3(A, B, R1, R2, R3)            \
   template<typename K>     \
@@ -36,7 +64,11 @@
     typedef typename boost::variant<typename K::R1, typename K::R2,     \
                                     typename K::R3> variant_type;       \
     typedef typename boost::optional< variant_type > result_type;       \
-  };
+  };                                                                    
+
+#endif
+
+
 
 #define CGAL_INTERSECTION_FUNCTION(A, B, DIM)                           \
   template<typename K>                                                  \
@@ -86,6 +118,9 @@ template<typename, typename, typename>
 struct Intersection_traits {
   // This defaults to Object, if we use VERSION < 2 and do nothing
   // otherwise.
+  #if CGAL_INTERSECTION_VERSION < 2
+  typedef CGAL::Object result_type;
+  #endif
 };
 
 
@@ -110,7 +145,7 @@ template<typename B>
 class IT<Bbox_3, B> : public Intersection_traits< typename Kernel_traits<B>::Kernel, CGAL::Bbox_3, B >
 { };
 
-
+  
 namespace Intersections {
 namespace internal {
 
@@ -122,12 +157,33 @@ namespace internal {
 // _could_ come with conversion overhead and so we rather go for
 // the real type.
 // Overloads for empty returns are also provided.
-  template<typename F, typename A, typename B, typename T>
-  inline typename cpp11::result_of<F(A, B)>::type
-  intersection_return(T&& t) { return typename cpp11::result_of<F(A, B)>::type(std::forward<T>(t)); }
+#if CGAL_INTERSECTION_VERSION < 2
+  #if defined(CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE)
+    template<typename, typename, typename, typename T>
+    inline
+    CGAL::Object intersection_return(const T& t) { return CGAL::make_object(t); }
+  #else
+    template<typename, typename, typename, typename T>
+    inline
+    CGAL::Object intersection_return(T&& t) { return CGAL::make_object(std::forward<T>(t)); }
+  #endif // CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE
+  template<typename, typename, typename>
+  inline
+  CGAL::Object intersection_return() { return CGAL::Object(); }
+#else
+#if defined(CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE)
+    template<typename F, typename A, typename B, typename T>
+    inline typename cpp11::result_of<F(A, B)>::type
+    intersection_return(const T& t) { return typename cpp11::result_of<F(A, B)>::type(t); }
+  #else
+    template<typename F, typename A, typename B, typename T>
+    inline typename cpp11::result_of<F(A, B)>::type
+    intersection_return(T&& t) { return typename cpp11::result_of<F(A, B)>::type(std::forward<T>(t)); }
+  #endif // CGAL_CFG_NO_CPP0X_RVALUE_REFERENCE
   template<typename F, typename A, typename B>
   inline typename cpp11::result_of<F(A, B)>::type
   intersection_return() { return typename cpp11::result_of<F(A, B)>::type(); }
+#endif // CGAL_INTERSECTION_VERSION < 2
 
 // Something similar to wrap around boost::get and object_cast to
 // prevent ifdefing too much. Another way could be to introduce an
@@ -136,7 +192,7 @@ namespace internal {
 // it somewhat nicer.
 template<typename T>
 inline
-const T* intersect_get(const CGAL::Object& o) {
+const T* intersect_get(const CGAL::Object& o) { 
   return CGAL::object_cast<T>(&o);
 }
 
@@ -196,7 +252,7 @@ do_intersect_impl(const A& a, const B& b, Dynamic_dimension_tag) {
 
 } // namespace internal
 } // namespace Intersections
-
+  
 // See overloads in the respective header files
 
 // template<typename A, typename B>
@@ -212,7 +268,7 @@ do_intersect_impl(const A& a, const B& b, Dynamic_dimension_tag) {
 // inline
 // bool
 // do_intersect(const A& a, const B& b) {
-//   CGAL_static_assertion_msg((boost::is_same<typename A::Ambient_dimension, typename B::Ambient_dimension>::value),
+//   CGAL_static_assertion_msg((boost::is_same<typename A::Ambient_dimension, typename B::Ambient_dimension>::value), 
 //                         "do_intersect with objects of different dimensions not supported");
 //   return internal::do_intersect_impl(a, b, typename A::Ambient_dimension());
 // }

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Envelope_3/include/CGAL/Envelope_3/Envelope_divide_and_conquer_3.h $
-// $Id: Envelope_divide_and_conquer_3.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Envelope_3/include/CGAL/Envelope_3/Envelope_divide_and_conquer_3.h $
+// $Id: Envelope_divide_and_conquer_3.h 9293fc2 2018-09-04T16:09:18+03:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Michal Meyerovitch     <gorgymic@post.tau.ac.il>
 //                 Baruch Zukerman        <baruchzu@post.tau.ac.il>
@@ -56,7 +65,7 @@
 // - remove edges between faces with the same envelope data, which do not
 //   contribute to the shape of the envelope (i.e. have the same envelope data
 //   as their adjacent faces)
-// - remove unnecessary vertices of two kinds:
+// - remove unneccessary vertices of two kinds:
 //   a. vertices which have degree 2, the 2 incident edges can be geometrically
 //      merged, and has the same envelope data as both these edges
 //   b. isolated vertices which have the same envelope data as their incident
@@ -632,16 +641,16 @@ public:
     // make sure the aux flags are correctly after all resolvings
     //CGAL_assertion(verify_aux_flags(result));
 
-    // finally, remove unnecessary edges, between faces  with the same surface
+    // finally, remove unneccessary edges, between faces  with the same surface
     // (and which are not degenerate)
 
-    remove_unnecessary_edges(result);
+    remove_unneccessary_edges(result);
     CGAL_expensive_assertion_msg(result.is_valid(),
                        "after remove edges result is not valid");
 
-    // also remove unnecessary vertices (that were created in the process of
+    // also remove unneccessary vertices (that were created in the process of
     // vertical decomposition but the vertical edge was removed)
-    remove_unnecessary_vertices(result);
+    remove_unneccessary_vertices(result);
     CGAL_expensive_assertion_msg(result.is_valid(),
                        "after remove vertices result is not valid");
 
@@ -719,9 +728,9 @@ protected:
     return has_eq;
   }
 
-  // Remove unnecessary edges, between faces with the same surface
+  // Remove unneccessary edges, between faces with the same surface
   // (and which are not degenerate)
-  void remove_unnecessary_edges(Minimization_diagram_2& result)
+  void remove_unneccessary_edges(Minimization_diagram_2& result)
   {
     // collect all those edges in this list, and remove them all at the end
     // (thus, not destroying the iterator)
@@ -1000,18 +1009,18 @@ protected:
     return (equal_first && equal_second);
   }
 
-  // Remove unnecessary vertices, which have degree 2, and the 2 curves
+  // Remove unneccessary vertices, which have degree 2, and the 2 curves
   // can be merged
   // (and which are not degenerate)
-  void remove_unnecessary_vertices(Minimization_diagram_2& result)
+  void remove_unneccessary_vertices(Minimization_diagram_2& result)
   {
-    // we have 2 types of unnecessary vertices: those with degree 2 (that
+    // we have 2 types of unneccessary vertices: those with degree 2 (that
     // satisfy all the conditions below), and isolated vertices that have the
     // same envelope information as the face they're contained in.
 
     // all the vertices that don't have their data set, are those vertices
     // on vertical edges, created in the decomposition process,
-    // and are not necessary
+    // and are not neccessary
 
     // also those vertices with degree 2, that can merge their 2 edges and
     // with same data as both these edges, can be removed
@@ -1631,7 +1640,7 @@ protected:
                             Self* b) :
       Md_observer(arr), base(b)
     {
-      CGAL_assertion(base != nullptr);
+      CGAL_assertion(base != NULL);
     }
 
     /* virtual void before_split_edge (Halfedge_handle e,
@@ -1776,7 +1785,7 @@ protected:
       faces(f),
       base(b)
     {
-      CGAL_assertion(base != nullptr);
+      CGAL_assertion(base != NULL);
     }
 
     // Write the discover time for a given vertex.

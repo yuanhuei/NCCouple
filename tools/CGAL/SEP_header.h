@@ -1,11 +1,20 @@
 // Copyright (c) 2016, 2017 GeometryFactory
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/CGAL_ImageIO/include/CGAL/SEP_header.h $
-// $Id: SEP_header.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/CGAL_ImageIO/include/CGAL/SEP_header.h $
+// $Id: SEP_header.h af2a447 2017-12-12T12:51:30+01:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Laurent Rineau
 
@@ -50,7 +59,7 @@ struct SEP_header_aux
   Int_dict int_dict;
   Double_dict double_dict;
   String_dict string_dict;
-
+  
 public:
   template <typename Tuple_string_variant>
   SEP_header_aux& operator<<(const Tuple_string_variant& tuple)
@@ -105,7 +114,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 namespace CGAL {
 
 class SEP_header {
-
+  
   boost::array<std::size_t, 3> _n;
   boost::array<double, 3> _d;
   boost::array<double, 3> _o;
@@ -119,7 +128,7 @@ public:
   SEP_header(std::string fileName) : _dim(-1) {
     std::ifstream input(fileName.c_str());
     if(!input) {
-      std::cerr << "Error: cannot open the header file \""
+      std::cerr << "Error: cannot open the header file \"" 
                 << fileName << "\"!\n";
       return;
     }
@@ -164,7 +173,7 @@ public:
     else return it->second;
   }
   /// @}
-
+  
   /// non-const getters
   /// @{
   double& get_o(int i) { return _o[i-1]; }

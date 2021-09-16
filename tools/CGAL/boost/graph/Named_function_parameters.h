@@ -1,10 +1,19 @@
 // Copyright (c) 2019  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/BGL/include/CGAL/boost/graph/Named_function_parameters.h $
-// $Id: Named_function_parameters.h 2556196 2020-03-23T08:56:47+01:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/BGL/include/CGAL/boost/graph/Named_function_parameters.h $
+// $Id: Named_function_parameters.h 17df9b5 2019-09-09T10:48:05+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Sebastien Loriot
@@ -194,7 +203,6 @@ get_parameter(const Named_function_parameters<T, Tag, Base>& np, Query_tag tag)
   return internal_np::get_parameter_impl(static_cast<const internal_np::Named_params_impl<T, Tag, Base>&>(np), tag);
 }
 
-// Two parameters, non-trivial default value
 template <typename D>
 D choose_parameter(const internal_np::Param_not_found&, const D& d)
 {
@@ -202,20 +210,8 @@ D choose_parameter(const internal_np::Param_not_found&, const D& d)
 }
 
 template <typename T, typename D>
-const T& choose_parameter(const T& t, const D&)
-{
-  return t;
-}
-
-// single parameter so that we can avoid a default construction
-template <typename D>
-D choose_parameter(const internal_np::Param_not_found&)
-{
-  return D();
-}
-
-template <typename D, typename T>
-const T& choose_parameter(const T& t)
+const T&
+choose_parameter(const T& t, const D&)
 {
   return t;
 }
@@ -235,6 +231,7 @@ bool is_default_parameter(const T&)
 
 } //namespace CGAL
 
+#ifndef CGAL_CFG_NO_CPP0X_DEFAULT_TEMPLATE_ARGUMENTS_FOR_FUNCTION_TEMPLATES
 // code added to avoid silent runtime issues in non-updated code
 namespace boost
 {
@@ -244,5 +241,6 @@ namespace boost
     CGAL_static_assertion(B && "You must use CGAL::parameters::get_parameter instead of boost::get_param");
   }
 }
+#endif
 
 #endif // CGAL_BOOST_GRAPH_NAMED_FUNCTION_PARAMS_HPP

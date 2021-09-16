@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Polygon_mesh_slicer/Axis_parallel_plane_traits.h $
-// $Id: Axis_parallel_plane_traits.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Polygon_mesh_slicer/Axis_parallel_plane_traits.h $
+// $Id: Axis_parallel_plane_traits.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     :  Sebastien Loriot
@@ -114,10 +123,10 @@ public:
       const typename Traits::Point_3& src = m_source_3(s);
       const typename Traits::Point_3& tgt = m_target_3(s);
 
-      std::array<FT,3> src_coords = {{ *m_coord_iterator(src),
+      cpp11::array<FT,3> src_coords = {{ *m_coord_iterator(src),
                                          *(m_coord_iterator(src)+1),
                                          *(m_coord_iterator(src)+2) }};
-      std::array<FT,3> tgt_coords = {{ *m_coord_iterator(tgt),
+      cpp11::array<FT,3> tgt_coords = {{ *m_coord_iterator(tgt),
                                          *(m_coord_iterator(tgt)+1),
                                          *(m_coord_iterator(tgt)+2) }};
 

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Barycentric_mapping_parameterizer_3.h $
-// $Id: Barycentric_mapping_parameterizer_3.h 93a70d3 2020-07-21T16:46:50+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Barycentric_mapping_parameterizer_3.h $
+// $Id: Barycentric_mapping_parameterizer_3.h 5806b88 2020-01-03T11:07:43+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent Saboret, Pierre Alliez, Bruno Levy
 
@@ -21,7 +30,6 @@
 #include <CGAL/Surface_mesh_parameterization/Fixed_border_parameterizer_3.h>
 
 #include <CGAL/Default.h>
-#include <CGAL/iterator.h>
 
 #if defined(CGAL_EIGEN3_ENABLED)
 #include <CGAL/Eigen_solver_traits.h>
@@ -44,8 +52,8 @@ namespace Surface_mesh_parameterization {
 /// This class is a strategy called by the main
 /// parameterization algorithm `Fixed_border_parameterizer_3::parameterize()` and it:
 /// - provides the template parameters `BorderParameterizer_` and `SolverTraits_`.
-/// - implements compute_w_ij() to compute `w_ij`, the `(i,j)`-coefficient of
-///   the matrix `A` for `j` neighbor vertex of `i`, based on Tutte Barycentric
+/// - implements compute_w_ij() to compute `w_ij = (i,j)`, coefficient of
+///   the matrix A for `j` neighbor vertex of `i`, based on Tutte Barycentric
 ///   Mapping method.
 ///
 /// \cgalModels `Parameterizer_3`
@@ -109,32 +117,24 @@ public:
   #endif
   >::type                                                     Solver_traits;
 #else
-  /// Border parameterizer type
   typedef Border_parameterizer_                               Border_parameterizer;
-
-  /// Solver traits type
-  typedef SolverTraits_                                       Solver_traits;
+  typedef SolverTraits_                                       SolverTraits;
 #endif
-
-  /// Triangle mesh type
-  typedef TriangleMesh_                                       Triangle_mesh;
 
   typedef TriangleMesh_                                       TriangleMesh;
 
-  /// Mesh vertex type
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor    vertex_descriptor;
-
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<Triangle_mesh>::halfedge_descriptor  halfedge_descriptor;
-
 private:
   // Superclass
-  typedef Fixed_border_parameterizer_3<Triangle_mesh,
+  typedef Fixed_border_parameterizer_3<TriangleMesh_,
                                        Border_parameterizer,
                                        Solver_traits>  Base;
 
 // Private types
 private:
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor    vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor  halfedge_descriptor;
+  typedef CGAL::Vertex_around_target_circulator<TriangleMesh>              vertex_around_target_circulator;
+
   typedef typename Base::NT                       NT;
 
   // Solver traits subtypes:
@@ -148,24 +148,24 @@ public:
                                       ///< %Object that maps the surface's border to 2D space.
                                       Solver_traits sparse_la = Solver_traits())
                                       ///< Traits object to access a sparse linear system.
-  : Fixed_border_parameterizer_3<Triangle_mesh,
+  : Fixed_border_parameterizer_3<TriangleMesh,
                                  Border_parameterizer,
                                  Solver_traits>(border_param, sparse_la)
   { }
 
   // Default copy constructor and operator =() are fine
 
-  /// returns whether the 3D -> 2D mapping is one-to-one.
+  /// Check if the 3D -> 2D mapping is one-to-one.
   template <typename VertexUVMap,
             typename Faces_Container>
-  bool is_one_to_one_mapping(const Triangle_mesh& mesh,
+  bool is_one_to_one_mapping(const TriangleMesh& mesh,
                              halfedge_descriptor bhd,
                              const VertexUVMap uvmap) const
   {
-    /// Theorem: A one-to-one mapping is guaranteed if all `w_ij` coefficients
-    ///          are > 0 (for `j` vertex neighbor of `i`) and if the surface
+    /// Theorem: A one-to-one mapping is guaranteed if all w_ij coefficients
+    ///          are > 0 (for j vertex neighbor of i) and if the surface
     ///          border is mapped onto a 2D convex polygon.
-    /// Here, all `w_ij` coefficients are equal to `1` (for `j` vertex neighbor of `i`), thus a
+    /// Here, all w_ij coefficients = 1 (for j vertex neighbor of i), thus a
     /// valid embedding is guaranteed if the surface border is mapped
     /// onto a 2D convex polygon.
     return (Base::get_border_parameterizer().is_border_convex() ||
@@ -174,12 +174,13 @@ public:
 
 // Protected operations
 protected:
-  /// computes `w_ij`, the coefficient of matrix `A` for `j` neighbor vertex of `i`.
-  virtual NT compute_w_ij(const Triangle_mesh& /* mesh */,
+  /// Compute w_ij = (i,j), coefficient of matrix A for j neighbor vertex of i.
+  virtual NT compute_w_ij(const TriangleMesh& /* mesh */,
       vertex_descriptor /* main_vertex_v_i */,
-      Vertex_around_target_circulator<Triangle_mesh> /* neighbor_vertex_v_j */ ) const
+      vertex_around_target_circulator /* neighbor_vertex_v_j */ ) const
   {
-    /// In the Tutte Barycentric Mapping algorithm, we have `w_ij = 1`, for `j` neighbor vertex of `i`.
+    /// In the Tutte Barycentric Mapping algorithm, we have w_ij = 1,
+    /// for j neighbor vertex of i.
     return 1.;
   }
 };

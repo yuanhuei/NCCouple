@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Feature/Cluster_vertical_extent.h $
-// $Id: Cluster_vertical_extent.h 19004a7 2020-08-04T13:41:48+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Feature/Cluster_vertical_extent.h $
+// $Id: Cluster_vertical_extent.h 29433bc 2018-06-15T14:10:07+02:00 Simon Giraudot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
@@ -36,11 +45,11 @@ namespace Feature {
 class Cluster_vertical_extent : public CGAL::Classification::Feature_base
 {
   std::vector<float> m_values;
-
+  
 public:
 
   /*!
-    \brief constructs the feature.
+    \brief Constructs the feature.
 
     \tparam ClusterRange model of `ConstRange`. Its iterator type
     is `RandomAccessIterator` and its value type is the key type of
@@ -52,15 +61,15 @@ public:
   Cluster_vertical_extent (const ClusterRange& clusters)
   {
     typedef typename ClusterRange::const_iterator::value_type::Item Item;
-
+    
     this->set_name ("cluster_vertical_extent");
 
     m_values.reserve (clusters.size());
     for (std::size_t i = 0; i < clusters.size(); ++ i)
     {
-      float min_z = (std::numeric_limits<float>::max)();
-      float max_z = -(std::numeric_limits<float>::min)();
-
+      float min_z = std::numeric_limits<float>::max();
+      float max_z = -std::numeric_limits<float>::min();
+        
       for (std::size_t j = 0; j < clusters[i].size(); ++ j)
       {
         const Item& item = clusters[i][j];
@@ -75,7 +84,7 @@ public:
   /// \cond SKIP_IN_MANUAL
   virtual float value (std::size_t cluster_index) { return m_values[cluster_index]; }
   /// \endcond
-
+    
 };
 
 } // namespace Feature

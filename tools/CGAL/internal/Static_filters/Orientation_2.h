@@ -1,12 +1,21 @@
 // Copyright (c) 2001,2004  INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Filtered_kernel/include/CGAL/internal/Static_filters/Orientation_2.h $
-// $Id: Orientation_2.h 5c8df66 2020-09-25T14:25:14+02:00 Jane Tournois
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Filtered_kernel/include/CGAL/internal/Static_filters/Orientation_2.h $
+// $Id: Orientation_2.h f2391a3 2017-12-19T16:29:53+01:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Sylvain Pion
 
@@ -35,8 +44,21 @@ public:
 
   typedef typename Base::result_type  result_type;
 
+#ifndef CGAL_CFG_MATCHING_BUG_6
   using Base::operator();
-
+#else 
+  result_type
+  operator()(const Vector_2& u, const Vector_2& v) const
+  { 
+    return Base::operator()(u,v);
+  }
+  
+  result_type
+  operator()(const Circle_2& c) const
+  {
+    return Base::operator()(c);
+  }
+#endif
   Orientation
   operator()(const Point_2 &p, const Point_2 &q, const Point_2 &r) const
 

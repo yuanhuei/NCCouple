@@ -1,11 +1,20 @@
 // Copyright (c) 2014
 // INRIA Saclay-Ile de France (France)
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/NewKernel_d/include/CGAL/NewKernel_d/static_int.h $
-// $Id: static_int.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/NewKernel_d/include/CGAL/NewKernel_d/static_int.h $
+// $Id: static_int.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Marc Glisse
 
@@ -15,10 +24,10 @@
 
 namespace CGAL {
 template <class NT> struct static_zero {
-        operator NT() const { return constant<NT,0>(); }
+	operator NT() const { return constant<NT,0>(); }
 };
 template <class NT> struct static_one {
-        operator NT() const { return constant<NT,1>(); }
+	operator NT() const { return constant<NT,1>(); }
 };
 
 template <class NT> static_zero<NT> operator-(static_zero<NT>) { return static_zero<NT>(); }

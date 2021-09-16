@@ -4,10 +4,21 @@
  * All rights reserved.
  *
  * This file is part of CGAL (www.cgal.org).
+ * You can redistribute it and/or modify it under the terms of the GNU
+ * Lesser General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
  *
- * $URL: https://github.com/CGAL/cgal/blob/v5.2.1/CGAL_Core/include/CGAL/CORE/Config.h $
- * $Id: Config.h 26fb266 2019-10-19T16:28:33+02:00 Sébastien Loriot
- * SPDX-License-Identifier: LGPL-3.0-or-later
+ * Licensees holding a valid commercial license may use this file in
+ * accordance with the commercial license agreement provided with the
+ * software.
+ *
+ * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *
+ * $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/CGAL_Core/include/CGAL/CORE/Config.h $
+ * $Id: Config.h 6b568a8 2017-11-11T21:06:17+01:00 Sébastien Loriot
+ * SPDX-License-Identifier: LGPL-3.0+
  ***************************************************************************/
 
 #ifndef _CORE_CONFIG_H_

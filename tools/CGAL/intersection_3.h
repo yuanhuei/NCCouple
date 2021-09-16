@@ -5,11 +5,20 @@
 // Max-Planck-Institute Saarbruecken (Germany),
 // and Tel-Aviv University (Israel).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_3/include/CGAL/intersection_3.h $
-// $Id: intersection_3.h 90d2e03 2020-01-15T13:32:11+01:00 Maxime Gimeno
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_3/include/CGAL/intersection_3.h $
+// $Id: intersection_3.h e1eacea 2018-05-09T12:20:11+01:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Geert-Jan Giezeman <geert@cs.uu.nl>
@@ -82,7 +91,6 @@
 #include <CGAL/Intersections_3/Sphere_3_Triangle_3.h>
 
 #include <CGAL/Intersections_3/Tetrahedron_3_Tetrahedron_3.h>
-#include <CGAL/Intersections_3/Tetrahedron_3_Triangle_3.h>
 #include <CGAL/Intersections_3/Tetrahedron_3_Triangle_3.h>
 
 #include <CGAL/Intersections_3/Triangle_3_Triangle_3.h>

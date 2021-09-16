@@ -1,11 +1,20 @@
 // Copyright (c) 2006-2008 Max-Planck-Institute Saarbruecken (Germany).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Number_types/include/CGAL/Sqrt_extension/Eigen_NumTraits.h $
-// $Id: Eigen_NumTraits.h 8bb22d5 2020-03-26T14:23:37+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Number_types/include/CGAL/Sqrt_extension/Eigen_NumTraits.h $
+// $Id: Eigen_NumTraits.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Michael Hemmer   <hemmer@mpi-inf.mpg.de>
@@ -19,6 +28,13 @@ namespace Eigen {
   template <class NT,class ROOT, class ACDE_TAG, class FP_TAG>
   struct NumTraits<CGAL::Sqrt_extension<NT, ROOT, ACDE_TAG, FP_TAG> >
   {
+    typedef CGAL::Sqrt_extension<NT, ROOT, ACDE_TAG, FP_TAG> Real;
+    typedef Real NonInteger;
+    typedef Real Nested;
+    typedef Real Literal;
+
+    static inline Real epsilon() { return NumTraits<NT>::epsilon(); }
+
     enum {
       IsInteger = 0,
       IsSigned = 1,
@@ -28,19 +44,6 @@ namespace Eigen {
       AddCost = 2*NumTraits<NT>::AddCost+NumTraits<ROOT>::ReadCost,
       MulCost = 5*NumTraits<NT>::MulCost+2*NumTraits<NT>::AddCost
     };
-
-    typedef CGAL::Sqrt_extension<NT, ROOT, ACDE_TAG, FP_TAG> Real;
-    typedef Real NonInteger;
-    typedef Real Nested;
-    typedef Real Literal;
-
-    static inline Real epsilon() { return NumTraits<NT>::epsilon(); }
-    static inline int digits10() { return NumTraits<NT>::digits10(); }
-    static inline Real dummy_precision() { return NumTraits<NT>::dummy_precision(); }
-    static inline Real highest() { return NumTraits<NT>::highest(); }
-    static inline Real lowest() { return NumTraits<NT>::lowest(); }
-    static inline Real infinity() { return NumTraits<NT>::infinity(); }
-    static inline Real quiet_NaN() { return NumTraits<NT>::quiet_NaN(); }
   };
 }
 

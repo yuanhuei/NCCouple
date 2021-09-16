@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_unb_planar_insertion_helper.h $
-// $Id: Arr_unb_planar_insertion_helper.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_unb_planar_insertion_helper.h $
+// $Id: Arr_unb_planar_insertion_helper.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Baruch Zukerman <baruchzu@post.tau.ac.il>
@@ -178,7 +187,7 @@ before_handle_event(Event* event)
   if (ps_x == ARR_LEFT_BOUNDARY) {
     // The event lies on the left fictitious halfedge.
     this->m_lh = this->m_lh->twin()->next()->twin();
-    this->m_prev_minus_inf_x_event = nullptr;
+    this->m_prev_minus_inf_x_event = NULL;
   }
   else if (ps_x == ARR_RIGHT_BOUNDARY) {
     // The event lies on the right fictitious halfedge.
@@ -195,7 +204,7 @@ before_handle_event(Event* event)
       // The event lies on the top fictitious halfedge.
       CGAL_assertion (ps_y == ARR_TOP_BOUNDARY);
       this->m_th = this->m_th->twin()->next()->twin();
-      this->m_prev_plus_inf_y_event = nullptr;
+      this->m_prev_plus_inf_y_event = NULL;
     }
   }
 }

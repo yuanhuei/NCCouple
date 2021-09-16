@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arrangement_zone_2.h $
-// $Id: Arrangement_zone_2.h e0c8048 2020-07-02T14:08:08+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arrangement_zone_2.h $
+// $Id: Arrangement_zone_2.h 2187738 2018-09-06T07:35:43+03:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s): Ron Wein          <wein@post.tau.ac.il>
@@ -28,7 +37,6 @@
 #include <CGAL/Arr_tags.h>
 #include <CGAL/Arr_accessor.h>
 #include <CGAL/Arrangement_2/Arr_traits_adaptor_2.h>
-#include <CGAL/Arr_point_location_result.h>
 
 #include <list>
 #include <map>
@@ -94,28 +102,22 @@ protected:
                                                    Right_side_category>::result
     Are_all_sides_oblivious_category;
 
-  typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
-  typedef typename Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
-  typedef typename Arrangement_2::Face_const_handle     Face_const_handle;
+  typedef typename Arrangement_2::Vertex_const_handle    Vertex_const_handle;
+  typedef typename Arrangement_2::Halfedge_const_handle  Halfedge_const_handle;
+  typedef typename Arrangement_2::Face_const_handle      Face_const_handle;
 
   typedef typename Arrangement_2::Ccb_halfedge_circulator
     Ccb_halfedge_circulator;
 
   // Types used for caching intersection points:
-  typedef std::pair<Point_2, Multiplicity>              Intersection_point;
-  typedef boost::variant<Intersection_point, X_monotone_curve_2>
-                                                        Intersection_result;
-  typedef boost::optional<Intersection_result>          Optional_intersection;
-  typedef std::list<Intersection_result>                Intersect_list;
+  typedef std::pair<Point_2, Multiplicity>               Intersect_point_2;
+  typedef std::list<CGAL::Object>                        Intersect_list;
   typedef std::map<const X_monotone_curve_2*, Intersect_list>
-                                                        Intersect_map;
-  typedef typename Intersect_map::iterator              Intersect_map_iterator;
+                                                         Intersect_map;
+  typedef typename Intersect_map::iterator               Intersect_map_iterator;
 
-  typedef std::set<const X_monotone_curve_2*>           Curves_set;
-  typedef typename Curves_set::iterator                 Curves_set_iterator;
-
-  typedef Arr_point_location_result<Arrangement_2>      Pl_result;
-  typedef typename Pl_result::Type                      Pl_result_type;
+  typedef std::set<const X_monotone_curve_2*>            Curves_set;
+  typedef typename Curves_set::iterator                  Curves_set_iterator;
 
   // Data members:
   Arrangement_2& m_arr;                 // The associated arrangement.
@@ -131,7 +133,7 @@ protected:
 
   X_monotone_curve_2 m_cv;              // The current portion of the
                                         // inserted curve.
-  Pl_result_type m_obj;                 // The location of the left endpoint.
+  CGAL::Object m_obj;                   // The location of the left endpoint.
   bool m_has_left_pt;                   // Is the left end of the curve bounded.
   bool m_left_on_boundary;              // Is the left point on the boundary.
   Point_2 m_left_pt;                    // Its current left endpoint.
@@ -184,7 +186,7 @@ public:
     m_invalid_he()
   {
     m_geom_traits = static_cast<const Traits_adaptor_2*>(arr.geometry_traits());
-    CGAL_assertion(visitor != nullptr);
+    CGAL_assertion(visitor != NULL);
 
     // Initialize the visitor.
     visitor->init(&arr);
@@ -251,7 +253,7 @@ public:
    * \param obj An object that represents the location of the left end of the
    *            curve.
    */
-  void init_with_hint(const X_monotone_curve_2& cv, Pl_result_type obj);
+  void init_with_hint(const X_monotone_curve_2& cv, const Object& obj);
 
   /*! Compute the zone of the given curve and issue the apporpriate
    * notifications for the visitor.
@@ -385,15 +387,14 @@ private:
    *                                            point coincides with the right
    *                                            curve-end, which lies on the
    *                                            surface boundary.
-   * \return An object representing the next intersection: Intersection_point
+   * \return An object representing the next intersection: Intersect_point_2
    *         in case of a simple intersection point, X_monotone_curve_2 in
    *         case of an overlap, and an empty object if there is no
    *         intersection.
    */
-  Optional_intersection
-  _compute_next_intersection(Halfedge_handle he,
-                             bool skip_first_point,
-                             bool& intersect_on_right_boundary);
+  CGAL::Object _compute_next_intersection(Halfedge_handle he,
+                                          bool skip_first_point,
+                                          bool& intersect_on_right_boundary);
 
   /*! Remove the next intersection of m_cv with the given halfedge from the map.
    * \param he A handle to the halfedge.

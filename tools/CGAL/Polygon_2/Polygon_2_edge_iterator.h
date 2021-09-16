@@ -1,16 +1,25 @@
-// Copyright (c) 1997
+// Copyright (c) 1997  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon/include/CGAL/Polygon_2/Polygon_2_edge_iterator.h $
-// $Id: Polygon_2_edge_iterator.h f7e2c03 2020-08-13T15:37:10+02:00 Simon Giraudot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon/include/CGAL/Polygon_2/Polygon_2_edge_iterator.h $
+// $Id: Polygon_2_edge_iterator.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Wieger Wesselink, Geert-Jan Giezeman <geert@cs.uu.nl>
 
@@ -35,26 +44,17 @@ private:
     Segment m_seg;
 };
 
-template <class Traits_, class Container_,
-          class ConstructSegment = Tag_true>
+template <class Traits_, class Container_>
 class Polygon_2_edge_iterator {
   public:
-    typedef Polygon_2_edge_iterator<Traits_, Container_, ConstructSegment> Self;
     typedef typename std::iterator_traits<typename Container_::iterator>::iterator_category iterator_category;
     typedef typename Traits_::Segment_2 Segment_2;
-    typedef typename Traits_::Point_2 Point_2;
-    typedef std::pair<std::reference_wrapper<const Point_2>,
-                      std::reference_wrapper<const Point_2> > Point_pair;
-
-    typedef typename std::conditional<ConstructSegment::value,
-                                      Segment_2, Point_pair>::type
-            value_type;
-
+    typedef typename Traits_::Segment_2 value_type;
     typedef Container_ Container;
     typedef typename Container_::const_iterator const_iterator;
     typedef typename Container_::difference_type difference_type;
-    typedef value_type*           pointer;
-    typedef value_type&           reference;
+    typedef Segment_2*           pointer;
+    typedef Segment_2&           reference;
   private:
     const Container_* container;   // needed for dereferencing the last edge
     const_iterator first_vertex;   // points to the first vertex of the edge
@@ -64,115 +64,102 @@ class Polygon_2_edge_iterator {
       : container(c), first_vertex(f) {}
 
     bool operator==(
-      const Self& x) const
+      const Polygon_2_edge_iterator<Traits_, Container_>& x) const
     {
       return first_vertex == x.first_vertex;
     }
-
+    
     bool operator!=(
-      const Self& x) const
+      const Polygon_2_edge_iterator<Traits_, Container_>& x) const
     {
       return !(first_vertex == x.first_vertex);
     }
 
-    value_type operator*() const {
-      return make_value_type(ConstructSegment());
-    }
-
-    Segment_2 make_value_type (const Tag_true&) const {
+    Segment_2 operator*() const {
       const_iterator second_vertex = first_vertex;
       ++second_vertex;
       if (second_vertex == container->end())
         second_vertex = container->begin();
-      typename Traits_::Construct_segment_2 construct_segment_2 =
+      typename Traits_::Construct_segment_2 construct_segment_2 = 
             Traits_().construct_segment_2_object();
       return construct_segment_2(*first_vertex, *second_vertex);
     }
+    
+    Polygon_2__Segment_ptr<Segment_2> operator->() const
+        {return Polygon_2__Segment_ptr<Segment_2>(operator*());}
 
-    Point_pair make_value_type (const Tag_false&) const {
-      const_iterator second_vertex = first_vertex;
-      ++second_vertex;
-      if (second_vertex == container->end())
-        second_vertex = container->begin();
-      return std::make_pair (std::cref(*first_vertex), std::cref(*second_vertex));
-    }
-
-
-    Polygon_2__Segment_ptr<value_type> operator->() const
-        {return Polygon_2__Segment_ptr<value_type>(operator*());}
-
-    Self& operator++() {
+    Polygon_2_edge_iterator<Traits_, Container_>& operator++() {
       ++first_vertex;
       return *this;
     }
 
-    Self operator++(int) {
-      Self tmp = *this;
+    Polygon_2_edge_iterator<Traits_, Container_> operator++(int) {
+      Polygon_2_edge_iterator<Traits_, Container_> tmp = *this;
       ++*this;
       return tmp;
     }
 
-    Self& operator--() {
+    Polygon_2_edge_iterator<Traits_, Container_>& operator--() {
       --first_vertex;
       return *this;
     }
 
-    Self operator--(int) {
-      Self tmp = *this;
+    Polygon_2_edge_iterator<Traits_, Container_> operator--(int) {
+      Polygon_2_edge_iterator<Traits_, Container_> tmp = *this;
       --*this;
       return tmp;
     }
 
 // random access iterator requirements
-    Self&
+    Polygon_2_edge_iterator<Traits_, Container_>&
     operator+=(difference_type n) {
       first_vertex += n;
       return *this;
     }
 
-    Self
+    Polygon_2_edge_iterator<Traits_, Container_>
     operator+(difference_type n) const {
-      return Self(
+      return Polygon_2_edge_iterator<Traits_, Container_>(
         container, first_vertex + n);
     }
 
-    Self&
+    Polygon_2_edge_iterator<Traits_, Container_>&
     operator-=(difference_type n) {
       return (*this) -= n;
     }
 
-    Self
+    Polygon_2_edge_iterator<Traits_, Container_>
     operator-(difference_type n) const {
-      return Self(
+      return Polygon_2_edge_iterator<Traits_, Container_>(
         container, first_vertex - n);
     }
 
     difference_type
-    operator-(const Self& a) const {
+    operator-(const Polygon_2_edge_iterator<Traits_, Container_>& a) const {
       return first_vertex - a.first_vertex;
     }
 
-    value_type operator[](int n) const {
-      return *Self(
+    Segment_2 operator[](int n) const {
+      return *Polygon_2_edge_iterator<Traits_, Container_>(
         container, first_vertex+n);
     }
 
-    bool operator<(const Self& a) const
+    bool operator<(const Polygon_2_edge_iterator<Traits_, Container_>& a) const
     {
       return first_vertex < a.first_vertex;
     }
 
-    bool operator>(const Self& a) const
+    bool operator>(const Polygon_2_edge_iterator<Traits_, Container_>& a) const
     {
       return first_vertex > a.first_vertex;
     }
 
-    bool operator<=(const Self& a) const
+    bool operator<=(const Polygon_2_edge_iterator<Traits_, Container_>& a) const
     {
       return first_vertex <= a.first_vertex;
     }
 
-    bool operator>=(const Self& a) const
+    bool operator>=(const Polygon_2_edge_iterator<Traits_, Container_>& a) const
     {
       return first_vertex >= a.first_vertex;
     }
@@ -180,15 +167,15 @@ class Polygon_2_edge_iterator {
 };
 
 
-template <class Traits_,  class Container_, class ConstructSegment>
+template <class Traits_,  class Container_>
 typename Container_::difference_type
-distance_type(const Polygon_2_edge_iterator<Traits_,Container_,Container_>&)
+distance_type(const Polygon_2_edge_iterator<Traits_,Container_>&)
 { return Container_::difference_type(); }
 
 template <class Traits_,  class Container_>
 typename Traits_::Segment_2*
-value_type(const Polygon_2_edge_iterator<Traits_,Container_,Tag_true>&)
-{ return (typename Polygon_2_edge_iterator<Traits_,Container_,Tag_true>::value_type *)(0); }
+value_type(const Polygon_2_edge_iterator<Traits_,Container_>&)
+{ return (typename Traits_::Segment_2 *)(0); }
 
 
 //-----------------------------------------------------------------------//

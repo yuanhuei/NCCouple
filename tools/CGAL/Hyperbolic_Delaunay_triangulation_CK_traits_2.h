@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Hyperbolic_triangulation_2/include/CGAL/Hyperbolic_Delaunay_triangulation_CK_traits_2.h $
-// $Id: Hyperbolic_Delaunay_triangulation_CK_traits_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Hyperbolic_triangulation_2/include/CGAL/Hyperbolic_Delaunay_triangulation_CK_traits_2.h $
+// $Id: Hyperbolic_Delaunay_triangulation_CK_traits_2.h 71327aa 2018-12-30T22:19:18+01:00 Iordan Iordanov
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mikhail Bogdanov
 //                 Monique Teillaud <Monique.Teillaud@inria.fr>
@@ -35,7 +44,7 @@ namespace internal {
   template <typename Traits>
   class Construct_hyperbolic_circumcenter_CK_2
   {
-    typedef typename Traits::Hyperbolic_Voronoi_point_2     Hyperbolic_Voronoi_point_2;
+    typedef typename Traits::Hyperbolic_Voronoi_point_2     Hyperbolic_Voronoi_point_2;  
     typedef typename Traits::Hyperbolic_point_2             Hyperbolic_point_2;
     typedef typename Traits::Euclidean_circle_or_line_2     Euclidean_circle_or_line_2;
     typedef typename Traits::Euclidean_line_2               Euclidean_line_2;
@@ -56,7 +65,7 @@ namespace internal {
       Hyperbolic_point_2 po(CGAL::ORIGIN);
       Circle_2 l_inf(po, FT(1));
 
-      if( _gt.compare_distance_2_object()(po, p, q) == EQUAL &&
+      if( _gt.compare_distance_2_object()(po, p, q) == EQUAL && 
           _gt.compare_distance_2_object()(po, p, r) == EQUAL)
         return po;
 
@@ -366,7 +375,7 @@ public:
   Construct_hyperbolic_circumcenter_2
   construct_hyperbolic_circumcenter_2_object() const
   { return Construct_hyperbolic_circumcenter_2(*this); }
-
+  
   Construct_hyperbolic_bisector_2
   construct_hyperbolic_bisector_2_object() const
   { return Construct_hyperbolic_bisector_2(*this); }

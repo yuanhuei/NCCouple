@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Box_intersection_d/include/CGAL/Box_intersection_d/Box_d.h $
-// $Id: Box_d.h 6b36ea0 2021-02-17T16:48:39+00:00 Andreas Fabri
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Box_intersection_d/include/CGAL/Box_intersection_d/Box_d.h $
+// $Id: Box_d.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>
 //                 Andreas Meyer <ameyer@mpi-sb.mpg.de>
@@ -24,7 +33,6 @@
 #include <CGAL/atomic.h>
 
 #include <algorithm>
-#include <array>
 
 namespace CGAL {
 
@@ -57,16 +65,15 @@ struct ID_FROM_BOX_ADDRESS {};
 struct ID_FROM_HANDLE {};
 
 // Generic template signature of boxes, specialized for policies
-template<class NT_, int N, class IdPolicy = ID_EXPLICIT>
+template<class NT_, int N, class IdPolicy = ID_EXPLICIT> 
 class Box_d;
 
 // ID_NONE is used as base class and cannot be used directly in the algorithms
 template<class NT_, int N>
 class Box_d< NT_, N, ID_NONE> {
 protected:
-    std::array<NT_,N> lo;
-    std::array<NT_,N> hi;
-
+    NT_ lo[N];
+    NT_ hi[N];
 public:
     typedef NT_         NT;
     typedef std::size_t ID;
@@ -74,8 +81,8 @@ public:
     Box_d() {}
     Box_d(bool complete) { init(complete); }
     Box_d(NT l[N], NT h[N]) {
-        std::copy( l, l + N, &lo[0] );
-        std::copy( h, h + N, &hi[0] );
+        std::copy( l, l + N, lo );
+        std::copy( h, h + N, hi );
     }
     void init (bool complete = false) {
         NT inf = box_limits<NT>::inf();
@@ -138,10 +145,10 @@ public:
     }
     void extend(std::pair<NT,NT> p[2]) {
         bbx = Bbox_2(
-            (std::min)( bbx.xmin(), p[0].first),
-            (std::min)( bbx.ymin(), p[1].first),
-            (std::max)( bbx.xmax(), p[0].second),
-            (std::max)( bbx.ymax(), p[1].second));
+	    (std::min)( bbx.xmin(), p[0].first),
+	    (std::min)( bbx.ymin(), p[1].first),
+	    (std::max)( bbx.xmax(), p[0].second),
+	    (std::max)( bbx.ymax(), p[1].second));
     }
     static int dimension() { return 2; }
     NT min_coord(int dim) const { return (dim==0) ? bbx.xmin() : bbx.ymin();}
@@ -186,15 +193,15 @@ public:
     }
     void extend(std::pair<NT,NT> p[3]) {
         bbx = Bbox_3(
-            (std::min)( bbx.xmin(), p[0].first),
-            (std::min)( bbx.ymin(), p[1].first),
-            (std::min)( bbx.zmin(), p[2].first),
-            (std::max)( bbx.xmax(), p[0].second),
-            (std::max)( bbx.ymax(), p[1].second),
-            (std::max)( bbx.zmax(), p[2].second));
+	    (std::min)( bbx.xmin(), p[0].first),
+	    (std::min)( bbx.ymin(), p[1].first),
+	    (std::min)( bbx.zmin(), p[2].first),
+	    (std::max)( bbx.xmax(), p[0].second),
+	    (std::max)( bbx.ymax(), p[1].second),
+	    (std::max)( bbx.zmax(), p[2].second));
     }
     static int dimension() { return 3; }
-    NT min_coord(int dim) const {
+    NT min_coord(int dim) const { 
         return (dim==0) ? bbx.xmin() : ((dim==1) ? bbx.ymin() : bbx.zmin());
     }
     NT max_coord(int dim) const {

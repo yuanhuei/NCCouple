@@ -1,11 +1,20 @@
 // Copyright (c) 2010-2011 CNRS and LIRIS' Establishments (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Combinatorial_map/include/CGAL/Combinatorial_map_iterators_base.h $
-// $Id: Combinatorial_map_iterators_base.h 9a50c0f 2019-11-26T13:22:03+01:00 Guillaume Damiand
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Combinatorial_map/include/CGAL/Combinatorial_map_iterators_base.h $
+// $Id: Combinatorial_map_iterators_base.h 38b2e57 2018-01-17T17:59:35+00:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Guillaume Damiand <guillaume.damiand@liris.cnrs.fr>
 //
@@ -106,7 +115,7 @@ namespace CGAL {
     {
       return ( ((*this==mmap->null_handle) && (aiterator==mmap->null_handle)) ||
                (mfirst_dart == aiterator.mfirst_dart &&
-                static_cast<const Base&>(*this)==
+               static_cast<const Base&>(*this)==
                 static_cast<const Base&>(aiterator)) );
     }
 

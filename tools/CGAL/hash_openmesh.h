@@ -1,11 +1,20 @@
 // Copyright (c) 2016  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/STL_Extension/include/CGAL/hash_openmesh.h $
-// $Id: hash_openmesh.h fa44e3c 2021-03-05T08:18:45+00:00 Andreas Fabri
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/STL_Extension/include/CGAL/hash_openmesh.h $
+// $Id: hash_openmesh.h 26c857a 2018-06-13T15:11:45+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Andreas Fabri
 
@@ -43,10 +52,7 @@ public:
   }
 
   bool
-  operator!=(const OMesh_edge& other) const
-  {
-    return !(*this == other);
-  }
+  operator!=(const OMesh_edge& other) { return !(*this == other); }
 
   Halfedge_handle
   opposite() const { return Halfedge_handle((halfedge_.idx() & 1) ? halfedge_.idx()-1 : halfedge_.idx()+1); }
@@ -85,7 +91,7 @@ namespace std {
 
 #if defined(BOOST_MSVC)
 #  pragma warning(push)
-#  pragma warning(disable:4099) // For VC10 it is class hash
+#  pragma warning(disable:4099) // For VC10 it is class hash 
 #endif
 
 #ifndef CGAL_CFG_NO_STD_HASH

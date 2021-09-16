@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Triangulation/include/CGAL/internal/Static_or_dynamic_array.h $
-// $Id: Static_or_dynamic_array.h 378554e 2020-03-06T16:42:23+01:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Triangulation/include/CGAL/internal/Static_or_dynamic_array.h $
+// $Id: Static_or_dynamic_array.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)    : Samuel Hornus
 
@@ -51,9 +60,9 @@ template< typename Containee, typename D, bool WithCompactContainerHelper = fals
 // The case of static size:
 template< typename Containee, int D, bool WithCompactContainerHelper >
 struct S_or_D_array< Containee, Dimension_tag< D >, WithCompactContainerHelper >
-: public std::array<Containee, D>
+: public array<Containee, D>
 {
-    typedef std::array<Containee, D> Base;
+    typedef array<Containee, D> Base;
     S_or_D_array(const int)
     : Base()
     {}
@@ -66,9 +75,9 @@ struct S_or_D_array< Containee, Dimension_tag< D >, WithCompactContainerHelper >
     {
         return (*this)[0].for_compact_container();
     }
-    void    for_compact_container(void *p)
+    void* & for_compact_container()
     {
-        (*this)[0].for_compact_container(p);
+        return (*this)[0].for_compact_container();
     }
 };
 
@@ -94,14 +103,14 @@ struct S_or_D_array< Containee, Dynamic_dimension_tag, true >
 {
     typedef std::vector<Containee> Base;
     S_or_D_array(const int d)
-    : Base(d), fcc_(nullptr)
+    : Base(d), fcc_(NULL)
     {}
     S_or_D_array(const int d, const Containee & c)
-    : Base(d, c), fcc_(nullptr)
+    : Base(d, c), fcc_(NULL)
     {}
     void* fcc_;
     void*   for_compact_container() const { return fcc_; }
-    void    for_compact_container(void* p)       { fcc_ = p; }
+    void* & for_compact_container()       { return fcc_; }
 };
 
 } // end of namespace internal

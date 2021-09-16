@@ -3,10 +3,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesher/include/CGAL/AABB_polyhedral_oracle.h $
-// $Id: AABB_polyhedral_oracle.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesher/include/CGAL/AABB_polyhedral_oracle.h $
+// $Id: AABB_polyhedral_oracle.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s) : Pierre Alliez, Laurent Rineau, Stephane Tayeb
@@ -49,7 +58,7 @@ namespace CGAL {
     typedef class AABB_traits<Kernel,AABB_primitive> AABB_traits;
     typedef AABB_tree<AABB_traits> Tree;
     typedef typename AABB_traits::Bounding_box Bounding_box;
-
+    
     typedef boost::shared_ptr<Tree> Tree_shared_ptr;
     Tree_shared_ptr m_pTree;
 
@@ -74,7 +83,11 @@ namespace CGAL {
     friend class Intersect_3;
 
     class Intersect_3 {
-
+      #if CGAL_INTERSECTION_VERSION < 2
+      typedef boost::optional<typename Tree::Object_and_primitive_id> 
+        AABB_intersection;
+      #endif
+      
       const Self& self;
 
     public:
@@ -84,20 +97,28 @@ namespace CGAL {
 
       Object operator()(const Surface_3& surface, const Segment_3& segment) const
       {
+        #if CGAL_INTERSECTION_VERSION < 2
+        AABB_intersection
+        #else
         boost::optional< typename AABB_traits::template Intersection_and_primitive_id<Segment_3>::Type >
+        #endif
           intersection = surface.tree()->any_intersection(segment);
-
+        
         if ( intersection )
           return intersection->first;
         else
           return Object();
       }
-
+      
       Object operator()(const Surface_3& surface, const Line_3& line) const
       {
+        #if CGAL_INTERSECTION_VERSION < 2
+        AABB_intersection
+        #else
         boost::optional< typename AABB_traits::template Intersection_and_primitive_id<Line_3>::Type >
+        #endif
           intersection = surface.tree()->any_intersection(line);
-
+        
         if ( intersection )
           return intersection->first;
         else
@@ -105,9 +126,13 @@ namespace CGAL {
       }
       Object operator()(const Surface_3& surface, const Ray_3& ray) const
       {
+        #if CGAL_INTERSECTION_VERSION < 2
+        AABB_intersection
+        #else
         boost::optional< typename AABB_traits::template Intersection_and_primitive_id<Ray_3>::Type >
+        #endif
           intersection = surface.tree()->any_intersection(ray);
-
+        
         if ( intersection )
           return intersection->first;
         else
@@ -136,11 +161,11 @@ namespace CGAL {
 
       template <typename OutputIteratorPoints>
       OutputIteratorPoints operator() (const Surface_3& /* surface */,
-        OutputIteratorPoints out,
-        int /* n */) const
+	OutputIteratorPoints out,
+	int /* n */) const
       {
-        // std::cout << "AABB_polyhedral_oracle: empty initial point set" << std::endl;
-        return out;
+	// std::cout << "AABB_polyhedral_oracle: empty initial point set" << std::endl;
+	return out;
       }
     };
 

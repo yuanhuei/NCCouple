@@ -1,16 +1,25 @@
-// Copyright (c) 2000,2001
+// Copyright (c) 2000,2001  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Kernel_d/include/CGAL/Kernel_d/Hyperplane_d.h $
-// $Id: Hyperplane_d.h 489e853 2020-06-10T18:25:33+02:00 Laurent Rineau
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Kernel_d/include/CGAL/Kernel_d/Hyperplane_d.h $
+// $Id: Hyperplane_d.h 383d93d 2019-01-18T15:29:34+01:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Michael Seel
 
@@ -41,10 +50,10 @@ public:
 
   Hyperplane_d(int d=0) : Base(d) {}
   Hyperplane_d(int a, int b, int c) : Base(a,b,c) {}
-  Hyperplane_d(const RT& a, const RT& b, const RT& c) :
+  Hyperplane_d(const RT& a, const RT& b, const RT& c) : 
     Base(a,b,c) {}
   Hyperplane_d(int a, int b, int c, int d) : Base(a,b,c,d) {}
-  Hyperplane_d(const RT& a, const RT& b, const RT& c, const RT& d) :
+  Hyperplane_d(const RT& a, const RT& b, const RT& c, const RT& d) : 
     Base(a,b,c,d) {}
 
   Hyperplane_d(const Point_d<R>& p, const Direction_d<R>& dir) :
@@ -62,22 +71,18 @@ public:
     : Base (d, first, last, D) {}
 
   template <class ForwardIterator>
-  Hyperplane_d(ForwardIterator first, ForwardIterator last,
+  Hyperplane_d(ForwardIterator first, ForwardIterator last, 
                const Point_d<R>& o, Oriented_side side = ON_ORIENTED_BOUNDARY)
     : Base(first,last,o,side) {}
 
-  Vector_d<R> orthogonal_vector() const
+  Vector_d<R> orthogonal_vector() const 
   { return Base::orthogonal_vector(); }
-  Direction_d<R> orthogonal_direction() const
+  Direction_d<R> orthogonal_direction() const 
   { return Base::orthogonal_direction(); }
 
   bool operator==(const Self& w) const
   { return Base::operator==(w); }
   bool operator!=(const Self& w) const
-  { return Base::operator!=(w); }
-  bool operator==(const Base& w) const
-  { return Base::operator==(w); }
-  bool operator!=(const Base& w) const
   { return Base::operator!=(w); }
 };
 

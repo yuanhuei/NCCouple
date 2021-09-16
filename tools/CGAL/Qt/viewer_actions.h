@@ -4,11 +4,19 @@
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
  This file is part of a fork of the QGLViewer library version 2.7.0.
+ http://www.libqglviewer.com - contact@libqglviewer.com
+
+ This file may be used under the terms of the GNU General Public License 
+ version 3.0 as published by the Free Software Foundation and
+ appearing in the LICENSE file included in the packaging of this file.
+
+ This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 *****************************************************************************/
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/GraphicsView/include/CGAL/Qt/viewer_actions.h $
-// $Id: viewer_actions.h 06995b5 2020-09-30T16:28:25+02:00 Maxime Gimeno
-// SPDX-License-Identifier: GPL-3.0-only
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/GraphicsView/include/CGAL/Qt/viewer_actions.h $
+// $Id: viewer_actions.h 93d9e8e 2018-06-29T14:39:19+01:00 Jane
+// SPDX-License-Identifier: GPL-3.0
 #ifndef VIEWER_ACTIONS_H
 #define VIEWER_ACTIONS_H
 namespace CGAL{
@@ -79,8 +87,7 @@ enum MouseAction {
   ROLL,
   DRIVE,
   SCREEN_TRANSLATE,
-  ZOOM_ON_REGION,
-  ZOOM_FOV
+  ZOOM_ON_REGION
 };
 
 enum SnapShotBackground {

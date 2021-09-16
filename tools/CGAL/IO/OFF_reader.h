@@ -1,10 +1,19 @@
 // Copyright (c) 2015 GeometryFactory
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron_IO/include/CGAL/IO/OFF_reader.h $
-// $Id: OFF_reader.h 922b861 2020-04-14T15:40:38+02:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron_IO/include/CGAL/IO/OFF_reader.h $
+// $Id: OFF_reader.h 26c86d2 2020-01-31T11:58:58+01:00 Maxime Gimeno
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Laurent Rineau and Sebastien Loriot
 
@@ -14,13 +23,11 @@
 #include <CGAL/IO/File_scanner_OFF.h>
 #include <CGAL/IO/reader_helpers.h>
 
-#include <CGAL/array.h>
-#include <CGAL/assertions.h>
-#include <CGAL/Container_helper.h>
-#include <CGAL/use.h>
-
 #include <vector>
 #include <iostream>
+#include <CGAL/array.h>
+#include <CGAL/assertions.h>
+#include <CGAL/use.h>
 
 namespace CGAL {
 
@@ -49,13 +56,13 @@ namespace CGAL {
       std::size_t no;
 
       scanner.scan_facet( no, i);
-      CGAL::internal::resize(polygons[i], no);
+      IO::internal::resize(polygons[i], no);
       for(std::size_t j = 0; j < no; ++j) {
         std::size_t id;
         scanner.scan_facet_vertex_index(id, i);
         if(id < scanner.size_of_vertices())
         {
-          polygons[i][j] = typename std::remove_cv<typename std::iterator_traits<typename Polygon_3::const_iterator>::value_type>::type(id);
+          polygons[i][j] = id;
         }
         else
           return false;
@@ -106,7 +113,7 @@ namespace CGAL {
             vcolors[i] = scanner.get_color_from_line(iss);
           }
         }
-
+        
         if(!in)
           return false;
     }
@@ -116,7 +123,7 @@ namespace CGAL {
       scanner.scan_facet( no, i);
       if(!in)
         return false;
-      CGAL::internal::resize(polygons[i], no);
+      IO::internal::resize(polygons[i], no);
       for(std::size_t j = 0; j < no; ++j) {
         std::size_t id;
         scanner.scan_facet_vertex_index(id, i);

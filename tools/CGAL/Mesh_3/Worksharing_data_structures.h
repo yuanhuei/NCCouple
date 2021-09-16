@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_3/Worksharing_data_structures.h $
-// $Id: Worksharing_data_structures.h 4fc2f59 2020-07-31T16:17:56+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_3/Worksharing_data_structures.h $
+// $Id: Worksharing_data_structures.h 49d526c 2019-07-29T14:30:03+02:00 Jane Tournois
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Clement Jamin
 
@@ -23,12 +32,12 @@
 #include <CGAL/Bbox_3.h>
 
 #include <tbb/concurrent_queue.h>
-#include <tbb/task_group.h>
+#include <tbb/task.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/concurrent_vector.h>
 #include <tbb/scalable_allocator.h>
 
-#include <atomic>
+#include <tbb/atomic.h>
 
 #include <vector>
 
@@ -65,8 +74,8 @@ public:
 
     m_num_cells =
       num_grid_cells_per_axis*num_grid_cells_per_axis*num_grid_cells_per_axis;
-    m_occupation_grid = new std::atomic<int>[m_num_cells];
-    m_num_batches_grid = new std::atomic<int>[m_num_cells];
+    m_occupation_grid = new tbb::atomic<int>[m_num_cells];
+    m_num_batches_grid = new tbb::atomic<int>[m_num_cells];
     // Initialize grid
     for (int i = 0 ; i < m_num_cells ; ++i)
     {
@@ -106,15 +115,15 @@ public:
 
   void add_batch(int cell_index, int to_add)
   {
-    m_num_batches_grid[cell_index].fetch_add(to_add);
+    m_num_batches_grid[cell_index].fetch_and_add(to_add);
   }
 
   void add_occupation(int cell_index, int to_add, int)
   {
-    m_occupation_grid[cell_index].fetch_add(to_add);
+    m_occupation_grid[cell_index].fetch_and_add(to_add);
 
     /*int new_occupation =
-      (m_occupation_grid[cell_index].fetch_add(to_add))
+      (m_occupation_grid[cell_index].fetch_and_add(to_add))
       + to_add;
     //m_num_batches_grid[cell_index] = num_items_in_work_queue;
 
@@ -221,7 +230,7 @@ public:
 
 
     // Rotate
-    static std::atomic<int> last_cell_index;
+    static tbb::atomic<int> last_cell_index;
     //std::cerr << "last=" << last_cell_index << std::endl;
     int i = (last_cell_index + 1) % m_num_cells;
     for ( ; i != last_cell_index ; i = (i + 1) % m_num_cells)
@@ -246,11 +255,11 @@ protected:
 
   int                                             m_num_grid_cells_per_axis;
   int                                             m_num_cells;
-  std::atomic<int> *                              m_occupation_grid;
-  std::atomic<int> *                              m_num_batches_grid;
+  tbb::atomic<int> *                              m_occupation_grid;
+  tbb::atomic<int> *                              m_num_batches_grid;
 
-  std::atomic<int>                                m_laziest_cell_index;
-  std::atomic<int>                                m_laziest_cell_occupation;
+  tbb::atomic<int>                                m_laziest_cell_index;
+  tbb::atomic<int>                                m_laziest_cell_occupation;
 };
 
 
@@ -267,7 +276,7 @@ public:
   virtual ~WorkItem() { }
 
   // Derived class defines the actual work.
-  virtual void operator()() const = 0;
+  virtual void run() = 0;
   virtual bool less_than(const WorkItem &) const = 0;
 };
 
@@ -294,17 +303,16 @@ public:
     : m_func(func), m_quality(quality)
   {}
 
-  ~MeshRefinementWorkItem() override
+  virtual ~MeshRefinementWorkItem()
   {}
 
-  void operator()() const override
+  void run()
   {
     m_func();
-    tbb::scalable_allocator<MeshRefinementWorkItem>().deallocate(
-        const_cast<MeshRefinementWorkItem *>(this), 1);
+    tbb::scalable_allocator<MeshRefinementWorkItem<Func, Quality> >().deallocate(this, 1);
   }
 
-  bool less_than (const WorkItem &other) const override
+  bool less_than (const WorkItem &other) const
   {
     /*try
     {
@@ -342,17 +350,14 @@ public:
     : m_func(func)
   {}
 
-  ~SimpleFunctorWorkItem() override = default;
-
-  void operator()() const override
+  void run()
   {
     m_func();
-    tbb::scalable_allocator<SimpleFunctorWorkItem>().deallocate(
-        const_cast<SimpleFunctorWorkItem *>(this), 1);
+    tbb::scalable_allocator<SimpleFunctorWorkItem<Func> >().deallocate(this, 1);
   }
 
   // Irrelevant here
-  bool less_than (const WorkItem &other) const override
+  bool less_than (const WorkItem &other) const
   {
     // Just compare addresses
     return this < &other;
@@ -382,13 +387,13 @@ public:
     m_batch.push_back(p_item);
   }
 
-  void operator()() const
+  void run()
   {
     std::sort(m_batch.begin(), m_batch.end(), CompareTwoWorkItems());
     BatchIterator it = m_batch.begin();
     BatchIterator it_end = m_batch.end();
     for ( ; it != it_end ; ++it)
-      (*it)->operator()();
+      (*it)->run();
   }
 
   size_t size() const
@@ -402,7 +407,7 @@ public:
   }
 
 protected:
-  mutable Batch m_batch;
+  Batch m_batch;
 };
 
 
@@ -414,6 +419,7 @@ protected:
  * ===================
  */
 class WorkItemTask
+  : public tbb::task
 {
 public:
   WorkItemTask(WorkItem *pwi)
@@ -422,7 +428,7 @@ public:
   }
 
 private:
-  inline void operator()() const;
+  /*override*/inline tbb::task* execute();
 
   WorkItem *m_pwi;
 };
@@ -435,12 +441,40 @@ private:
  */
 class Simple_worksharing_ds
 {
-  template <typename Func>
-  void enqueue_work(Func f, tbb::task_group &task_group) const
+public:
+  // Constructors
+  Simple_worksharing_ds()
   {
-    task_group.run(f);
+  }
+
+  /// Destructor
+  virtual ~Simple_worksharing_ds()
+  {
+  }
+
+  template <typename Func>
+  void enqueue_work(Func f, tbb::task &parent_task) const
+  {
+    WorkItem *p_item =
+      tbb::scalable_allocator<SimpleFunctorWorkItem<Func> >().allocate(1);
+    new (p_item) SimpleFunctorWorkItem<Func>(f);
+    enqueue_task(create_task(p_item, parent_task));
+  }
+
+protected:
+
+  WorkItemTask *create_task(WorkItem *pwi, tbb::task &parent_task) const
+  {
+    return new(tbb::task::allocate_additional_child_of(parent_task)) WorkItemTask(pwi);
+  }
+
+  void enqueue_task(WorkItemTask *t) const
+  {
+    tbb::task::spawn(*t);
   }
 };
+
+
 
 /*
  * ==================
@@ -448,14 +482,15 @@ class Simple_worksharing_ds
  * ==================
  */
 class TokenTask
+  : public tbb::task
 {
 public:
   TokenTask(Load_based_worksharing_ds *p_wsds)
     : m_worksharing_ds(p_wsds) {}
 
-  inline void operator()() const;
-
 private:
+  /*override*/inline tbb::task* execute();
+
   Load_based_worksharing_ds *m_worksharing_ds;
 };
 
@@ -478,7 +513,7 @@ public:
   {
     m_tls_work_buffers = new TLS_WorkBuffer[m_num_cells];
     m_work_batches = new tbb::concurrent_queue<WorkBatch>[m_num_cells];
-    m_num_batches = new std::atomic<int>[m_num_cells];
+    m_num_batches = new tbb::atomic<int>[m_num_cells];
 
     for (int i = 0 ; i < m_num_cells ; ++i)
       m_num_batches[i] = 0;
@@ -500,7 +535,7 @@ public:
   }
 
   template <typename P3, typename Func, typename Quality>
-  void enqueue_work(Func f, const Quality &quality, tbb::task_group &task_group, const P3 &point)
+  void enqueue_work(Func f, const Quality &quality, tbb::task &parent_task, const P3 &point)
   {
     WorkItem *p_item = new MeshRefinementWorkItem<Func, Quality>(f, quality);
     int index = m_stats.compute_index(point);
@@ -508,13 +543,13 @@ public:
     wb.add_work_item(p_item);
     if (wb.size() >= NUM_WORK_ITEMS_PER_BATCH)
     {
-      add_batch_and_enqueue_task(wb, index, task_group);
+      add_batch_and_enqueue_task(wb, index, parent_task);
       wb.clear();
     }
   }
 
   // Returns true if some items were flushed
-  bool flush_work_buffers(tbb::task_group &task_group)
+  bool flush_work_buffers(tbb::task &parent_task)
   {
     int num_flushed_items = 0;
 
@@ -534,7 +569,7 @@ public:
     }
 
     for (int i = 0 ; i < num_flushed_items ; ++i)
-      enqueue_task(task_group);
+      enqueue_task(parent_task);
 
     return (num_flushed_items > 0);
   }
@@ -567,7 +602,7 @@ public:
     std::cerr << "Running a batch of " << wb.size() <<
       " elements on cell #" << index << std::endl;
 #endif
-    wb();
+    wb.run();
     add_occupation(index, -1);
   }
 
@@ -584,19 +619,19 @@ protected:
     m_stats.add_batch(index, 1);
   }
 
-  void enqueue_task(tbb::task_group &task_group)
+  void enqueue_task(tbb::task &parent_task)
   {
+    parent_task.increment_ref_count();
     // Warning: when using "enqueue", the system will use up to two threads
     // even if you told task_scheduler_init to use only one
     // (see http://software.intel.com/en-us/forums/showthread.php?t=101669)
-    task_group.run(TokenTask(this));
+    tbb::task::spawn(*new(parent_task.allocate_child()) TokenTask(this));
   }
 
-  void add_batch_and_enqueue_task(const WorkBuffer &wb, int index,
-                                  tbb::task_group &task_group)
+  void add_batch_and_enqueue_task(const WorkBuffer &wb, int index, tbb::task &parent_task)
   {
     add_batch(wb, index);
-    enqueue_task(task_group);
+    enqueue_task(parent_task);
   }
 
   void add_occupation(int cell_index, int to_add, int occupation_radius = 1)
@@ -647,7 +682,7 @@ protected:
   Work_statistics                   m_stats;
   TLS_WorkBuffer                   *m_tls_work_buffers;
   tbb::concurrent_queue<WorkBatch> *m_work_batches;
-  std::atomic<int>                 *m_num_batches;
+  tbb::atomic<int>                 *m_num_batches;
 };
 
 
@@ -663,16 +698,18 @@ protected:
  * ===================
  */
 class WorkBatchTask
+  : public tbb::task
 {
 public:
   WorkBatchTask(const WorkBatch &wb)
     : m_wb(wb)
   {
+    //set_affinity(tbb::task::self().affinity());
   }
 
-  inline void operator()() const;
-
 private:
+  /*override*/inline tbb::task* execute();
+
   WorkBatch m_wb;
 };
 
@@ -690,6 +727,7 @@ public:
         Concurrent_mesher_config::get().num_work_items_per_batch)
   {
     set_bbox(bbox);
+    m_cache_number_of_tasks = 0;
   }
 
   /// Destructor
@@ -703,7 +741,7 @@ public:
   }
 
   template <typename Func>
-  void enqueue_work(Func f, tbb::task_group &task_group)
+  void enqueue_work(Func f, tbb::task &parent_task)
   {
     //WorkItem *p_item = new SimpleFunctorWorkItem<Func>(f);
     WorkItem *p_item =
@@ -713,13 +751,14 @@ public:
     workbuffer.add_work_item(p_item);
     if (workbuffer.size() >= NUM_WORK_ITEMS_PER_BATCH)
     {
-      add_batch_and_enqueue_task(workbuffer, task_group);
+      add_batch_and_enqueue_task(workbuffer, parent_task);
       workbuffer.clear();
     }
+    m_cache_number_of_tasks = parent_task.ref_count();
   }
 
   template <typename Func, typename Quality>
-  void enqueue_work(Func f, const Quality &quality, tbb::task_group &task_group)
+  void enqueue_work(Func f, const Quality &quality, tbb::task &parent_task)
   {
     WorkItem *p_item =
       tbb::scalable_allocator<MeshRefinementWorkItem<Func, Quality> >()
@@ -729,13 +768,14 @@ public:
     workbuffer.add_work_item(p_item);
     if (workbuffer.size() >= NUM_WORK_ITEMS_PER_BATCH)
     {
-      add_batch_and_enqueue_task(workbuffer, task_group);
+      add_batch_and_enqueue_task(workbuffer, parent_task);
       workbuffer.clear();
     }
+    m_cache_number_of_tasks = parent_task.ref_count();
   }
 
   // Returns true if some items were flushed
-  bool flush_work_buffers(tbb::task_group &task_group)
+  bool flush_work_buffers(tbb::task &parent_task)
   {
     int num_flushed_items = 0;
 
@@ -747,7 +787,7 @@ public:
     {
       if (it_buffer->size() > 0)
       {
-        tasks.push_back(create_task(*it_buffer));
+        tasks.push_back(create_task(*it_buffer, parent_task));
         it_buffer->clear();
         ++num_flushed_items;
       }
@@ -756,14 +796,15 @@ public:
     for (std::vector<WorkBatchTask*>::const_iterator it = tasks.begin() ;
       it != tasks.end() ; ++it)
     {
-      enqueue_task(*it, task_group);
+      enqueue_task(*it, parent_task);
     }
 
+    m_cache_number_of_tasks = parent_task.ref_count();
     return (num_flushed_items > 0);
   }
 
-  [[deprecated]] int approximate_number_of_enqueued_element() const {
-    return 0;
+  int approximate_number_of_enqueued_element() const {
+    return int(m_cache_number_of_tasks) * int(NUM_WORK_ITEMS_PER_BATCH);
   }
 
 protected:
@@ -772,44 +813,47 @@ protected:
   typedef WorkBatch                                        WorkBuffer;
   typedef tbb::enumerable_thread_specific<WorkBuffer>      TLS_WorkBuffer;
 
-  WorkBatchTask *create_task(const WorkBuffer &wb) const
+  WorkBatchTask *create_task(const WorkBuffer &wb, tbb::task &parent_task) const
   {
-    auto ptr = tbb::scalable_allocator<WorkBatchTask>().allocate(1);
-    return new(ptr) WorkBatchTask(wb);
+    return new(tbb::task::allocate_additional_child_of(parent_task)) WorkBatchTask(wb);
   }
 
   void enqueue_task(WorkBatchTask *task,
-                    tbb::task_group &task_group) const
+                    tbb::task &) const
   {
-    task_group.run(*task);
+    tbb::task::spawn(*task);
   }
 
   void add_batch_and_enqueue_task(const WorkBuffer &wb,
-                                  tbb::task_group &task_group) const
+                                  tbb::task &parent_task) const
   {
-    enqueue_task(create_task(wb), task_group);
+    enqueue_task(create_task(wb, parent_task), parent_task);
   }
 
   const size_t                      NUM_WORK_ITEMS_PER_BATCH;
+  tbb::atomic<int>                  m_cache_number_of_tasks;
   TLS_WorkBuffer                    m_tls_work_buffers;
 };
 
 
 
 
-inline void TokenTask::operator()() const
+inline tbb::task* TokenTask::execute()
 {
   m_worksharing_ds->run_next_work_item();
+  return NULL;
 }
 
-inline void WorkItemTask::operator()() const
+inline tbb::task* WorkItemTask::execute()
 {
-  m_pwi->operator()();
+  m_pwi->run();
+  return NULL;
 }
 
-inline void WorkBatchTask::operator()() const
+inline tbb::task* WorkBatchTask::execute()
 {
-  m_wb.operator()();
+  m_wb.run();
+  return NULL;
 }
 
 } } //namespace CGAL::Mesh_3

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/Containers_filler.h $
-// $Id: Containers_filler.h c9279b6 2020-07-07T16:04:47+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/Containers_filler.h $
+// $Id: Containers_filler.h 78e7060 2018-02-19T14:27:06+01:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mael Rouxel-Labbé
 
@@ -14,13 +23,12 @@
 
 #include <CGAL/license/Surface_mesh_parameterization.h>
 
-#include <CGAL/boost/graph/internal/initialized_index_maps_helpers.h>
-#include <CGAL/Polygon_mesh_processing/connected_components.h>
+#include <CGAL/disable_warnings.h>
 
-#include <boost/tuple/tuple.hpp>
+#include <boost/foreach.hpp>
+#include "boost/tuple/tuple.hpp"
 #include <boost/unordered_set.hpp>
 #include <boost/graph/graph_traits.hpp>
-
 #include <vector>
 
 namespace CGAL {
@@ -55,17 +63,17 @@ public:
 
   Containers_filler(const TriangleMesh& mesh_,
                     Vertex_set& vertices_)
-    : mesh(mesh_), vertices(vertices_), faces(nullptr)
+    : mesh(mesh_), vertices(vertices_), faces(NULL)
   { }
 
-  void operator()(const face_descriptor fd)
+  void operator()(face_descriptor fd)
   {
     halfedge_descriptor hd = halfedge(fd, mesh);
-    for(vertex_descriptor vd : vertices_around_face(hd, mesh)) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices_around_face(hd, mesh)) {
       vertices.insert(vd);
     }
 
-    if(faces != nullptr)
+    if(faces != NULL)
       faces->push_back(fd);
   }
 };
@@ -80,10 +88,10 @@ struct Index_map_filler
     : mesh(mesh), map(&map), index(0)
   { }
 
-  void operator()(const face_descriptor fd)
+  void operator()(const face_descriptor& fd)
   {
-    for(vertex_descriptor vd : vertices_around_face(halfedge(fd, mesh), mesh))
-    {
+    BOOST_FOREACH(vertex_descriptor vd,
+                  vertices_around_face(halfedge(fd, mesh), mesh)) {
       typename Map::iterator it;
       bool new_element;
       boost::tie(it,new_element) = map->insert(std::make_pair(vd,1));
@@ -98,47 +106,12 @@ struct Index_map_filler
   int index;
 };
 
-template <typename TriangleMesh, typename VertexIndexMap>
-void fill_index_map_of_cc(const typename boost::graph_traits<TriangleMesh>::halfedge_descriptor bhd,
-                          const TriangleMesh& mesh,
-                          VertexIndexMap vimap)
-{
-  namespace PMP = CGAL::Polygon_mesh_processing;
-
-  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor        vertex_descriptor;
-  typedef typename boost::graph_traits<TriangleMesh>::face_descriptor          face_descriptor;
-
-  std::vector<face_descriptor> CC_faces;
-
-  // 'reserve' might cause a huge amount of memory to be used for a tiny CC,
-  // but if this is a problem as a user, one could simply parameterize a Face_filtered_graph instead.
-  CC_faces.reserve(num_faces(mesh));
-
-  PMP::connected_component(face(opposite(bhd, mesh), mesh), mesh, std::back_inserter(CC_faces));
-
-  // If all vertices are involved, avoid walking all the faces
-  if(CC_faces.size() == faces(mesh).size())
-  {
-    BGL::internal::Index_map_initializer<VertexIndexMap, TriangleMesh> id_initializer;
-    id_initializer(CGAL::internal_np::vertex_index, vimap, mesh);
-  }
-  else
-  {
-    for(vertex_descriptor v : vertices(mesh))
-      put(vimap, v, -1);
-
-    int index = 0;
-    for(face_descriptor f : CC_faces)
-      for(vertex_descriptor v : vertices_around_face(halfedge(f, mesh), mesh))
-        if(get(vimap, v) == -1)
-          put(vimap, v, index++);
-  }
-}
-
 } // namespace internal
 
 } // namespace Surface_mesh_parameterization
 
 } // namespace CGAL
+
+#include <CGAL/enable_warnings.h>
 
 #endif // CGAL_SURFACE_MESH_PARAMETERIZATION_INTERNAL_CONTAINERS_FILLER_H

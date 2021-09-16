@@ -1,16 +1,25 @@
 // Copyright (c) 2002-2008 Max-Planck-Institute Saarbruecken (Germany)
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polynomial/include/CGAL/Polynomial/modular_gcd.h $
-// $Id: modular_gcd.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polynomial/include/CGAL/Polynomial/modular_gcd.h $
+// $Id: modular_gcd.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 //Author(s) : Michael Hemmer <mhemmer@uni-mainz.de>
 
 /*! \file CGAL/Polynomial/modular_gcd.h
-  provides gcd for Polynomials, based on Modular arithmetic.
+  provides gcd for Polynomials, based on Modular arithmetic. 
 */
 
 
@@ -28,14 +37,14 @@
 namespace CGAL {
 namespace internal {
 
-template <class NT>
+template <class NT> 
 Polynomial<NT> modular_gcd_utcf(
         const Polynomial<NT>& FF1 ,
         const Polynomial<NT>& FF2 , Integral_domain_tag){
     return modular_gcd_utcf_dfai(FF1, FF2);
 }
 
-template <class NT>
+template <class NT> 
 Polynomial<NT> modular_gcd_utcf(
         const Polynomial<NT>& FF1 ,
         const Polynomial<NT>& FF2 , Unique_factorization_domain_tag){
@@ -46,4 +55,4 @@ Polynomial<NT> modular_gcd_utcf(
 }///namespace CGAL
 
 #endif //#ifndef CGAL_POLYNOMIAL_MODULAR_GCD_H 1
-
+ 

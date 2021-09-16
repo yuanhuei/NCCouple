@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/validity.h $
-// $Id: validity.h bdd4efe 2021-01-15T10:06:56+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/internal/validity.h $
+// $Id: validity.h 8cdfad0 2017-11-15T22:58:57+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mael Rouxel-Labbé
 
@@ -25,7 +34,8 @@
 #include <CGAL/intersections.h>
 #include <CGAL/Polygon_mesh_processing/connected_components.h>
 
-#include <boost/iterator/function_output_iterator.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function_output_iterator.hpp>
 
 #include <vector>
 
@@ -63,7 +73,7 @@ bool has_flips(const TriangleMesh& mesh,
   Vector_3 first_triangle_normal(0., 0., 0.);
   bool is_normal_set = false;
 
-  for(face_descriptor fd : faces) {
+  BOOST_FOREACH(face_descriptor fd, faces) {
     // Get 3 vertices of the facet
     halfedge_descriptor hd = halfedge(fd, mesh);
     vertex_descriptor vd0 = target(hd, mesh);
@@ -113,8 +123,7 @@ class Intersect_facets
   typename Kernel::Construct_triangle_2 triangle_functor;
   typename Kernel::Do_intersect_2 do_intersect_2_functor;
 
-  typedef CGAL::Box_intersection_d::ID_FROM_BOX_ADDRESS Box_policy;
-  typedef CGAL::Box_intersection_d::Box_with_info_d<NT, 2, face_descriptor, Box_policy> Box;
+  typedef CGAL::Box_intersection_d::Box_with_info_d<NT, 2, face_descriptor> Box;
 
   const TriangleMesh& mesh;
   const VertexUVMap uvmap;
@@ -232,7 +241,7 @@ public:
   { }
 };
 
-/// returns whether the 3D -> 2D mapping is one-to-one.
+/// Check if the 3D -> 2D mapping is one-to-one.
 /// This function is stronger than "has_flips()" because the parameterized
 /// surface can loop over itself without creating any flips.
 template <typename TriangleMesh,
@@ -251,13 +260,12 @@ bool is_one_to_one_mapping(const TriangleMesh& mesh,
   typedef typename Kernel::FT                                         NT;
   typedef typename Kernel::Point_2                                    Point_2;
 
-  typedef CGAL::Box_intersection_d::ID_FROM_BOX_ADDRESS Box_policy;
-  typedef CGAL::Box_intersection_d::Box_with_info_d<NT, 2, face_descriptor, Box_policy> Box;
+  typedef CGAL::Box_intersection_d::Box_with_info_d<NT, 2, face_descriptor> Box;
 
   // Create the corresponding vector of bounding boxes
   std::vector<Box> boxes;
 
-  for(face_descriptor fd : faces) {
+  BOOST_FOREACH(face_descriptor fd, faces) {
     halfedge_descriptor hd = halfedge(fd, mesh);
     vertex_descriptor vd0 = target(hd, mesh);
     vertex_descriptor vd1 = target(next(hd, mesh), mesh);
@@ -278,14 +286,15 @@ bool is_one_to_one_mapping(const TriangleMesh& mesh,
   std::vector<const Box*> boxes_ptr;
   boxes_ptr.reserve(boxes.size());
 
-  for(Box& b : boxes)
+  BOOST_FOREACH(Box& b, boxes)
     boxes_ptr.push_back(&b);
 
   // Run the self intersection algorithm with all defaults
   unsigned int counter = 0;
   Intersect_facets<TriangleMesh, VertexUVMap> intersect_facets(mesh, uvmap, counter);
   std::ptrdiff_t cutoff = 2000;
-  CGAL::box_self_intersection_d(boxes_ptr.begin(), boxes_ptr.end(), intersect_facets, cutoff);
+  CGAL::box_self_intersection_d(boxes_ptr.begin(), boxes_ptr.end(),
+                                intersect_facets, cutoff);
   return (counter == 0);
 }
 

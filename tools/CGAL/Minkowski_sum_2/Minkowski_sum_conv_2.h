@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Minkowski_sum_2/include/CGAL/Minkowski_sum_2/Minkowski_sum_conv_2.h $
-// $Id: Minkowski_sum_conv_2.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Minkowski_sum_2/include/CGAL/Minkowski_sum_2/Minkowski_sum_conv_2.h $
+// $Id: Minkowski_sum_conv_2.h 8cdfad0 2017-11-15T22:58:57+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Ron Wein   <wein_r@yahoo.com>
 //             Efi Fogel  <efifogel@gmail.com>
@@ -133,9 +142,9 @@ public:
   ~Minkowski_sum_by_convolution_2()
   {
     if (m_own_kernel) {
-      if (m_kernel != nullptr) {
+      if (m_kernel != NULL) {
         delete m_kernel;
-        m_kernel = nullptr;
+        m_kernel = NULL;
       }
       m_own_kernel = false;
     }

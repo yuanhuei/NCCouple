@@ -1,14 +1,26 @@
+// ======================================================================
+//
 // Copyright (c) 2005-2017 GeometryFactory (France).  All Rights Reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Subdivision_method_3/include/CGAL/Subdivision_method_3/internal/subdivision_hosts_impl_3.h $
-// $Id: subdivision_hosts_impl_3.h e893ac1 2020-08-18T10:06:51+02:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Subdivision_method_3/include/CGAL/Subdivision_method_3/internal/subdivision_hosts_impl_3.h $
+// $Id: subdivision_hosts_impl_3.h 6dfa8d0 2018-01-15T18:01:59+01:00 Maxime Gimeno
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s): Le-Jeng Shiue <Andy.Shiue@gmail.com>
 //
+// ======================================================================
 
 #ifndef CGAL_SUBDIVISION_HOSTS_IMPL_3_H
 #define CGAL_SUBDIVISION_HOSTS_IMPL_3_H
@@ -21,6 +33,7 @@
 #include <CGAL/circulator.h>
 #include <CGAL/tags.h>
 
+#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <iterator>
@@ -81,7 +94,7 @@ void PQQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
 
   int i=0;
   boost::unordered_map<vertex_descriptor,int> v_index;
-  for(vertex_descriptor vh : p_vertices){
+  BOOST_FOREACH(vertex_descriptor vh, p_vertices){
     v_index[vh]= i++;
   }
 
@@ -91,7 +104,7 @@ void PQQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
     mask.face_node(*fitr, face_point_buffer[i]);
   {
     std::size_t i = 0;
-    for(edge_descriptor ed : p_edges){
+    BOOST_FOREACH(edge_descriptor ed, p_edges){
       if(is_border(ed,p)){
         halfedge_descriptor h=halfedge(ed,p);
         if (is_border(h,p)) h=opposite(h,p);
@@ -201,14 +214,14 @@ void PTQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
 
   int i=0;
   boost::unordered_map<vertex_descriptor,int> v_index;
-  for(vertex_descriptor vh : p_vertices){
+  BOOST_FOREACH(vertex_descriptor vh, p_vertices){
     v_index[vh]= i++;
   }
   std::vector<bool> v_onborder(num_v);
 
   {
     std::size_t i = 0;
-    for(edge_descriptor ed : p_edges){
+    BOOST_FOREACH(edge_descriptor ed, p_edges){
       if(! is_border(ed,p)){
         mask.edge_node(halfedge(ed,p), edge_point_buffer[i]);
       } else{
@@ -290,7 +303,7 @@ void DQQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
   std::size_t num_f = p_faces.size();
 
   std::vector<halfedge_descriptor> border_halfedges;
-  for(edge_descriptor ed : p_edges){
+  BOOST_FOREACH(edge_descriptor ed, p_edges){
     if(is_border(ed,p)){
       border_halfedges.push_back(halfedge(ed,p));
     }
@@ -301,8 +314,8 @@ void DQQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
   int pi = 0;
   int vi=0;
   std::vector<bool> is_border_vertex(num_v, false);
-  for(vertex_descriptor vd : p_vertices){
-    for(halfedge_descriptor hd : halfedges_around_target(vd,p)){
+  BOOST_FOREACH(vertex_descriptor vd, p_vertices){
+    BOOST_FOREACH(halfedge_descriptor hd, halfedges_around_target(vd,p)){
       if (! is_border(hd,p)){
         mask.corner_node(hd, point_buffer[pi++]);
       }
@@ -367,7 +380,7 @@ void DQQ_1step(Poly& p, VertexPointMap vpm, Mask mask) {
   }
 
 
-  for(halfedge_descriptor eeh : border_halfedges){
+  BOOST_FOREACH(halfedge_descriptor eeh, border_halfedges){
     halfedge_descriptor eh = eeh;
     if (is_border(eh,p)){
       eh = opposite(eh,p);
@@ -423,7 +436,7 @@ void Sqrt3_1step(Poly& p, VertexPointMap vpm, Mask mask,
   // reserve enough size for the new points
   std::size_t new_pts_size = num_f;
   if(refine_border) {
-    for(edge_descriptor ed : p_edges){
+    BOOST_FOREACH(edge_descriptor ed, p_edges){
       if(is_border(ed, p))
         ++new_pts_size;
     }
@@ -442,10 +455,10 @@ void Sqrt3_1step(Poly& p, VertexPointMap vpm, Mask mask,
   // compute the positions of new points
   std::size_t i = 0;
   std::size_t face_id = 0;
-  for(face_descriptor fd : p_faces) {
+  BOOST_FOREACH (face_descriptor fd, p_faces) {
     //ASSERTION_MSG(circulator_size(fitr->facet_begin())==3, "(ERROR) Non-triangle facet!");
     if(refine_border) {
-      for(halfedge_descriptor hd : halfedges_around_face(halfedge(fd, p), p)) {
+      BOOST_FOREACH(halfedge_descriptor hd, halfedges_around_face(halfedge(fd, p), p)) {
         if(is_border(opposite(hd, p),p)) {
           face_halfedge_border[face_id] = hd;
           Point vpt;
@@ -469,7 +482,7 @@ void Sqrt3_1step(Poly& p, VertexPointMap vpm, Mask mask,
   }
 
   // smooth the position of existing vertices
-  for(vertex_descriptor vd : p_vertices){
+  BOOST_FOREACH(vertex_descriptor vd, p_vertices){
     Point pt;
     if(!is_border(vd, p)) {
       mask.vertex_node(vd, pt);

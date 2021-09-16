@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/ARAP_parameterizer_3.h $
-// $Id: ARAP_parameterizer_3.h bdd4efe 2021-01-15T10:06:56+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/ARAP_parameterizer_3.h $
+// $Id: ARAP_parameterizer_3.h 5806b88 2020-01-03T11:07:43+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mael Rouxel-Labbé
 
@@ -81,7 +90,8 @@
 #include <CGAL/Kernel/Conic_misc.h> // used to solve conic equations
 #endif
 
-#include <boost/iterator/function_output_iterator.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function_output_iterator.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/unordered_set.hpp>
@@ -129,7 +139,7 @@ namespace Surface_mesh_parameterization {
 /// a random vertex is pinned.
 ///
 /// If flips are present in the initial parameterization, a post-processing step
-/// is applied using `CGAL::Surface_mesh_parameterization::MVC_post_processor_3<TriangleMesh_, SolverTraits_>`
+/// is applied using `CGAL::Surface_mesh_parameterization::MVC_post_processor_3<TriangleMesh, SolverTraits_>`
 /// to attempt to obtain a valid final embedding.
 ///
 /// A one-to-one mapping is *not* guaranteed.
@@ -162,7 +172,6 @@ namespace Surface_mesh_parameterization {
 /// \endcode
 ///
 /// \sa `CGAL::Surface_mesh_parameterization::Fixed_border_parameterizer_3<TriangleMesh, BorderParameterizer, SolverTraits>`
-/// \sa `CGAL::Iterative_authalic_parameterizer_3<TriangleMesh, BorderParameterizer, SolverTraits>`
 ///
 template < class TriangleMesh_,
            class BorderParameterizer_ = Default,
@@ -195,39 +204,28 @@ public:
   #endif
   >::type                                                     Solver_traits;
 #else
-  /// Border parameterizer type
   typedef Border_parameterizer_                               Border_parameterizer;
-
-  /// Solver traits type
   typedef SolverTraits_                                       Solver_traits;
-
-  /// Number type, deduced from the internal vertex point map of `Triangle_mesh`
-  typedef unspecified_type                                    NT;
 #endif
-
-  /// Triangle mesh type
-  typedef TriangleMesh_                                       Triangle_mesh;
 
   typedef TriangleMesh_                                       TriangleMesh;
 
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<Triangle_mesh>::halfedge_descriptor  halfedge_descriptor;
-
 // Private types
 private:
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor    vertex_descriptor;
-  typedef typename boost::graph_traits<Triangle_mesh>::face_descriptor      face_descriptor;
-  typedef typename boost::graph_traits<Triangle_mesh>::face_iterator        face_iterator;
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_iterator      vertex_iterator;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor    vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor  halfedge_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::face_descriptor      face_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::face_iterator        face_iterator;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_iterator      vertex_iterator;
 
-  typedef CGAL::Halfedge_around_target_circulator<Triangle_mesh>    halfedge_around_target_circulator;
-  typedef CGAL::Halfedge_around_face_circulator<Triangle_mesh>      halfedge_around_face_circulator;
+  typedef CGAL::Halfedge_around_target_circulator<TriangleMesh>     halfedge_around_target_circulator;
+  typedef CGAL::Halfedge_around_face_circulator<TriangleMesh>       halfedge_around_face_circulator;
 
   typedef boost::unordered_set<vertex_descriptor>                   Vertex_set;
   typedef std::vector<face_descriptor>                              Faces_vector;
 
   // Traits subtypes:
-  typedef typename internal::Kernel_traits<Triangle_mesh>::Kernel   Kernel;
+  typedef typename internal::Kernel_traits<TriangleMesh>::Kernel    Kernel;
   typedef typename Kernel::FT                                       NT;
   typedef typename Kernel::Point_2                                  Point_2;
   typedef typename Kernel::Point_3                                  Point_3;
@@ -289,7 +287,7 @@ private:
   template <typename VertexUVMap,
             typename VertexIndexMap>
   void output_uvmap(const std::string filename,
-                    const Triangle_mesh& mesh,
+                    const TriangleMesh& mesh,
                     const Vertex_set& vertices,
                     const Faces_vector& faces,
                     const VertexUVMap uvmap,
@@ -304,7 +302,7 @@ private:
             typename VertexIndexMap>
   void output_uvmap(const std::string filename,
                     const unsigned int iter,
-                    const Triangle_mesh& mesh,
+                    const TriangleMesh& mesh,
                     const Vertex_set& vertices,
                     const Faces_vector& faces,
                     const VertexUVMap uvmap,
@@ -327,7 +325,7 @@ private:
                        const VertexIndexMap vimap,
                        const VertexParameterizedMap vpmap)
   {
-    for(vertex_descriptor vd : vertices) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices) {
       // The solver might not have managed to exactly constrain the vertex that was marked
       // as constrained; simply don't update its position.
       if(get(vpmap, vd))
@@ -343,12 +341,12 @@ private:
 // Private operations
 private:
   // Store the vertices and faces of the mesh in memory.
-  Error_code initialize_containers(const Triangle_mesh& mesh,
+  Error_code initialize_containers(const TriangleMesh& mesh,
                                    halfedge_descriptor bhd,
                                    Vertex_set& vertices,
                                    Faces_vector& faces) const
   {
-    internal::Containers_filler<Triangle_mesh> fc(mesh, vertices, &faces);
+    internal::Containers_filler<TriangleMesh> fc(mesh, vertices, &faces);
     Polygon_mesh_processing::connected_component(
                                       face(opposite(bhd, mesh), mesh),
                                       mesh,
@@ -363,7 +361,7 @@ private:
   // Initialize the UV values with a first parameterization of the input.
   template <typename VertexUVMap,
             typename VertexIndexMap>
-  Error_code compute_initial_uv_map(Triangle_mesh& mesh,
+  Error_code compute_initial_uv_map(TriangleMesh& mesh,
                                     halfedge_descriptor bhd,
                                     VertexUVMap uvmap,
                                     VertexIndexMap vimap) const
@@ -384,11 +382,11 @@ private:
     // According to the paper, MVC is better for single border and LSCM is better
     // when there are multiple borders
     if(number_of_borders == 1) {
-      typedef Mean_value_coordinates_parameterizer_3<Triangle_mesh>     MVC_parameterizer;
+      typedef Mean_value_coordinates_parameterizer_3<TriangleMesh>     MVC_parameterizer;
       MVC_parameterizer mvc_parameterizer;
       status = mvc_parameterizer.parameterize(mesh, bhd, uvmap, vimap, vpmap);
     } else {
-      typedef LSCM_parameterizer_3<Triangle_mesh, Border_parameterizer> LSCM_parameterizer;
+      typedef LSCM_parameterizer_3<TriangleMesh, Border_parameterizer> LSCM_parameterizer;
       LSCM_parameterizer lscm_parameterizer;
       status = lscm_parameterizer.parameterize(mesh, bhd, uvmap, vimap, vpmap);
     }
@@ -401,7 +399,7 @@ private:
   template <typename VertexUVMap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code parameterize_border(const Triangle_mesh& mesh,
+  Error_code parameterize_border(const TriangleMesh& mesh,
                                  const Vertex_set& vertices,
                                  halfedge_descriptor bhd,
                                  VertexIndexMap vimap,
@@ -434,14 +432,14 @@ private:
   }
 
   // Compute the cotangent of the angle between the vectors ij and ik.
-  void compute_cotangent_angle(const Triangle_mesh& mesh,
+  void compute_cotangent_angle(const TriangleMesh& mesh,
                                halfedge_descriptor hd,
                                vertex_descriptor vi,
                                vertex_descriptor vj,
                                vertex_descriptor vk,
                                Cot_map ctmap) const
   {
-    typedef typename boost::property_map<Triangle_mesh,
+    typedef typename boost::property_map<TriangleMesh,
                                          boost::vertex_point_t>::const_type PPmap;
     const PPmap ppmap = get(vertex_point, mesh);
 
@@ -454,11 +452,11 @@ private:
   }
 
   // Fill the map 'ctmap' with the cotangents of the angles of the faces of 'mesh'.
-  Error_code compute_cotangent_angles(const Triangle_mesh& mesh,
+  Error_code compute_cotangent_angles(const TriangleMesh& mesh,
                                       const Faces_vector& faces,
                                       Cot_map ctmap) const
   {
-    for(face_descriptor fd : faces) {
+    BOOST_FOREACH(face_descriptor fd, faces) {
       halfedge_descriptor hd = halfedge(fd, mesh), hdb = hd;
 
       vertex_descriptor vi = target(hd, mesh);
@@ -480,8 +478,8 @@ private:
     return OK;
   }
 
-  // computes `w_ij`, the `(i,j)`-coefficient of matrix `A` for `j` neighbor vertex of `i`.
-  NT compute_w_ij(const Triangle_mesh& mesh,
+  // Compute w_ij = (i, j) coefficient of matrix A for j neighbor vertex of i.
+  NT compute_w_ij(const TriangleMesh& mesh,
                   halfedge_descriptor hd,
                   const Cot_map ctmap) const
   {
@@ -508,7 +506,7 @@ private:
   // \pre Line i of A must contain only zeros.
   template <typename VertexIndexMap>
   Error_code fill_linear_system_matrix(Matrix& A,
-                                       const Triangle_mesh& mesh,
+                                       const TriangleMesh& mesh,
                                        vertex_descriptor vertex,
                                        const Cot_map ct_map,
                                        VertexIndexMap vimap) const
@@ -550,7 +548,7 @@ private:
   // after (at least two) border vertices parameterization.
   template <typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code initialize_matrix_A(const Triangle_mesh& mesh,
+  Error_code initialize_matrix_A(const TriangleMesh& mesh,
                                  const Vertex_set& vertices,
                                  const Cot_map ctmap,
                                  VertexIndexMap vimap,
@@ -561,7 +559,7 @@ private:
 
     // compute A
     unsigned int count = 0;
-    for(vertex_descriptor vd : vertices) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices) {
       if(!get(vpmap, vd)) { // not yet parameterized
         // Compute the line i of the matrix A
         status = fill_linear_system_matrix(A, mesh, vd, ctmap, vimap);
@@ -707,7 +705,7 @@ private:
 
   // Compute the root that gives the lowest face energy.
   template <typename VertexUVMap>
-  std::size_t compute_root_with_lowest_energy(const Triangle_mesh& mesh,
+  std::size_t compute_root_with_lowest_energy(const TriangleMesh& mesh,
                                               face_descriptor fd,
                                               const Cot_map ctmap,
                                               const Local_points& lp,
@@ -734,7 +732,7 @@ private:
 
   // Compute the root that gives the lowest face energy.
   template <typename VertexUVMap>
-  std::size_t compute_root_with_lowest_energy(const Triangle_mesh& mesh,
+  std::size_t compute_root_with_lowest_energy(const TriangleMesh& mesh,
                                               face_descriptor fd,
                                               const Cot_map ctmap,
                                               const Local_points& lp,
@@ -760,7 +758,7 @@ private:
 
   // Compute the optimal values of the linear transformation matrices Lt.
   template <typename VertexUVMap>
-  Error_code compute_optimal_Lt_matrices(const Triangle_mesh& mesh,
+  Error_code compute_optimal_Lt_matrices(const TriangleMesh& mesh,
                                          const Faces_vector& faces,
                                          const Cot_map ctmap,
                                          const Local_points& lp,
@@ -770,7 +768,7 @@ private:
   {
     Error_code status = OK;
 
-    for(face_descriptor fd : faces) {
+    BOOST_FOREACH(face_descriptor fd, faces) {
       // Compute the coefficients C1, C2, C3
       NT C1 = 0., C2 = 0., C3 = 0.;
 
@@ -886,13 +884,13 @@ private:
   }
 
   // Compute the local parameterization (2D) of a face and store it in memory.
-  void project_face(const Triangle_mesh& mesh,
+  void project_face(const TriangleMesh& mesh,
                     vertex_descriptor vi,
                     vertex_descriptor vj,
                     vertex_descriptor vk,
                     Local_points& lp) const
   {
-    typedef typename boost::property_map<Triangle_mesh,
+    typedef typename boost::property_map<TriangleMesh,
                                          boost::vertex_point_t>::const_type PPmap;
     const PPmap ppmap = get(vertex_point, mesh);
 
@@ -912,14 +910,14 @@ private:
 
   // Utility for fill_linear_system_rhs():
   // Compute the local isometric parameterization (2D) of the faces of the mesh.
-  Error_code compute_local_parameterization(const Triangle_mesh& mesh,
+  Error_code compute_local_parameterization(const TriangleMesh& mesh,
                                             const Faces_vector& faces,
                                             Local_points& lp,
                                             Lp_map lpmap) const
   {
     int global_index = 0;
 
-    for(face_descriptor fd : faces) {
+    BOOST_FOREACH(face_descriptor fd, faces) {
       halfedge_descriptor hd = halfedge(fd, mesh), hdb = hd;
 
       vertex_descriptor vi = target(hd, mesh); // hd is k -- > i
@@ -948,9 +946,9 @@ private:
     return OK;
   }
 
-  // Compute the coefficient b_ij = (i,j) of the right hand side vector B,
+  // Compute the coefficient b_ij = (i, j) of the right hand side vector B,
   // for j neighbor vertex of i.
-  void compute_b_ij(const Triangle_mesh& mesh,
+  void compute_b_ij(const TriangleMesh& mesh,
                     halfedge_descriptor hd,
                     const Cot_map ctmap,
                     const Local_points& lp,
@@ -1021,7 +1019,7 @@ private:
   // \pre Vertex i musn't be already parameterized.
   // \pre Lines i of Bu and Bv must be zero.
   template <typename VertexIndexMap>
-  Error_code fill_linear_system_rhs(const Triangle_mesh& mesh,
+  Error_code fill_linear_system_rhs(const TriangleMesh& mesh,
                                     vertex_descriptor vertex,
                                     const Cot_map ctmap,
                                     const Local_points& lp,
@@ -1065,7 +1063,7 @@ private:
   template <typename VertexUVMap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code compute_rhs(const Triangle_mesh& mesh,
+  Error_code compute_rhs(const TriangleMesh& mesh,
                          const Vertex_set& vertices,
                          const Cot_map ctmap,
                          const Local_points& lp,
@@ -1080,7 +1078,7 @@ private:
     Error_code status = OK;
 
     unsigned int count = 0;
-    for(vertex_descriptor vd : vertices) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices) {
       if(!get(vpmap, vd)) { // not yet parameterized
         // Compute the lines i of the vectors Bu and Bv
         status = fill_linear_system_rhs(mesh, vd, ctmap, lp, lpmap,
@@ -1103,7 +1101,7 @@ private:
   template <typename VertexUVMap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code update_solution(const Triangle_mesh& mesh,
+  Error_code update_solution(const TriangleMesh& mesh,
                              const Vertex_set& vertices,
                              const Cot_map ctmap,
                              const Local_points& lp,
@@ -1143,7 +1141,7 @@ private:
     CGAL_postcondition_code
     (
       // make sure that the constrained vertices have not been moved
-      for(vertex_descriptor vd : vertices) {
+      BOOST_FOREACH(vertex_descriptor vd, vertices) {
         if(get(vpmap, vd)) {
           int index = get(vimap, vd);
           CGAL_warning(std::abs(Xu[index] - Bu[index] ) < 1e-7);
@@ -1159,7 +1157,7 @@ private:
 
   // Compute the current energy of a face, given a linear transformation matrix.
   template <typename VertexUVMap>
-  NT compute_current_face_energy(const Triangle_mesh& mesh,
+  NT compute_current_face_energy(const TriangleMesh& mesh,
                                  face_descriptor fd,
                                  const Cot_map ctmap,
                                  const Local_points& lp,
@@ -1202,7 +1200,7 @@ private:
 
   // Compute the current energy of a face.
   template <typename VertexUVMap>
-  NT compute_current_face_energy(const Triangle_mesh& mesh,
+  NT compute_current_face_energy(const TriangleMesh& mesh,
                                  face_descriptor fd,
                                  const Cot_map ctmap,
                                  const Local_points& lp,
@@ -1219,7 +1217,7 @@ private:
 
   // Compute the current energy of the parameterization.
   template <typename VertexUVMap>
-  NT compute_current_energy(const Triangle_mesh& mesh,
+  NT compute_current_energy(const TriangleMesh& mesh,
                             const Faces_vector& faces,
                             const Cot_map ctmap,
                             const Local_points& lp,
@@ -1229,7 +1227,7 @@ private:
   {
     NT E = 0.;
 
-    for(face_descriptor fd : faces) {
+    BOOST_FOREACH(face_descriptor fd, faces) {
       NT Ef = compute_current_face_energy(mesh, fd, ctmap, lp, lpmap,
                                           ltmap, uvmap);
       E += Ef;
@@ -1244,14 +1242,14 @@ private:
   // the (hopefully few) flips in the result.
   template <typename VertexUVMap,
             typename VertexIndexMap>
-  Error_code post_process(const Triangle_mesh& mesh,
+  Error_code post_process(const TriangleMesh& mesh,
                           const Vertex_set& vertices,
                           const Faces_vector& faces,
                           halfedge_descriptor bhd,
                           VertexUVMap uvmap,
                           const VertexIndexMap vimap) const
   {
-    typedef MVC_post_processor_3<Triangle_mesh>     Post_processor;
+    typedef MVC_post_processor_3<TriangleMesh>     Post_processor;
 
     Post_processor p;
     Error_code status = p.parameterize(mesh, vertices, faces, bhd, uvmap, vimap);
@@ -1267,28 +1265,28 @@ private:
 
 // Public operations
 public:
-  /// returns whether the 3D -> 2D mapping is one-to-one.
-  template <typename FaceRange, typename VertexUVMap>
-  bool is_one_to_one_mapping(const Triangle_mesh& mesh,
-                             const FaceRange& faces,
+  /// Check if the 3D -> 2D mapping is one-to-one.
+  template <typename VertexUVMap>
+  bool is_one_to_one_mapping(const TriangleMesh& mesh,
+                             const Faces_vector& faces,
                              const VertexUVMap uvmap) const
   {
     return internal::is_one_to_one_mapping(mesh, faces, uvmap);
   }
 
-  /// computes a mapping from a triangular 3D surface mesh to a piece of the 2D space.
+  /// Compute a mapping from a triangular 3D surface mesh to a piece of the 2D space.
   /// The mapping is piecewise linear (linear in each triangle).
   /// The result is the (u,v) pair image of each vertex of the 3D surface.
   ///
   /// \tparam VertexUVmap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
-  ///         %Point_2 (type deduced from `Triangle_mesh` using `Kernel_traits`)
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
+  ///         %Point_2 (type deduced from `TriangleMesh` using `Kernel_traits`)
   ///         as value type.
   /// \tparam VertexIndexMap must be a model of `ReadablePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a unique integer as value type.
   /// \tparam VertexParameterizedMap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a Boolean as value type.
   ///
   /// \param mesh a triangulated surface.
@@ -1303,16 +1301,12 @@ public:
   template <typename VertexUVMap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code parameterize(Triangle_mesh& mesh,
+  Error_code parameterize(TriangleMesh& mesh,
                           halfedge_descriptor bhd,
                           VertexUVMap uvmap,
                           VertexIndexMap vimap,
                           VertexParameterizedMap vpmap)
   {
-    CGAL_precondition(is_valid_polygon_mesh(mesh));
-    CGAL_precondition(is_triangle_mesh(mesh));
-    CGAL_precondition(bhd != boost::graph_traits<Triangle_mesh>::null_halfedge() && is_border(bhd, mesh));
-
     Error_code status = OK;
 
     // vertices and faces containers

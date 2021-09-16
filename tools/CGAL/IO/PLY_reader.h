@@ -1,17 +1,26 @@
 // Copyright (c) 2017 GeometryFactory
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron_IO/include/CGAL/IO/PLY_reader.h $
-// $Id: PLY_reader.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron_IO/include/CGAL/IO/PLY_reader.h $
+// $Id: PLY_reader.h 1cfcb1b 2018-12-18T15:28:02+01:00 Simon Giraudot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Simon Giraudot
 
 #ifndef CGAL_IO_PLY_READER_H
 #define CGAL_IO_PLY_READER_H
 
-#include <CGAL/IO/PLY.h>
+#include <CGAL/IO/read_ply_points.h>
 
 namespace CGAL{
 
@@ -37,7 +46,7 @@ namespace CGAL{
           rtag = "red"; gtag = "green"; btag = "blue";
         }
       }
-
+      
       for (std::size_t j = 0; j < element.number_of_items(); ++ j)
       {
         for (std::size_t k = 0; k < element.number_of_properties(); ++ k)
@@ -49,7 +58,7 @@ namespace CGAL{
             return false;
         }
 
-        std::tuple<std::vector<Integer>, boost::uint8_t, boost::uint8_t, boost::uint8_t> new_face;
+        cpp11::tuple<std::vector<Integer>, boost::uint8_t, boost::uint8_t, boost::uint8_t> new_face; 
 
         if (has_colors)
         {
@@ -95,13 +104,13 @@ namespace CGAL{
     }
 
     internal::PLY::PLY_reader reader;
-
+  
     if (!(reader.init (in)))
     {
       in.setstate(std::ios::failbit);
       return false;
     }
-
+  
     for (std::size_t i = 0; i < reader.number_of_elements(); ++ i)
     {
       internal::PLY::PLY_element& element = reader.element(i);
@@ -123,7 +132,7 @@ namespace CGAL{
 
           internal::PLY::process_properties (element, new_vertex,
                                              make_ply_point_reader (CGAL::Identity_property_map<Point_3>()));
-
+      
           points.push_back (get<0>(new_vertex));
         }
       }
@@ -161,7 +170,7 @@ namespace CGAL{
       }
     }
 
-    return !in.bad();
+    return true;
   }
 
   template <class Point_3, class Polygon_3, class Color_rgb>
@@ -169,10 +178,8 @@ namespace CGAL{
   read_PLY( std::istream& in,
             std::vector< Point_3 >& points,
             std::vector< Polygon_3 >& polygons,
-            std::vector<std::pair<unsigned int, unsigned int> >& hedges,
             std::vector<Color_rgb>& fcolors,
             std::vector<Color_rgb>& vcolors,
-            std::vector<std::pair<float, float> >& huvs,
             bool /* verbose */ = false)
   {
     if(!in)
@@ -181,12 +188,13 @@ namespace CGAL{
       return false;
     }
     internal::PLY::PLY_reader reader;
-
+  
     if (!(reader.init (in)))
     {
       in.setstate(std::ios::failbit);
       return false;
     }
+
     for (std::size_t i = 0; i < reader.number_of_elements(); ++ i)
     {
       internal::PLY::PLY_element& element = reader.element(i);
@@ -217,7 +225,7 @@ namespace CGAL{
               return false;
           }
 
-          std::tuple<Point_3, boost::uint8_t, boost::uint8_t, boost::uint8_t> new_vertex;
+          cpp11::tuple<Point_3, boost::uint8_t, boost::uint8_t, boost::uint8_t> new_vertex;
 
           if (has_colors)
           {
@@ -255,52 +263,6 @@ namespace CGAL{
           return false;
         }
       }
-      else if(element.name() == "halfedge" )
-      {
-        bool has_uv = false;
-        std::string stag = "source", ttag = "target", utag = "u", vtag = "v";
-        if ( element.has_property<unsigned int>("source") &&
-            element.has_property<unsigned int>("target") &&
-             element.has_property<float>("u") &&
-            element.has_property<float>("v"))
-        {
-          has_uv = true;
-        }
-        std::tuple<unsigned int, unsigned int, float, float, float>  new_hedge;
-        for (std::size_t j = 0; j < element.number_of_items(); ++ j)
-        {
-          for (std::size_t k = 0; k < element.number_of_properties(); ++ k)
-          {
-            internal::PLY::PLY_read_number* property = element.property(k);
-            property->get (in);
-
-            if (in.eof())
-              return false;
-          }
-
-          if (has_uv)
-          {
-            internal::PLY::process_properties (element, new_hedge,
-                                               std::make_pair (CGAL::make_nth_of_tuple_property_map<0>(new_hedge),
-                                                               PLY_property<unsigned int>(stag.c_str())),
-                                               std::make_pair (CGAL::make_nth_of_tuple_property_map<1>(new_hedge),
-                                                               PLY_property<unsigned int>(ttag.c_str())),
-                                               std::make_pair (CGAL::make_nth_of_tuple_property_map<2>(new_hedge),
-                                                               PLY_property<float>(utag.c_str())),
-                                               std::make_pair (CGAL::make_nth_of_tuple_property_map<3>(new_hedge),
-                                                               PLY_property<float>(vtag.c_str())));
-            hedges.push_back (std::make_pair(get<0>(new_hedge), get<1>(new_hedge)));
-            huvs.push_back (std::make_pair(get<2>(new_hedge), get<3>(new_hedge)));
-          }
-          else
-            internal::PLY::process_properties (element, new_hedge,
-                                               std::make_pair(CGAL::make_nth_of_tuple_property_map<0>(new_hedge),
-                                                              PLY_property<unsigned int>(stag.c_str())),
-                                               std::make_pair(CGAL::make_nth_of_tuple_property_map<1>(new_hedge),
-                                                              PLY_property<unsigned int>(ttag.c_str()))
-                                               );
-        }
-      }
       else // Read other elements and ignore
       {
         for (std::size_t j = 0; j < element.number_of_items(); ++ j)
@@ -309,31 +271,18 @@ namespace CGAL{
           {
             internal::PLY::PLY_read_number* property = element.property(k);
             property->get (in);
+
             if (in.fail())
               return false;
           }
         }
       }
     }
-    return !in.bad();
+
+    return true;
   }
 
-  template <class Point_3, class Polygon_3, class Color_rgb>
-  bool
-  read_PLY( std::istream& in,
-            std::vector< Point_3 >& points,
-            std::vector< Polygon_3 >& polygons,
-            std::vector<Color_rgb>& fcolors,
-            std::vector<Color_rgb>& vcolors,
-            bool /* verbose */ = false)
-  {
-    std::vector<std::pair<unsigned int, unsigned int> > dummy_pui;
-    std::vector<std::pair<float, float> > dummy_pf;
-    return read_PLY<Point_3, Polygon_3, Color_rgb>(in, points, polygons,
-                                                   dummy_pui,
-                                                   fcolors, vcolors,
-                                                   dummy_pf);
-  }
+
 } // namespace CGAL
 
 #endif // CGAL_IO_PLY_READER_H

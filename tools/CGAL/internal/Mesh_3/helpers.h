@@ -3,10 +3,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/internal/Mesh_3/helpers.h $
-// $Id: helpers.h 98e4838 2021-02-17T15:49:48+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/internal/Mesh_3/helpers.h $
+// $Id: helpers.h 27b6e03 2018-06-07T10:18:02+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent Rineau, Stéphane Tayeb
@@ -27,6 +36,7 @@
 #include <CGAL/Kernel/global_functions.h>
 #include <CGAL/property_map.h>
 
+#include <boost/foreach.hpp>
 #include <boost/graph/graph_traits.hpp>
 
 #include <iostream>
@@ -45,7 +55,7 @@ void dump_graph_edges(std::ostream& out, const Graph& g)
   typedef typename boost::graph_traits<Graph>::edge_descriptor edge_descriptor;
 
   out.precision(17);
-  for(edge_descriptor e : CGAL::make_range(edges(g)))
+  BOOST_FOREACH(edge_descriptor e, edges(g))
   {
     vertex_descriptor s = source(e, g);
     vertex_descriptor t = target(e, g);
@@ -82,7 +92,7 @@ struct Angle_tester
       const typename Kernel::Point_3& p1 = g[v1];
       const typename Kernel::Point_3& p2 = g[v2];
 
-      return (CGAL::angle(p1, p, p2) != CGAL::OBTUSE);
+      return (CGAL::angle(p1, p, p2) == CGAL::ACUTE);
     }
   }
 };

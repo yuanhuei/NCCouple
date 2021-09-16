@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/LSCM_parameterizer_3.h $
-// $Id: LSCM_parameterizer_3.h bdd4efe 2021-01-15T10:06:56+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/LSCM_parameterizer_3.h $
+// $Id: LSCM_parameterizer_3.h 2f9408f 2018-09-04T12:01:27+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent Saboret, Pierre Alliez, Bruno Levy
 
@@ -31,7 +40,8 @@
 #endif
 #include <CGAL/OpenNL/linear_solver.h>
 
-#include <boost/iterator/function_output_iterator.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function_output_iterator.hpp>
 #include <boost/unordered_set.hpp>
 
 #include <vector>
@@ -75,7 +85,7 @@ namespace Surface_mesh_parameterization {
 ///         and `CGAL_EIGEN3_ENABLED` is defined, then an overload of `Eigen_solver_traits`
 ///         is provided as default parameter:
 /// \code
-///   CGAL::Eigen_solver_traits<Eigen::SimplicialLDLT< Eigen::SparseMatrix<double> > >
+///   CGAL::Eigen_solver_traits<Eigen::BICGSTAB< Eigen::SparseMatrix<double> > >
 /// \endcode
 ///         Otherwise, it uses CGAL's wrapping function to the OpenNL library:
 /// \code
@@ -100,7 +110,12 @@ public:
   #if defined(CGAL_EIGEN3_ENABLED)
     // WARNING: at the moment, the choice of SolverTraits_ is completely
     // ignored (see LeastSquaresSolver typedef) and `OpenNL::LinearSolver<SolverTraits_>`
-    // is always used...
+    // is used anyway. If Eigen solver traits were to be used again, there is a bug
+    // in the line below to be first fixed:
+    // `Eigen_sparse_symmetric_matrix<double>::EigenType` is a NON SYMMETRIC
+    // Eigen sparse matrix, and thus SolverTraits_::Matrix will be a NON SYMMETRIC matrix
+    // and the whole symmetry aspect will be completely ignored.
+    // @fixme
     CGAL::Eigen_solver_traits<
             Eigen::SimplicialLDLT<Eigen_sparse_symmetric_matrix<double>::EigenType> >
   #else
@@ -108,29 +123,24 @@ public:
   #endif
   >::type                                                     Solver_traits;
 #else
-  /// The border parameterizer
   typedef Border_parameterizer_                               Border_parameterizer;
-
-  /// Solver traits type
   typedef SolverTraits_                                       Solver_traits;
 #endif
 
-  /// Triangle mesh type
-  typedef TriangleMesh_                                       Triangle_mesh;
-
   typedef TriangleMesh_                                       TriangleMesh;
-
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<Triangle_mesh>::halfedge_descriptor halfedge_descriptor;
 
 // Private types
 private:
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor   vertex_descriptor;
-  typedef typename boost::graph_traits<Triangle_mesh>::face_descriptor     face_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor   vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor halfedge_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::face_descriptor     face_descriptor;
+
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_iterator     vertex_iterator;
+  typedef typename boost::graph_traits<TriangleMesh>::face_iterator       face_iterator;
 
   // Traits subtypes:
-  typedef typename internal::Kernel_traits<Triangle_mesh>::PPM      PPM;
-  typedef typename internal::Kernel_traits<Triangle_mesh>::Kernel   Kernel;
+  typedef typename internal::Kernel_traits<TriangleMesh>::PPM       PPM;
+  typedef typename internal::Kernel_traits<TriangleMesh>::Kernel    Kernel;
   typedef typename Kernel::FT                                       NT;
   typedef typename Kernel::Point_2                                  Point_2;
   typedef typename Kernel::Point_3                                  Point_3;
@@ -155,29 +165,29 @@ public:
 
   // Default copy constructor and operator =() are fine
 
-  /// returns whether the 3D -> 2D mapping is one-to-one.
+  /// Check if the 3D -> 2D mapping is one-to-one.
   template <typename VertexUVMap>
-  bool is_one_to_one_mapping(const Triangle_mesh& mesh,
+  bool is_one_to_one_mapping(const TriangleMesh& mesh,
                              halfedge_descriptor bhd,
                              const VertexUVMap uvmap) const
   {
     return internal::is_one_to_one_mapping(mesh, bhd, uvmap);
   }
 
-  /// computes a one-to-one mapping from a triangular 3D surface mesh
+  /// Compute a one-to-one mapping from a triangular 3D surface mesh
   /// to a piece of the 2D space.
   /// The mapping is piecewise linear (linear in each triangle).
-  /// The result is the `(u,v)` pair image of each vertex of the 3D surface.
+  /// The result is the (u,v) pair image of each vertex of the 3D surface.
   ///
   /// \tparam VertexUVmap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
-  ///         %Point_2 (type deduced from `Triangle_mesh` using `Kernel_traits`)
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
+  ///         %Point_2 (type deduced from `TriangleMesh` using `Kernel_traits`)
   ///         as value type.
   /// \tparam VertexIndexMap must be a model of `ReadablePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a unique integer as value type.
   /// \tparam VertexParameterizedMap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a Boolean as value type.
   ///
   /// \param mesh a triangulated surface.
@@ -190,21 +200,17 @@ public:
   /// \pre The vertices must be indexed (`vimap` must be initialized).
   ///
   template <typename VertexUVmap, typename VertexIndexMap, typename VertexParameterizedMap>
-  Error_code parameterize(Triangle_mesh& mesh,
+  Error_code parameterize(TriangleMesh& mesh,
                           halfedge_descriptor bhd,
                           VertexUVmap uvmap,
                           VertexIndexMap vimap,
                           VertexParameterizedMap vpmap)
   {
-    CGAL_precondition(is_valid_polygon_mesh(mesh));
-    CGAL_precondition(is_triangle_mesh(mesh));
-    CGAL_precondition(bhd != boost::graph_traits<Triangle_mesh>::null_halfedge() && is_border(bhd, mesh));
-
     // Fill containers
     boost::unordered_set<vertex_descriptor> ccvertices;
     std::vector<face_descriptor> ccfaces;
 
-    internal::Containers_filler<Triangle_mesh> fc(mesh, ccvertices, &ccfaces);
+    internal::Containers_filler<TriangleMesh> fc(mesh, ccvertices, &ccfaces);
     Polygon_mesh_processing::connected_component(
                                       face(opposite(bhd, mesh), mesh),
                                       mesh,
@@ -236,7 +242,7 @@ public:
     // Fill the matrix for the other vertices
     solver.begin_system();
 
-    for(face_descriptor fd : ccfaces) {
+    BOOST_FOREACH(face_descriptor fd, ccfaces) {
       // Create two lines in the linear system per triangle (one for u, one for v)
       status = setup_triangle_relations(solver, mesh, fd, vimap);
       if (status != OK)
@@ -255,7 +261,7 @@ public:
     // Copy X coordinates into the (u,v) pair of each vertex
     //set_mesh_uv_from_system(mesh, solver, uvmap);
 
-    for(vertex_descriptor vd : ccvertices) {
+    BOOST_FOREACH(vertex_descriptor vd, ccvertices) {
       int index = get(vimap,vd);
       NT u = solver.variable(2 * index).value();
       NT v = solver.variable(2 * index + 1).value();
@@ -279,7 +285,7 @@ private:
                                           VertexIndexMap vimap,
                                           VertexParameterizedMap vpmap) const
   {
-    for(vertex_descriptor v : ccvertices) {
+    BOOST_FOREACH(vertex_descriptor v, ccvertices) {
       // Get vertex index in sparse linear system
       int index = get(vimap, v);
 
@@ -344,7 +350,7 @@ private:
   // in presence of degenerate triangles
   template <typename VertexIndexMap >
   Error_code setup_triangle_relations(LeastSquaresSolver& solver,
-                                      const Triangle_mesh& mesh,
+                                      const TriangleMesh& mesh,
                                       face_descriptor facet,
                                       VertexIndexMap vimap) const
   {

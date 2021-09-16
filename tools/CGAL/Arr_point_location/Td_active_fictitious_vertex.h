@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_point_location/Td_active_fictitious_vertex.h $
-// $Id: Td_active_fictitious_vertex.h 319383c 2020-05-20T09:47:58+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_point_location/Td_active_fictitious_vertex.h $
+// $Id: Td_active_fictitious_vertex.h 06d2fc7 2018-05-16T17:48:15+03:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s): Oren Nechushtan   <theoren@math.tau.ac.il>
 //            Michal Balas      <balasmic@post.tau.ac.il>
@@ -180,7 +189,7 @@ public:
 
   Td_active_fictitious_vertex()
   {
-    PTR = new Data(Traits::empty_vtx_handle(), Traits::empty_he_handle(), nullptr);
+    PTR = new Data(Traits::empty_vtx_handle(), Traits::empty_he_handle(), NULL);
   }
 
   /*! Constructor given Vertex & Halfedge handles. */

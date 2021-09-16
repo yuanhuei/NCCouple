@@ -1,10 +1,19 @@
 // Copyright (c) 2012  INRIA Bordeaux Sud-Ouest (France), All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Solver_interface/include/CGAL/Eigen_vector.h $
-// $Id: Eigen_vector.h d6c1aba 2020-03-27T18:17:06+01:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Solver_interface/include/CGAL/Eigen_vector.h $
+// $Id: Eigen_vector.h 2eb411d 2019-04-11T21:28:59+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Gael Guennebaud
 
@@ -33,9 +42,9 @@ which is a simple array of numbers.
 \sa `CGAL::Eigen_sparse_symmetric_matrix<T>`
 */
 
-template<class T, int D = ::Eigen::Dynamic>
+template<class T>
 class Eigen_vector
-  : public ::Eigen::Matrix<T, D, 1>
+  : public Eigen::Matrix<T, Eigen::Dynamic, 1>
 {
 // Public types
 public:
@@ -44,24 +53,24 @@ public:
   typedef T                                      NT;
 
   /// The internal vector type from \ref thirdpartyEigen "Eigen".
-  typedef ::Eigen::Matrix<T, D, 1>               EigenType;
+  typedef Eigen::Matrix<T, Eigen::Dynamic, 1>    EigenType;
   /// @}
 
 // Public operations
 public:
-  Eigen_vector& operator=(const Eigen_vector& other)
+  Eigen_vector<T>& operator=(const Eigen_vector<T>& other)
   {
     return static_cast<EigenType&>(*this) = other.eigen_object();
   }
 
-  Eigen_vector& operator=(const EigenType& other)
+  Eigen_vector<T>& operator=(const EigenType& other)
   {
-    return static_cast<Eigen_vector&>(static_cast<EigenType&>(*this) = other);
+    return static_cast<Eigen_vector<T>&>(static_cast<EigenType&>(*this) = other);
   }
-
-  /// Constructs a null vector.
-  Eigen_vector() : EigenType() {}
-
+  Eigen_vector()
+    : EigenType()
+  {}
+  
   /// Create a vector initialized with zeros.
   Eigen_vector(std::size_t dimension)
     : EigenType(static_cast<int>(dimension))

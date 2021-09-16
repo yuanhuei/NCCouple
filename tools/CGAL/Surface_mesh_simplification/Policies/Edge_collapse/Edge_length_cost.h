@@ -1,10 +1,19 @@
 // Copyright (c) 2006  GeometryFactory (France). All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_simplification/include/CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_length_cost.h $
-// $Id: Edge_length_cost.h ff09c5d 2019-10-25T16:35:53+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_simplification/include/CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_length_cost.h $
+// $Id: Edge_length_cost.h f2b1e70 2018-01-16T09:53:29+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Fernando Cacciola <fernando.cacciola@geometryfactory.com>
 //
@@ -13,28 +22,51 @@
 
 #include <CGAL/license/Surface_mesh_simplification.h>
 
-#include <CGAL/Surface_mesh_simplification/internal/Common.h>
+
+#include <CGAL/Surface_mesh_simplification/Detail/Common.h>
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
 
 namespace CGAL {
-namespace Surface_mesh_simplification {
 
+namespace Surface_mesh_simplification
+{
+
+//
 // Edge-length cost: the squared length of the collapsing edge
-template<class TM>
+//
+  template<class TM>
 class Edge_length_cost
 {
 public:
-  Edge_length_cost() {}
+  /*  
+  typedef TM_ TM ;
+  
+  typedef Edge_profile<TM> Profile ;
+  typedef typename Profile::Point Point;  
+  typedef typename Kernel_traits<Point>::Kernel Kernel ;
+  typedef typename Kernel::FT FT ;
+  typedef optional<FT> result_type ;
+  */
+public:
 
-  template <typename Profile, typename T>
-  boost::optional<typename Profile::FT> operator()(const Profile& profile, const T& /*placement*/) const
+  Edge_length_cost()
+  {}
+
+  template <typename Profile, typename T> 
+  optional<typename Profile::FT> operator()( Profile const& aProfile, T const& /*aPlacement*/ ) const
   {
-    typedef boost::optional<typename Profile::FT>                     result_type;
-    return result_type(profile.geom_traits().compute_squared_distance_3_object()(profile.p0(), profile.p1()));
+    typedef optional<typename Profile::FT> result_type;
+    return result_type(squared_distance(aProfile.p0(),aProfile.p1()));
   }
+  
 };
 
+
 } // namespace Surface_mesh_simplification
-} // namespace CGAL
+
+
+} //namespace CGAL
 
 #endif // CGAL_SURFACE_MESH_SIMPLIFICATION_POLICIES_EDGE_COLLAPSE_EDGE_LENGHT_COST_H
+// EOF //
+ 

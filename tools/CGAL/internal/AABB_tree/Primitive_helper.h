@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/AABB_tree/include/CGAL/internal/AABB_tree/Primitive_helper.h $
-// $Id: Primitive_helper.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/AABB_tree/include/CGAL/internal/AABB_tree/Primitive_helper.h $
+// $Id: Primitive_helper.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Sebastien Loriot
 
@@ -36,7 +45,7 @@ template<class Primitive>
 struct Point_result_type<Primitive,false>{ typedef typename Primitive::Point type; };
 
 
-//helper controlling whether extra data should be stored in the AABB_tree traits class
+//helper controlling whether extra data should be stored in the AABB_tree traits class  
 template <class AABBTraits, bool has_shared_data=Has_nested_type_Shared_data<typename AABBTraits::Primitive>::value>
 struct Primitive_helper;
 
@@ -52,7 +61,7 @@ struct Primitive_helper<AABBTraits,true>{
     return p.reference_point(traits.shared_data());
   }
 };
-
+  
 template <class AABBTraits>
 struct Primitive_helper<AABBTraits,false>{
   typedef typename Datum_result_type<typename AABBTraits::Primitive>::type Datum_type;

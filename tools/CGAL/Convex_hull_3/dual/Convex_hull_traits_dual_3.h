@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Convex_hull_3/include/CGAL/Convex_hull_3/dual/Convex_hull_traits_dual_3.h $
-// $Id: Convex_hull_traits_dual_3.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Convex_hull_3/include/CGAL/Convex_hull_3/dual/Convex_hull_traits_dual_3.h $
+// $Id: Convex_hull_traits_dual_3.h a5b6e6a 2018-06-27T08:55:38+02:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Jocelyn Meyron
@@ -66,10 +75,10 @@ namespace CGAL
           //Traits
           Traits_xy_3 construct_traits_xy_3_object()const
           {return Traits_xy_3();}
-
+          
           Traits_yz_3 construct_traits_yz_3_object()const
           {return Traits_yz_3();}
-
+          
           Traits_xz_3 construct_traits_xz_3_object()const
           {return Traits_xz_3();}
           // Segment_3

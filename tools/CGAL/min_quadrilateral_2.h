@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Bounding_volumes/include/CGAL/min_quadrilateral_2.h $
-// $Id: min_quadrilateral_2.h d678d0f 2021-02-02T11:12:16+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Bounding_volumes/include/CGAL/min_quadrilateral_2.h $
+// $Id: min_quadrilateral_2.h 26c857a 2018-06-13T15:11:45+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Michael Hoffmann <hoffmann@inf.ethz.ch> and
 //                 Emo Welzl <emo@inf.ethz.ch>
@@ -20,7 +29,8 @@
 #include <CGAL/basic.h>
 #include <CGAL/Optimisation/assertions.h>
 #include <iterator>
-#include <functional>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 #ifdef CGAL_OPTIMISATION_EXPENSIVE_PRECONDITION_TAG
 #include <CGAL/Polygon_2_algorithms.h>
@@ -69,16 +79,13 @@ convex_bounding_box_2(
   typedef typename Traits::Point_2                Point_2;
   typedef typename Traits::Less_xy_2              Less_xy_2;
   typedef typename Traits::Less_yx_2              Less_yx_2;
-  typedef std::function<bool(const Point_2&,
-                             const Point_2&)>     Greater_xy_2;
-  typedef Greater_xy_2                            Greater_yx_2;
+  typedef boost::function2<bool,Point_2,Point_2>  Greater_xy_2;
+  typedef boost::function2<bool,Point_2,Point_2>  Greater_yx_2;
 
   Less_xy_2    less_xy_2    = t.less_xy_2_object();
   Less_yx_2    less_yx_2    = t.less_yx_2_object();
-  Greater_xy_2 greater_xy_2 = [&less_xy_2](const Point_2& p1, const Point_2& p2)
-                              { return less_xy_2(p2, p1); };
-  Greater_yx_2 greater_yx_2 = [&less_yx_2](const Point_2& p1, const Point_2& p2)
-                              { return less_yx_2(p2, p1); };
+  Greater_xy_2 greater_xy_2 = boost::bind(less_xy_2, _2, _1);
+  Greater_yx_2 greater_yx_2 = boost::bind(less_yx_2, _2, _1);
 
   if (less_xy_2(*minx, *f) ||
       (less_yx_2(*minx, *f) && !less_xy_2(*f, *minx)))
@@ -270,23 +277,23 @@ namespace Optimisation {
     // ---------------------------------------------------------------
     // Right_of_implicit_line_2
     // ---------------------------------------------------------------
-    typedef std::function<bool(const Point_2&, const Point_2& , const Direction_2&)>
+    typedef boost::function3<bool,Point_2,Point_2,Direction_2> 
       Right_of_implicit_line_2;
-
+    
     Right_of_implicit_line_2 right_of_implicit_line_2_object() const {
-      return [this](const Point_2& p1, const Point_2& p2, const Direction_2& d)
-             {  return this->has_on_negative_side_2_object()(this->construct_line_2_object()(p2, d), p1); };
+      return boost::bind(has_on_negative_side_2_object(),
+			 boost::bind(construct_line_2_object(), _2, _3),
+			 _1);
     }
-
-    typedef std::function<Direction_2(const Point_2&, const Point_2&)>
+    
+    typedef boost::function2<Direction_2,Point_2,Point_2> 
       Construct_direction_2;
-
+    
     Construct_direction_2 construct_direction_2_object() const {
-      return [this](const Point_2& p1, const Point_2& p2)
-             { return this->Base::construct_direction_2_object()(
-                        this->construct_vector_2_object()(p1, p2)); };
+      return boost::bind(Base::construct_direction_2_object(),
+			 boost::bind(construct_vector_2_object(), _1, _2));
     }
-
+    
     template < class Kernel >
     class Rdbmop
     : public CGAL::cpp98::binary_function< Direction_2, int, Direction_2 >
@@ -296,16 +303,16 @@ namespace Optimisation {
       typename Kernel::Construct_direction_2              dir;
       typename Kernel::Construct_opposite_direction_2     oppdir;
     public:
-
+    
       Rdbmop() {}
-
+    
       Rdbmop(const Kernel& k)
       : cperpvec(k.construct_perpendicular_vector_2_object()),
         cvec(k.construct_vector_from_direction_2_object()),
         dir(k.construct_direction_2_object()),
         oppdir(k.construct_opposite_direction_2_object())
       {}
-
+    
       Direction_2
       operator()(const Direction_2& d, int i) const
       {
@@ -319,18 +326,20 @@ namespace Optimisation {
         return dir(cperpvec(cvec(d), COUNTERCLOCKWISE));
       }
     };
-
+    
     typedef Rdbmop<Traits> Rotate_direction_by_multiple_of_pi_2;
-
+    
     Rotate_direction_by_multiple_of_pi_2
     rotate_direction_by_multiple_of_pi_2_object() const
     { return Rotate_direction_by_multiple_of_pi_2(*this); }
-
-    typedef std::function<bool(const Direction_2&, const Direction_2&)>
+    
+    typedef boost::function2<bool,Direction_2,Direction_2>
       Less_angle_with_x_axis_2;
     Less_angle_with_x_axis_2 less_angle_with_x_axis_2_object() const {
-      return [this](const Direction_2& d1, const Direction_2& d2)
-             { return this->compare_angle_with_x_axis_2_object()(d1, d2) == SMALLER; };
+      return boost::bind(std::equal_to<Comparison_result>(), 
+                         boost::bind(compare_angle_with_x_axis_2_object(),
+                                     _1, _2),
+                         SMALLER);
     }
 
   };
@@ -469,7 +478,7 @@ min_parallelogram_2(ForwardIterator f,
 
   // check for trivial cases
   if (f == l) return o;
-
+  
   ForwardIterator first;
   do {
     first = f;
@@ -519,14 +528,14 @@ min_parallelogram_2(ForwardIterator f,
         rig = first;
     while (equal(*rig, *right));
     Direction_2 d_right = direction(*right, *rig);
-
+  
     ForwardIterator len = left;
     do
       if (++len == l)
         len = first;
     while (equal(*len, *left));
     Direction_2 d_left = direction(*len, *left);
-
+  
     if (less_angle(d_right, d_left))
       if (right_of_line(*rig, *left, next_dir))
         right = rig;
@@ -584,14 +593,14 @@ min_parallelogram_2(ForwardIterator f,
           rig = first;
       while (equal(*rig, *right));
       Direction_2 d_right = direction(*right, *rig);
-
+    
       ForwardIterator len = left;
       do
         if (++len == l)
           len = first;
       while (equal(*len, *left));
       Direction_2 d_left = direction(*len, *left);
-
+    
       if (less_angle(d_right, d_left))
         if (right_of_line(*rig, *left, next_dir))
           right = rig;

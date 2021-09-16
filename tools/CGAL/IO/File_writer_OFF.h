@@ -1,16 +1,25 @@
-// Copyright (c) 1997
+// Copyright (c) 1997  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Stream_support/include/CGAL/IO/File_writer_OFF.h $
-// $Id: File_writer_OFF.h 6c83e73 2020-10-08T15:29:21+02:00 Maxime Gimeno
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Stream_support/include/CGAL/IO/File_writer_OFF.h $
+// $Id: File_writer_OFF.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>
 
@@ -21,7 +30,6 @@
 #include <CGAL/IO/File_header_OFF.h>
 #include <iostream>
 #include <cstddef>
-#include <cstdint>
 
 namespace CGAL {
 
@@ -78,13 +86,13 @@ public:
     }
     void write_facet_begin( std::size_t no) {
         if ( m_header.binary())
-          I_Binary_write_big_endian_integer32( out(), static_cast<std::int32_t>(no));
+          I_Binary_write_big_endian_integer32( out(), static_cast<boost::int32_t>(no));
         else
             out() << no << ' ';
     }
     void write_facet_vertex_index( std::size_t index) {
         if ( m_header.binary())
-          I_Binary_write_big_endian_integer32( out(), static_cast<std::int32_t>(index));
+          I_Binary_write_big_endian_integer32( out(), static_cast<boost::int32_t>(index));
         else
             out() << ' ' << index;
     }

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_point_location/Arr_simple_point_location_impl.h $
-// $Id: Arr_simple_point_location_impl.h 0626eb0 2020-06-11T12:32:33+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_point_location/Arr_simple_point_location_impl.h $
+// $Id: Arr_simple_point_location_impl.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Ron Wein   <wein@post.tau.ac.il>
@@ -44,8 +53,10 @@ Arr_simple_point_location<Arrangement>::locate(const Point_2& p) const
 
   // Go over arrangement halfedges and check whether one of them contains
   // the query point in its interior.
-  auto is_in_x_range = m_geom_traits->is_in_x_range_2_object();
-  auto cmp_y_at_x = m_geom_traits->compare_y_at_x_2_object();
+  typename Traits_adaptor_2::Is_in_x_range_2  is_in_x_range =
+    m_geom_traits->is_in_x_range_2_object();
+  typename Traits_adaptor_2::Compare_y_at_x_2 cmp_y_at_x =
+    m_geom_traits->compare_y_at_x_2_object();
 
   typename Arrangement::Edge_const_iterator   eit;
   for (eit = m_arr->edges_begin(); eit != m_arr->edges_end(); ++eit) {
@@ -69,14 +80,14 @@ Arr_simple_point_location<Arrangement>::locate(const Point_2& p) const
   // In case the ray-shooting returned a vertex, we have to locate the first
   // halfedge whose source vertex is v, rotating clockwise around the vertex
   // from "6 o'clock", and to return its incident face.
-  const auto* vh = Result::template assign<Vertex_const_handle>(&obj);
+  const Vertex_const_handle* vh = Result().template assign<Vertex_const_handle>(obj);
   if (vh) {
     Halfedge_const_handle hh = _first_around_vertex(*vh);
     Face_const_handle fh = hh->face();
     return make_result(fh);
   }
 
-  const auto* hh = Result::template assign<Halfedge_const_handle>(&obj);
+  const Halfedge_const_handle* hh = Result().template assign<Halfedge_const_handle>(obj);
   if (hh) {
     // Make sure that the edge is directed from right to left, so that p
     // (which lies below it) is contained in its incident face. If necessary,
@@ -124,9 +135,9 @@ _base_vertical_ray_shoot(const Point_2& p, bool shoot_up) const
   Comparison_result               res = EQUAL;
   Comparison_result               y_res;
   bool                            in_x_range;
-  const typename Dcel::Halfedge*  closest_he = nullptr; // The closest so far.
-  const typename Dcel::Vertex*    cl_vs = nullptr;      // Its source.
-  const typename Dcel::Vertex*    cl_vt = nullptr;      // Its target.
+  const typename Dcel::Halfedge*  closest_he = NULL; // The closest so far.
+  const typename Dcel::Vertex*    cl_vs = NULL;      // Its source.
+  const typename Dcel::Vertex*    cl_vt = NULL;      // Its target.
 
   while (eit != e_end) {
     // Get the current edge and its source and target vertices.
@@ -147,7 +158,7 @@ _base_vertical_ray_shoot(const Point_2& p, bool shoot_up) const
       res = m_topol_traits->compare_y_at_x(p, he);
 
     if (in_x_range && (res == point_above_under)) {
-      if (closest_he == nullptr) {
+      if (closest_he == NULL) {
         // If no other x-monotone curve containing p in its x-range has been
         // found yet, take the current one as the vertically closest to p.
         closest_he = he;
@@ -231,7 +242,7 @@ _base_vertical_ray_shoot(const Point_2& p, bool shoot_up) const
   }
 
   // If we did not locate a closest halfedge, return an empty object.
-  if (closest_he == nullptr)
+  if (closest_he == NULL)
     return make_optional_result();
 
   // If we found a fictitious edge, return it now.
@@ -286,14 +297,15 @@ Arr_simple_point_location<Arrangement>::_vertical_ray_shoot(const Point_2& p,
 
   if (! optional_empty(optional_obj)) {
     const Result_type& obj = optional_assign(optional_obj);
-    const auto* p_vh = Result::template assign<Vertex_const_handle>(&obj);
+    const Vertex_const_handle* p_vh = Result().template assign<Vertex_const_handle>(obj);
     if (p_vh) {
       found_vertex = true;
       closest_v = *p_vh;
     }
     else {
-      const auto* p_hh = Result::template assign<Halfedge_const_handle>(&obj);
-      CGAL_assertion(p_hh != nullptr);
+      const Halfedge_const_handle* p_hh =
+        Result().template assign<Halfedge_const_handle>(obj);
+      CGAL_assertion(p_hh != NULL);
       found_halfedge = true;
       closest_he = *p_hh;
     }

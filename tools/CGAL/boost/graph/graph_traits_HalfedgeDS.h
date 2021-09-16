@@ -1,10 +1,19 @@
 // Copyright (c) 2007  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/HalfedgeDS/include/CGAL/boost/graph/graph_traits_HalfedgeDS.h $
-// $Id: graph_traits_HalfedgeDS.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/HalfedgeDS/include/CGAL/boost/graph/graph_traits_HalfedgeDS.h $
+// $Id: graph_traits_HalfedgeDS.h 560c77f 2019-07-14T22:54:16+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Andreas Fabri, Fernando Cacciola
@@ -202,7 +211,7 @@ namespace std {
 
 #if defined(BOOST_MSVC)
 #  pragma warning(push)
-#  pragma warning(disable:4099) // For VC10 it is class hash
+#  pragma warning(disable:4099) // For VC10 it is class hash 
 #endif
 
 #ifndef CGAL_CFG_NO_STD_HASH

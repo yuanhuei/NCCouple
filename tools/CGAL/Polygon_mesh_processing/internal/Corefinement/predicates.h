@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Corefinement/predicates.h $
-// $Id: predicates.h 1c5acc0 2020-05-08T13:34:22+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Corefinement/predicates.h $
+// $Id: predicates.h 3c382ac 2018-05-24T14:39:04+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Sebastien Loriot
@@ -122,15 +131,15 @@ bool  are_triangles_coplanar_same_side(
 }
 
 
-template <class Node_id, class Node_vector, class vertex_descriptor, class VPMP, class VPMQ>
+template <class Node_id, class Node_vector, class vertex_descriptor, class Vpm>
 bool are_triangles_coplanar_same_side(Node_id o_prime_index,
                                       Node_id o_index,
                                       Node_id p_index,
                                       Node_id q_index,
                                       vertex_descriptor p,
                                       vertex_descriptor q,
-                                      const VPMP& vpm_p,
-                                      const VPMQ& vpm_q,
+                                      const Vpm& vpm_p,
+                                      const Vpm& vpm_q,
                                       const Node_vector& nodes)
 {
   const Node_id NID((std::numeric_limits<Node_id>::max)());
@@ -142,7 +151,7 @@ bool are_triangles_coplanar_same_side(Node_id o_prime_index,
     );
 }
 
-template <class Node_id, class Node_vector, class vertex_descriptor, class VPMP, class VPMQ>
+template <class Node_id, class Node_vector, class vertex_descriptor, class Vpm>
 bool sorted_around_edge( Node_id o_prime_index,
                          Node_id o_index,
                          Node_id p1_index,
@@ -151,8 +160,8 @@ bool sorted_around_edge( Node_id o_prime_index,
                          vertex_descriptor p1,
                          vertex_descriptor p2,
                          vertex_descriptor q,
-                         const VPMP& vpm_p,
-                         const VPMQ& vpm_q,
+                         const Vpm& vpm_p,
+                         const Vpm& vpm_q,
                          const Node_vector& nodes)
 {
   const Node_id NID((std::numeric_limits<Node_id>::max)());

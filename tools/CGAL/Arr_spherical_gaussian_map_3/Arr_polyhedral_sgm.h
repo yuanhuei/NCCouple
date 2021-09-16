@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_spherical_gaussian_map_3/Arr_polyhedral_sgm.h $
-// $Id: Arr_polyhedral_sgm.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_spherical_gaussian_map_3/Arr_polyhedral_sgm.h $
+// $Id: Arr_polyhedral_sgm.h ace0997 2019-01-02T12:22:58+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s): Efi Fogel         <efif@post.tau.ac.il>
 //            Naama mayer       <naamamay@post.tau.ac.il>
@@ -515,7 +524,7 @@ public:
   /*! Constructor */
   Arr_polyhedral_sgm_initializer(PolyhedralSgm& sgm) :
     Base(sgm),
-    m_visitor(nullptr),
+    m_visitor(NULL),
     m_marked_vertex_index(0),
     m_marked_edge_index(0),
     m_marked_facet_index(0)
@@ -529,7 +538,7 @@ public:
    * \param visitor
    * \pre The polyhedron polyhedron does not have coplanar facets.
    */
-  void operator()(Polyhedron& polyhedron, Visitor* visitor = nullptr)
+  void operator()(Polyhedron& polyhedron, Visitor* visitor = NULL)
   {
 #if 0
     std::copy(polyhedron.points_begin(), polyhedron.points_end(),
@@ -559,7 +568,7 @@ public:
                   const CoordIndexIter indices_begin,
                   const CoordIndexIter indices_end,
                   size_type num_facets,
-                  Visitor* visitor = nullptr)
+                  Visitor* visitor = NULL)
   {
     m_visitor = visitor;
 
@@ -708,7 +717,7 @@ public:
  // template <typename SgmIterator>
  // void minkowski_sum(SgmIterator begin, SgmIterator end)
  // {
-        //typename SgmIterator::value_type* sgm1 = *begin++;
+	//typename SgmIterator::value_type* sgm1 = *begin++;
  //   typename SgmIterator::value_type* sgm2 = *begin;
  //   minkowski_sum(sgm1, sgm2);
  // }

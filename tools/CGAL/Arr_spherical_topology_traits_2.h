@@ -2,13 +2,22 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_spherical_topology_traits_2.h $
-// $Id: Arr_spherical_topology_traits_2.h 3849f5e 2020-06-14T00:41:25+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
-// Author(s): Efi Fogel         <efif@post.tau.ac.il>
-//            Eric Berberich    <ericb@post.tau.ac.il>
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_spherical_topology_traits_2.h $
+// $Id: Arr_spherical_topology_traits_2.h 18acb2e 2018-01-18T15:05:34+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
+//
+// Author(s)     : Efi Fogel         <efif@post.tau.ac.il>
+//                 Eric Berberich    <ericb@post.tau.ac.il>
 
 #ifndef CGAL_ARR_SPHERICAL_TOPOLOGY_TRAITS_2_H
 #define CGAL_ARR_SPHERICAL_TOPOLOGY_TRAITS_2_H
@@ -130,7 +139,7 @@ private:
   //! A container of boundary vertices.
   struct Vertex_key_comparer {
     /*! Construct default */
-    Vertex_key_comparer() : m_geom_traits(nullptr) {}
+    Vertex_key_comparer() : m_geom_traits(NULL) {}
 
     /*! Construct */
     Vertex_key_comparer(const Gt_adaptor_2* geom_traits) :
@@ -288,7 +297,7 @@ public:
   Vertex* north_pole() { return m_north_pole; }
 
   /*! Obtain a vertex on the line of discontinuity that corresponds to
-   *  the given curve-end (or return nullptr if no such vertex exists).
+   *  the given curve-end (or return NULL if no such vertex exists).
    */
   Vertex* discontinuity_vertex(const X_monotone_curve_2 xc, Arr_curve_end ind)
   {
@@ -296,7 +305,7 @@ public:
       m_geom_traits->construct_min_vertex_2_object()(xc) :
       m_geom_traits->construct_max_vertex_2_object()(xc);
     typename Vertex_map::iterator it = m_boundary_vertices.find(key);
-    return (it != m_boundary_vertices.end()) ? it->second : nullptr;
+    return (it != m_boundary_vertices.end()) ? it->second : NULL;
   }
   //@}
 
@@ -312,6 +321,7 @@ public:
   // the non-C++11 code requires the (re)definition of all constructors of the
   // derived class. The non-C++11 code follows the commented out C++11 code.
   // When we move to C++11 we can use the more elgant code.
+#if defined(CGAL_CFG_NO_CPP0X_TEMPLATE_ALIASES)
   // Type definition for the construction surface-sweep visitor.
   template <typename Evt, typename Crv>
   struct Construction_helper :
@@ -386,6 +396,47 @@ public:
                                                                 Base;
     Overlay_helper(const ArrA* arr_a, const ArrB* arr_b) : Base(arr_a, arr_b) {}
   };
+#else
+  // Type definition for the construction surface-sweep visitor.
+  template <typename Evt, typename Crv>
+  using Construction_helper =
+    Arr_spherical_construction_helper<Gt2, Arr, Evt, Crv>;
+
+  // Type definition for the no-intersection construction surface-sweep visitor.
+  template <typename Evt, typename Crv>
+  using No_intersection_construction_helper =
+    Arr_spherical_construction_helper<Gt2, Arr, Evt, Crv>;
+
+  // Type definition for the insertion surface-sweep visitor.
+  typedef Arr_insertion_traits_2<Gt2, Arr>                      I_traits;
+  template <typename Evt, typename Crv>
+  using Insertion_helper =
+    Arr_spherical_insertion_helper<I_traits, Arr, Evt, Crv>;
+
+  // Type definition for the no-intersection insertion surface-sweep visitor.
+  typedef Arr_basic_insertion_traits_2<Gt2, Arr>                Nxi_traits;
+  template <typename Evt, typename Crv>
+  using No_intersection_insertion_helper =
+    Arr_spherical_insertion_helper<Nxi_traits, Arr, Evt, Crv>;
+
+  // Type definition for the batched point-location surface-sweep visitor.
+  typedef Arr_batched_point_location_traits_2<Arr>              Bpl_traits;
+  template <typename Evt, typename Crv>
+  using Batched_point_location_helper =
+    Arr_spherical_batched_pl_helper<Bpl_traits, Arr, Evt, Crv>;
+
+  // Type definition for the vertical decomposition surface-sweep visitor.
+  typedef Arr_batched_point_location_traits_2<Arr>              Vd_traits;
+  template <typename Evt, typename Crv>
+  using Vertical_decomposition_helper =
+    Arr_spherical_vert_decomp_helper<Vd_traits, Arr, Evt, Crv>;
+
+  // Type definition for the overlay surface-sweep visitor.
+  template <typename Gt, typename Evt, typename Crv,
+            typename ArrA, typename ArrB>
+  using Overlay_helper =
+    Arr_spherical_overlay_helper<Gt, ArrA, ArrB, Arr, Evt, Crv>;
+#endif
   //@}
 
 public:
@@ -491,12 +542,11 @@ public:
    * \pre The curve has a boundary condition in either x or y.
    * \return An object that contains the curve end.
    */
-  boost::optional<boost::variant<Vertex*, Halfedge*> >
-  place_boundary_vertex(Face* f,
-                        const X_monotone_curve_2& xc,
-                        Arr_curve_end ind,
-                        Arr_parameter_space ps_x,
-                        Arr_parameter_space ps_y);
+  CGAL::Object place_boundary_vertex(Face* f,
+                                     const X_monotone_curve_2& xc,
+                                     Arr_curve_end ind,
+                                     Arr_parameter_space ps_x,
+                                     Arr_parameter_space ps_y);
 
   /*! Locate the predecessor halfedge for the given curve around a given
    * vertex with boundary conditions.
@@ -523,10 +573,9 @@ public:
    * \pre The curve end is incident to the boundary.
    * \return An object that contains the curve end.
    */
-  boost::variant<Vertex*, Halfedge*, Face*>
-  locate_curve_end(const X_monotone_curve_2& xc, Arr_curve_end ce,
-                   Arr_parameter_space ps_x,
-                   Arr_parameter_space ps_y);
+  CGAL::Object locate_curve_end(const X_monotone_curve_2& xc, Arr_curve_end ce,
+                                Arr_parameter_space ps_x,
+                                Arr_parameter_space ps_y);
 
   /*! Split a fictitious edge using the given vertex.
    * \param e The edge to split (one of the pair of halfedges).
@@ -539,7 +588,7 @@ public:
   {
     // There are no fictitious halfedges:
     CGAL_error();
-    return nullptr;
+    return NULL;
   }
 
   /*! Determine whether the given face is unbounded.

@@ -1,15 +1,24 @@
 // Copyright (c) 2005  INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Filtered_kernel/include/CGAL/internal/Static_filters/Compare_y_at_x_2.h $
-// $Id: Compare_y_at_x_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Filtered_kernel/include/CGAL/internal/Static_filters/Compare_y_at_x_2.h $
+// $Id: Compare_y_at_x_2.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Andreas Meyer
 
-#ifndef CGAL_INTERNAL_STATIC_FILTERS_COMPARE_Y_AT_X_2_H
+#ifndef CGAL_INTERNAL_STATIC_FILTERS_COMPARE_Y_AT_X_2_H 
 #define CGAL_INTERNAL_STATIC_FILTERS_COMPARE_Y_AT_X_2_H
 
 #include <CGAL/Profile_counter.h>
@@ -30,18 +39,18 @@ class Compare_y_at_x_2
 public:
 
   using Base::operator();
-
+  
   Comparison_result
   operator()( const Point_2& p, const Segment_2& s ) const {
     // compares the y-coordinates of p and the vertical projection of p on s.
     // Precondition : p is in the x-range of s.
-
+    
     typename Kernel::Less_x_2 less_x = Kernel().less_x_2_object();
     typename Kernel::Less_y_2 less_y = Kernel().less_y_2_object();
     typename Kernel::Orientation_2 orientation = Kernel().orientation_2_object();
 
     CGAL_kernel_precondition( are_ordered(s.source(), p, s.target(), less_x) );
-
+    
     if( less_x( s.source(), s.target() ) )
       return orientation(p, s.source(), s.target());
     else if ( less_x( s.target(), s.source() ) )

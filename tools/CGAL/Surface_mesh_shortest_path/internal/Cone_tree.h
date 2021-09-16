@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_shortest_path/include/CGAL/Surface_mesh_shortest_path/internal/Cone_tree.h $
-// $Id: Cone_tree.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_shortest_path/include/CGAL/Surface_mesh_shortest_path/internal/Cone_tree.h $
+// $Id: Cone_tree.h 6b40368 2019-10-10T14:38:59+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Stephen Kiazyk
 
@@ -104,11 +113,11 @@ public:
     , m_level(0)
     , m_treeId(treeId)
     , m_nodeType(ROOT)
-    , m_leftChild(nullptr)
-    , m_rightChild(nullptr)
-    , m_pendingLeftSubtree(nullptr)
-    , m_pendingRightSubtree(nullptr)
-    , m_pendingMiddleSubtree(nullptr)
+    , m_leftChild(NULL)
+    , m_rightChild(NULL)
+    , m_pendingLeftSubtree(NULL)
+    , m_pendingRightSubtree(NULL)
+    , m_pendingMiddleSubtree(NULL)
   {
   }
 
@@ -125,11 +134,11 @@ public:
     , m_level(0)
     , m_treeId(treeId)
     , m_nodeType(ROOT)
-    , m_leftChild(nullptr)
-    , m_rightChild(nullptr)
-    , m_pendingLeftSubtree(nullptr)
-    , m_pendingRightSubtree(nullptr)
-    , m_pendingMiddleSubtree(nullptr)
+    , m_leftChild(NULL)
+    , m_rightChild(NULL)
+    , m_pendingLeftSubtree(NULL)
+    , m_pendingRightSubtree(NULL)
+    , m_pendingMiddleSubtree(NULL)
   {
   }
 
@@ -151,11 +160,11 @@ public:
     , m_windowLeft(windowLeft)
     , m_windowRight(windowRight)
     , m_nodeType(nodeType)
-    , m_leftChild(nullptr)
-    , m_rightChild(nullptr)
-    , m_pendingLeftSubtree(nullptr)
-    , m_pendingRightSubtree(nullptr)
-    , m_pendingMiddleSubtree(nullptr)
+    , m_leftChild(NULL)
+    , m_rightChild(NULL)
+    , m_pendingLeftSubtree(NULL)
+    , m_pendingRightSubtree(NULL)
+    , m_pendingMiddleSubtree(NULL)
   {
   }
 
@@ -350,10 +359,10 @@ public:
 
   void push_middle_child(Cone_tree_node* child)
   {
-    if (m_pendingMiddleSubtree != nullptr)
+    if (m_pendingMiddleSubtree != NULL)
     {
       m_pendingMiddleSubtree->m_cancelled = true;
-      m_pendingMiddleSubtree = nullptr;
+      m_pendingMiddleSubtree = NULL;
     }
 
     m_middleChildren.push_back(child);
@@ -369,10 +378,10 @@ public:
 
   void set_left_child(Cone_tree_node* child)
   {
-    if (m_pendingLeftSubtree != nullptr)
+    if (m_pendingLeftSubtree != NULL)
     {
       m_pendingLeftSubtree->m_cancelled = true;
-      m_pendingLeftSubtree = nullptr;
+      m_pendingLeftSubtree = NULL;
     }
 
     m_leftChild = child;
@@ -387,16 +396,16 @@ public:
   Cone_tree_node* remove_left_child()
   {
     Cone_tree_node* temp = m_leftChild;
-    m_leftChild = nullptr;
+    m_leftChild = NULL;
     return temp;
   }
 
   void set_right_child(Cone_tree_node* child)
   {
-    if (m_pendingRightSubtree != nullptr)
+    if (m_pendingRightSubtree != NULL)
     {
       m_pendingRightSubtree->m_cancelled = true;
-      m_pendingRightSubtree = nullptr;
+      m_pendingRightSubtree = NULL;
     }
 
     m_rightChild = child;
@@ -411,7 +420,7 @@ public:
   Cone_tree_node* remove_right_child()
   {
     Cone_tree_node* temp = m_rightChild;
-    m_rightChild = nullptr;
+    m_rightChild = NULL;
     return temp;
   }
 
@@ -422,12 +431,12 @@ public:
 
   bool is_left_child() const
   {
-    return m_parent != nullptr && m_parent->m_leftChild == this;
+    return m_parent != NULL && m_parent->m_leftChild == this;
   }
 
   bool is_right_child() const
   {
-    return m_parent != nullptr && m_parent->m_rightChild == this;
+    return m_parent != NULL && m_parent->m_rightChild == this;
   }
 };
 

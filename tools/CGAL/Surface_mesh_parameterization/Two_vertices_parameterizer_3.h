@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Two_vertices_parameterizer_3.h $
-// $Id: Two_vertices_parameterizer_3.h bdd4efe 2021-01-15T10:06:56+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Two_vertices_parameterizer_3.h $
+// $Id: Two_vertices_parameterizer_3.h 2f9408f 2018-09-04T12:01:27+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent Saboret, Pierre Alliez, Bruno Levy
 
@@ -21,7 +30,8 @@
 #include <CGAL/Surface_mesh_parameterization/Error_code.h>
 
 #include <CGAL/Polygon_mesh_processing/connected_components.h>
-#include <boost/iterator/function_output_iterator.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function_output_iterator.hpp>
 
 #include <cfloat>
 #include <climits>
@@ -56,22 +66,16 @@ class Two_vertices_parameterizer_3
 {
 // Public types
 public:
-  /// Triangle mesh type
-  typedef TriangleMesh_                                            Triangle_mesh;
-
   typedef TriangleMesh_                                            TriangleMesh;
 
-  /// Mesh vertex type
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor vertex_descriptor;
-
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<Triangle_mesh>::halfedge_descriptor halfedge_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor halfedge_descriptor;
 
 // Private types
 private:
   // Traits subtypes:
-  typedef typename internal::Kernel_traits<Triangle_mesh>::PPM      PPM;
-  typedef typename internal::Kernel_traits<Triangle_mesh>::Kernel   Kernel;
+  typedef typename internal::Kernel_traits<TriangleMesh>::PPM       PPM;
+  typedef typename internal::Kernel_traits<TriangleMesh>::Kernel    Kernel;
   typedef typename Kernel::FT                                       NT;
   typedef typename Kernel::Point_2                                  Point_2;
   typedef typename Kernel::Point_3                                  Point_3;
@@ -98,7 +102,7 @@ public:
             typename VertexUVmap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code parameterize(const Triangle_mesh& mesh,
+  Error_code parameterize(const TriangleMesh& mesh,
                           const VertexContainer& vertices,
                           VertexUVmap uvmap,
                           VertexIndexMap /* vimap */,
@@ -106,7 +110,7 @@ public:
   {
     if(vertices_given) {
       bool found_min = false, found_max = false;
-      for(vertex_descriptor vd : vertices) {
+      BOOST_FOREACH(vertex_descriptor vd, vertices) {
         if(vd == vxmin) {
           found_min = true;
           if(found_max) break;
@@ -140,7 +144,7 @@ public:
     double ymax = -std::numeric_limits<double>::infinity();
     double zmax = -std::numeric_limits<double>::infinity();
 
-    for(vertex_descriptor vd : vertices) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices) {
       const Point_3& position = get(ppmap,vd);
 
       xmin = (std::min)(position.x(), xmin);
@@ -235,7 +239,7 @@ public:
     double vmin = std::numeric_limits<double>::infinity();
     double vmax = -std::numeric_limits<double>::infinity();
 
-    for(vertex_descriptor vd : vertices) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices) {
       const Point_3& position = get(ppmap, vd);
       Vector_3 position_as_vector = position - Point_3(0, 0, 0);
 
@@ -273,17 +277,17 @@ public:
     return OK;
   }
 
-  /// maps two extreme vertices of the 3D mesh and mark them as <i>parameterized</i>.
+  /// Map two extreme vertices of the 3D mesh and mark them as <i>parameterized</i>.
   ///
   /// \tparam VertexUVmap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
-  ///         %Point_2 (type deduced from `Triangle_mesh` using `Kernel_traits`)
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
+  ///         %Point_2 (type deduced from `TriangleMesh` using `Kernel_traits`)
   ///         as value type.
   /// \tparam VertexIndexMap must be a model of `ReadablePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a unique integer as value type.
   /// \tparam VertexParameterizedMap must be a model of `ReadWritePropertyMap` with
-  ///         `boost::graph_traits<Triangle_mesh>::%vertex_descriptor` as key type and
+  ///         `boost::graph_traits<TriangleMesh>::%vertex_descriptor` as key type and
   ///         a Boolean as value type.
   ///
   /// \param mesh a triangulated surface.
@@ -298,7 +302,7 @@ public:
   template <typename VertexUVmap,
             typename VertexIndexMap,
             typename VertexParameterizedMap>
-  Error_code parameterize(const Triangle_mesh& mesh,
+  Error_code parameterize(const TriangleMesh& mesh,
                           halfedge_descriptor bhd,
                           VertexUVmap uvmap,
                           VertexIndexMap vimap,
@@ -306,7 +310,7 @@ public:
   {
     // Fill containers
     boost::unordered_set<vertex_descriptor> vertices;
-    internal::Containers_filler<Triangle_mesh> fc(mesh, vertices);
+    internal::Containers_filler<TriangleMesh> fc(mesh, vertices);
     Polygon_mesh_processing::connected_component(
                                       face(opposite(bhd, mesh), mesh),
                                       mesh,
@@ -315,7 +319,7 @@ public:
     return parameterize(mesh, vertices, uvmap, vimap, vpmap);
   }
 
-  /// indicates if the border's shape is convex.
+  /// Indicate if the border's shape is convex.
   /// Meaningless for free border parameterization algorithms.
   bool is_border_convex() const { return false; }
 };

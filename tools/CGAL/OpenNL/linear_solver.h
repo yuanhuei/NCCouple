@@ -3,7 +3,19 @@
  * author:  Bruno Levy, INRIA, project ALICE
  * website: http://www.loria.fr/~levy/software
  *
- * This file is part of CGAL (www.cgal.org)
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3
+ * of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Scientific work that use this software can reference the website and
  * the following publication:
@@ -22,9 +34,9 @@
  *      - Added SymmetricLinearSolverTraits
  *      - copied Jacobi preconditioner from Graphite 1.9 code
  *
- * $URL: https://github.com/CGAL/cgal/blob/v5.2.1/OpenNL/include/CGAL/OpenNL/linear_solver.h $
- * $Id: linear_solver.h fcd0529 2019-10-20T00:47:56+02:00 Sébastien Loriot
- * SPDX-License-Identifier: LGPL-3.0-or-later
+ * $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/OpenNL/include/CGAL/OpenNL/linear_solver.h $
+ * $Id: linear_solver.h 8cdfad0 2017-11-15T22:58:57+01:00 Sébastien Loriot
+ * SPDX-License-Identifier: LGPL-3.0+
  */
 
 
@@ -216,9 +228,9 @@ public:
         least_squares_ = false ;
         nb_variables_ = nb_variables ;
         variable_ = new Variable[nb_variables] ;
-        A_ = nullptr ;
-        x_ = nullptr ;
-        b_ = nullptr ;
+        A_ = NULL ;
+        x_ = NULL ;
+        b_ = NULL ;
     }
 
     ~LinearSolver() {
@@ -380,9 +392,9 @@ public:
 
         transition(CONSTRUCTED, SOLVED) ;
 
-        delete A_ ; A_ = nullptr ;
-        delete b_ ; b_ = nullptr ;
-        delete x_ ; x_ = nullptr ;
+        delete A_ ; A_ = NULL ;
+        delete b_ ; b_ = NULL ;
+        delete x_ ; x_ = NULL ;
 
         return success;
     }

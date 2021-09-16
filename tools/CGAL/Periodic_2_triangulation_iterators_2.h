@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_2_triangulation_2/include/CGAL/Periodic_2_triangulation_iterators_2.h $
-// $Id: Periodic_2_triangulation_iterators_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_2_triangulation_2/include/CGAL/Periodic_2_triangulation_iterators_2.h $
+// $Id: Periodic_2_triangulation_iterators_2.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Nico Kruithof <Nico@nghk.nl>
 
@@ -58,7 +67,7 @@ public:
   typedef typename T::Iterator_type                       Iterator_type;
 
   Periodic_2_triangulation_triangle_iterator_2(Iterator_type it = T::STORED)
-    : _t(nullptr), _it(it), _off(0) {}
+    : _t(NULL), _it(it), _off(0) {}
 
   Periodic_2_triangulation_triangle_iterator_2(const T * t,
       Iterator_type it = T::STORED)
@@ -377,7 +386,7 @@ public:
   typedef typename T::Iterator_type                       Iterator_type;
 
   Periodic_2_triangulation_segment_iterator_2(Iterator_type it = T::STORED)
-    : _t(nullptr), _it(it), _off(0) {}
+    : _t(NULL), _it(it), _off(0) {}
 
   Periodic_2_triangulation_segment_iterator_2(const T * t,
       Iterator_type it = T::STORED)
@@ -673,7 +682,7 @@ public:
   typedef typename T::Iterator_type                       Iterator_type;
 
   Periodic_2_triangulation_point_iterator_2(Iterator_type it = T::STORED)
-    : _t(nullptr), _it(it) {}
+    : _t(NULL), _it(it) {}
 
   Periodic_2_triangulation_point_iterator_2(const T * t,
       Iterator_type it = T::STORED)
@@ -807,11 +816,11 @@ template <class T>
 class Domain_tester
 {
     const T *t;
-
+    
   public:
     Domain_tester() {}
     Domain_tester(const T *tr) : t(tr) {}
-
+    
     bool operator()(const typename T::Vertex_iterator & v) const
     {
         return (t->get_offset(v) != typename T::Offset(0, 0));

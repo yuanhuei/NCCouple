@@ -5,11 +5,20 @@
 // Max-Planck-Institute Saarbruecken (Germany),
 // and Tel-Aviv University (Israel).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Kernel_23/include/CGAL/Point_3.h $
-// $Id: Point_3.h 3ebe883 2020-03-01T12:50:13+01:00 Marc Glisse
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Kernel_23/include/CGAL/Point_3.h $
+// $Id: Point_3.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra
@@ -46,12 +55,12 @@ public:
   typedef typename R_::Kernel_base::Point_3  Rep;
   typedef typename R_::Cartesian_const_iterator_3 Cartesian_const_iterator;
 
-  const Rep& rep() const noexcept
+  const Rep& rep() const
   {
     return *this;
   }
 
-  Rep& rep() noexcept
+  Rep& rep()
   {
     return *this;
   }
@@ -80,15 +89,6 @@ public:
   Point_3(const RT& hx, const RT& hy, const RT& hz, const RT& hw)
     : Rep(typename R::Construct_point_3()(Return_base_tag(), hx, hy, hz, hw))
   {}
-
-  friend void swap(Self& a, Self& b)
-#ifdef __cpp_lib_is_swappable
-    noexcept(std::is_nothrow_swappable_v<Rep>)
-#endif
-  {
-    using std::swap;
-    swap(a.rep(), b.rep());
-  }
 
   typename cpp11::result_of<typename R::Compute_x_3( Point_3)>::type
   x() const

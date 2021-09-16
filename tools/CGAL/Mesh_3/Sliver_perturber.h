@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_3/Sliver_perturber.h $
-// $Id: Sliver_perturber.h 4fc2f59 2020-07-31T16:17:56+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_3/Sliver_perturber.h $
+// $Id: Sliver_perturber.h c28e05b 2018-02-23T12:50:06+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Stephane Tayeb
@@ -42,7 +51,8 @@
 #include <CGAL/Real_timer.h>
 #include <CGAL/Mesh_3/Null_perturber_visitor.h>
 #include <CGAL/Mesh_3/sliver_criteria.h>
-#include <CGAL/Time_stamper.h>
+#include <CGAL/Has_timestamp.h>
+#include <CGAL/Hash_handles_with_or_without_timestamps.h>
 
 #include <CGAL/Mesh_3/Concurrent_mesher_config.h>
 #include <CGAL/Mesh_3/Worksharing_data_structures.h>
@@ -53,7 +63,7 @@
 #endif
 
 #ifdef CGAL_LINKED_WITH_TBB
-# include <tbb/task_group.h>
+# include <tbb/task.h>
 #endif
 
 #include <boost/format.hpp>
@@ -104,7 +114,7 @@ PVertex_()
 , incident_sliver_nb_(0)
 , min_value_((std::numeric_limits<double>::max)())
 , try_nb_(0)
-, p_perturbation_(nullptr)
+, p_perturbation_(NULL)
 , id_()
 { }
 
@@ -113,7 +123,7 @@ PVertex_(const Vertex_handle& vh, id_type id)
 , incident_sliver_nb_(0)
 , min_value_((std::numeric_limits<double>::max)())
 , try_nb_(0)
-, p_perturbation_(nullptr)
+, p_perturbation_(NULL)
 , id_(id)
 { }
 
@@ -133,7 +143,7 @@ void set_perturbation(const Perturbation* p) { p_perturbation_ = p; }
 bool is_perturbable() const
 {
   return (   (vertex_handle_->in_dimension() > 1)
-          && (nullptr != perturbation())
+          && (NULL != perturbation())
           && (sliver_nb() != 0) );
 }
 
@@ -213,7 +223,7 @@ PVertex_()
 , incident_sliver_nb_(0)
 , min_value_((std::numeric_limits<double>::max)())
 , try_nb_(0)
-, p_perturbation_(nullptr)
+, p_perturbation_(NULL)
 , id_()
 { }
 
@@ -224,7 +234,7 @@ PVertex_(const Vertex_handle& vh, id_type id)
 , incident_sliver_nb_(0)
 , min_value_((std::numeric_limits<double>::max)())
 , try_nb_(0)
-, p_perturbation_(nullptr)
+, p_perturbation_(NULL)
 , id_(id)
 { }
 
@@ -254,7 +264,7 @@ void set_perturbation(const Perturbation* p) { p_perturbation_ = p; }
 bool is_perturbable() const
 {
   return (   (vertex_handle_->in_dimension() > 1)
-          && (nullptr != perturbation())
+          && (NULL != perturbation())
           && (sliver_nb() != 0) );
 }
 
@@ -335,10 +345,10 @@ protected:
   Lock_data_structure *
     get_lock_data_structure()                       const { return 0; }
   void unlock_all_elements()                        const {}
-  void create_task_group()                          const {}
+  void create_root_task()                           const {}
   bool flush_work_buffers()                         const { return true; }
   void wait_for_all()                               const {}
-  void destroy_trask_group()                        const {}
+  void destroy_root_task()                          const {}
   template <typename Func, typename PVertex>
   void enqueue_work(Func, const PVertex &)          const {}
 
@@ -373,34 +383,36 @@ protected:
     m_lock_ds.unlock_all_points_locked_by_this_thread();
   }
 
-  void create_task_group() const
+  void create_root_task() const
   {
-    m_task_group = new tbb::task_group;
+    m_empty_root_task = new( tbb::task::allocate_root() ) tbb::empty_task;
+    m_empty_root_task->set_ref_count(1);
   }
 
   bool flush_work_buffers() const
   {
-    bool keep_flushing = m_worksharing_ds.flush_work_buffers(*m_task_group);
+    m_empty_root_task->set_ref_count(1);
+    bool keep_flushing = m_worksharing_ds.flush_work_buffers(*m_empty_root_task);
     wait_for_all();
     return keep_flushing;
   }
 
   void wait_for_all() const
   {
-    m_task_group->wait();
+    m_empty_root_task->wait_for_all();
   }
 
-  void destroy_trask_group() const
+  void destroy_root_task() const
   {
-    delete m_task_group;
-    m_task_group = 0;
+    tbb::task::destroy(*m_empty_root_task);
+    m_empty_root_task = 0;
   }
 
   template <typename Func, typename PVertex>
   void enqueue_work(Func f, const PVertex &pv) const
   {
-    CGAL_assertion(m_task_group != 0);
-    m_worksharing_ds.enqueue_work(f, pv, *m_task_group);
+    CGAL_assertion(m_empty_root_task != 0);
+    m_worksharing_ds.enqueue_work(f, pv, *m_empty_root_task);
   }
 
   void increment_erase_counter(const Vertex_handle &vh) const
@@ -408,16 +420,12 @@ protected:
     vh->increment_erase_counter();
   }
 
-  void cancel() const {
-    return m_task_group->cancel();
-  }
-
 public:
 
 protected:
   mutable Lock_data_structure           m_lock_ds;
   mutable Mesh_3::Auto_worksharing_ds   m_worksharing_ds;
-  mutable tbb::task_group               *m_task_group;
+  mutable tbb::task                    *m_empty_root_task;
 };
 #endif // CGAL_LINKED_WITH_TBB
 
@@ -706,7 +714,7 @@ private:
       } while (!could_lock_zone);
 
       if ( m_sliver_perturber.is_time_limit_reached() )
-        m_sliver_perturber.cancel();
+        tbb::task::self().cancel_group_execution();
     }
   };
 #endif
@@ -884,7 +892,7 @@ add_perturbation(Perturbation* perturbation)
   if ( !perturbation_vector_.empty() )
     perturbation_vector_.back().set_next(perturbation);
 
-  if ( nullptr != perturbation )
+  if ( NULL != perturbation )
   {
     // Set order
     perturbation->set_order(next_perturbation_order_++);
@@ -935,7 +943,7 @@ perturb(const FT& sliver_bound, PQueue& pqueue, Visitor& visitor) const
   // Parallel
   if (boost::is_convertible<Concurrency_tag, Parallel_tag>::value)
   {
-    this->create_task_group();
+    this->create_root_task();
 
     while (pqueue.size() > 0)
     {
@@ -959,7 +967,7 @@ perturb(const FT& sliver_bound, PQueue& pqueue, Visitor& visitor) const
 # endif
     }
 
-    this->destroy_trask_group();
+    this->destroy_root_task();
   }
   // Sequential
   else
@@ -993,8 +1001,8 @@ perturb(const FT& sliver_bound, PQueue& pqueue, Visitor& visitor) const
       // Perturb vertex
       Vertex_vector modified_vertices;
 
-      // pv.perturbation() should not be nullptr if pv is in pqueue
-      CGAL_assertion(pv.perturbation() != nullptr);
+      // pv.perturbation() should not be NULL if pv is in pqueue
+      CGAL_assertion(pv.perturbation() != NULL);
 
       std::pair<bool,Vertex_handle> perturbation_ok =
         pv.perturbation()->operator()(pv.vertex(),
@@ -1033,7 +1041,7 @@ perturb(const FT& sliver_bound, PQueue& pqueue, Visitor& visitor) const
         // If perturbation fails, try next one
         pv.set_perturbation(pv.perturbation()->next());
 
-        if ( nullptr == pv.perturbation() )
+        if ( NULL == pv.perturbation() )
         {
           bad_vertices.push_back(pv.vertex());
         }
@@ -1325,8 +1333,8 @@ perturb_vertex( PVertex pv
     // Perturb vertex
     Vertex_vector modified_vertices;
 
-    // pv.perturbation() should not be nullptr if pv is in pqueue
-    CGAL_assertion(pv.perturbation() != nullptr);
+    // pv.perturbation() should not be NULL if pv is in pqueue
+    CGAL_assertion(pv.perturbation() != NULL);
 
     std::pair<bool,Vertex_handle> perturbation_ok =
       pv.perturbation()->operator()(pv.vertex(),
@@ -1375,7 +1383,7 @@ perturb_vertex( PVertex pv
         pv.set_perturbation(pv.perturbation()->next());
         pv.update_saved_erase_counter();
 
-        if ( nullptr == pv.perturbation() )
+        if ( NULL == pv.perturbation() )
         {
           bad_vertices.push_back(pv.vertex());
         }

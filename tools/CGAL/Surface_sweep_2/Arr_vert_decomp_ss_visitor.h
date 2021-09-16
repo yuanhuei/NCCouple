@@ -2,13 +2,23 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_vert_decomp_ss_visitor.h $
-// $Id: Arr_vert_decomp_ss_visitor.h 3c5552b 2020-06-30T21:22:40+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
-// Author(s): Ron Wein <wein@post.tau.ac.il>
-//            Efi Fogel <efifogel@gmail.com>
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_vert_decomp_ss_visitor.h $
+// $Id: Arr_vert_decomp_ss_visitor.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
+//
+//
+// Author(s)     : Ron Wein <wein@post.tau.ac.il>
+//                 Efi Fogel <efifogel@gmail.com>
 
 #ifndef CGAL_ARR_VERT_DECOMP_SS_VISITOR_H
 #define CGAL_ARR_VERT_DECOMP_SS_VISITOR_H
@@ -20,11 +30,10 @@
  * Definition of the Arr_vert_decomp_ss_visitor class-template.
  */
 
-#include <boost/variant.hpp>
-
 namespace CGAL {
 
 #include <CGAL/Surface_sweep_2/Default_visitor_base.h>
+#include <CGAL/Object.h>
 #include <CGAL/Default.h>
 
 /*! \class Arr_vert_decomp_ss_visitor
@@ -63,18 +72,13 @@ private:
 public:
   typedef typename Helper::Arrangement_2                Arrangement_2;
   typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
-  typedef typename Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
-  typedef typename Arrangement_2::Face_const_handle     Face_const_handle;
 
-  typedef boost::variant<Vertex_const_handle, Halfedge_const_handle,
-                         Face_const_handle>
-    Cell_type;
-  typedef boost::optional<Cell_type>                    Vert_type;
-  typedef std::pair<Vert_type, Vert_type>               Vert_pair;
+  typedef std::pair<CGAL::Object, CGAL::Object>         Vert_pair;
   typedef std::pair<Vertex_const_handle, Vert_pair>     Vert_entry;
 
 protected:
   typedef typename Base::Status_line_iterator           Status_line_iterator;
+  typedef typename Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
   //typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
   typedef typename Arrangement_2::Halfedge_around_vertex_const_circulator
     Halfedge_around_vertex_const_circulator;
@@ -89,8 +93,8 @@ protected:
                                         // An invalid vertex handle.
 
   Vertex_const_handle m_prev_vh;        // The previous vertex.
-  Vert_type m_prev_obj_below;           // The object this vertex sees below it.
-  Vert_type m_prev_obj_above;           // The object this vertex sees above it.
+  CGAL::Object m_prev_obj_below;        // The object this vertex sees below it.
+  CGAL::Object m_prev_obj_above;        // The object this vertex sees above it.
 
   Output_iterator* m_out;               // An output iterator for the result.
 
@@ -160,7 +164,7 @@ after_handle_event(Event* event,
   // Get the vertex handle associated with the current event (stored with
   // the point).
   Vertex_const_handle vh = event->point().vertex_handle();
-  Vert_type obj_above, obj_below;
+  CGAL::Object obj_above, obj_below;
 
   // Check the feature from above.
   if (above == this->status_line_end()) {
@@ -171,7 +175,8 @@ after_handle_event(Event* event,
   else {
     // We have a valid subcurve above the event: get its halfedge handle
     // and associate it with the vertex.
-    obj_above = Vert_type((*above)->last_curve().halfedge_handle());
+    obj_above =
+      CGAL::make_object((*above)->last_curve().halfedge_handle());
   }
 
   // Check if the previous vertex we handled has the same x-coordinate
@@ -210,12 +215,12 @@ after_handle_event(Event* event,
       }
 
       if (! vert_connected) {
-        obj_below = Vert_type(m_prev_vh);
-        m_prev_obj_above = Vert_type(vh);
+        obj_below = CGAL::make_object(m_prev_vh);
+        m_prev_obj_above = CGAL::make_object(vh);
       }
       else {
-        obj_below = Vert_type();
-        m_prev_obj_above = Vert_type();
+        obj_below = CGAL::Object();
+        m_prev_obj_above = CGAL::Object();
       }
     }
     else {
@@ -264,18 +269,19 @@ after_handle_event(Event* event,
         }
 
         if (! vert_connected) {
-          obj_below = Vert_type(m_prev_vh);
-          m_prev_obj_above = Vert_type(vh);
+          obj_below = CGAL::make_object(m_prev_vh);
+          m_prev_obj_above = CGAL::make_object(vh);
         }
         else {
-          obj_below = Vert_type();
-          m_prev_obj_above = Vert_type();
+          obj_below = CGAL::Object();
+          m_prev_obj_above = CGAL::Object();
         }
       }
       else {
         // Get the halfedge handle of the subcurve below the current event and
         // associate it with its vertex.
-        obj_below = Vert_type((*below)->last_curve().halfedge_handle());
+        obj_below =
+          CGAL::make_object((*below)->last_curve().halfedge_handle());
       }
     }
 

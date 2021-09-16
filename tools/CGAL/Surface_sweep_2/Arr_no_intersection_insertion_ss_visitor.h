@@ -2,15 +2,24 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_no_intersection_insertion_ss_visitor.h $
-// $Id: Arr_no_intersection_insertion_ss_visitor.h 3849f5e 2020-06-14T00:41:25+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_no_intersection_insertion_ss_visitor.h $
+// $Id: Arr_no_intersection_insertion_ss_visitor.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
-// Author(s): Baruch Zukerman <baruchzu@post.tau.ac.il>
-//            Ron Wein <wein@post.tau.ac.il>
-//            Efi Fogel <efif@post.tau.ac.il>
+// Author(s)     : Baruch Zukerman <baruchzu@post.tau.ac.il>
+//                 Ron Wein <wein@post.tau.ac.il>
+//                 Efi Fogel <efif@post.tau.ac.il>
 
 #ifndef CGAL_ARR_NO_INTERSECTION_INSERTION_SS_VISITOR_H
 #define CGAL_ARR_NO_INTERSECTION_INSERTION_SS_VISITOR_H
@@ -165,6 +174,7 @@ public:
    */
   virtual Vertex_handle insert_isolated_vertex(const Point_2& pt,
                                                Status_line_iterator iter);
+  //@}
 
   /// \name Edge-split functions (to be overridden by the child visitor).
   //@{

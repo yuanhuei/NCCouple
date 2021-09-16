@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_3/initialize_triangulation_from_labeled_image.h $
-// $Id: initialize_triangulation_from_labeled_image.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_3/initialize_triangulation_from_labeled_image.h $
+// $Id: initialize_triangulation_from_labeled_image.h ba3a59e 2017-11-30T15:54:00+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent Rineau
@@ -23,6 +32,8 @@
 #include <CGAL/iterator.h>
 #include <CGAL/point_generators_3.h>
 #include <CGAL/Image_3.h>
+
+#include <boost/foreach.hpp>
 
 #include <iostream>
 #include <queue>
@@ -145,14 +156,14 @@ void initialize_triangulation_from_labeled_image(C3T3& c3t3,
       }
     }
 
-    for(const Vector_3& v : directions)
+    BOOST_FOREACH(const Vector_3& v, directions)
     {
       const Bare_point test = it->first + v;
       const typename Mesh_domain::Intersection intersect =
         construct_intersection(Segment_3(it->first, test));
-      if (std::get<2>(intersect) != 0)
+      if (CGAL::cpp11::get<2>(intersect) != 0)
       {
-        const Bare_point& bpi = std::get<0>(intersect);
+        const Bare_point& bpi = CGAL::cpp11::get<0>(intersect);
         Weighted_point pi = cwp(bpi);
 
         // This would cause trouble to optimizers
@@ -196,7 +207,7 @@ void initialize_triangulation_from_labeled_image(C3T3& c3t3,
         }
 
         bool pi_inside_protecting_sphere = false;
-        for(Vertex_handle cv : conflict_vertices)
+        BOOST_FOREACH(Vertex_handle cv, conflict_vertices)
         {
           if(tr.is_infinite(cv))
             continue;
@@ -214,7 +225,7 @@ void initialize_triangulation_from_labeled_image(C3T3& c3t3,
         }
         if (pi_inside_protecting_sphere)
           continue;
-        const typename Mesh_domain::Index index = std::get<1>(intersect);
+        const typename Mesh_domain::Index index = CGAL::cpp11::get<1>(intersect);
 
         /// The following lines show how to insert initial points in the
         /// `c3t3` object. [insert initial points]

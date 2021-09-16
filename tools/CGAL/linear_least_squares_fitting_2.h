@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Principal_component_analysis/include/CGAL/linear_least_squares_fitting_2.h $
-// $Id: linear_least_squares_fitting_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Principal_component_analysis/include/CGAL/linear_least_squares_fitting_2.h $
+// $Id: linear_least_squares_fitting_2.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Pierre Alliez and Sylvain Pion and Ankit Gupta
 
@@ -29,39 +38,39 @@
 
 namespace CGAL {
 
-template < typename InputIterator,
+template < typename InputIterator, 
            typename Kernel,
-           typename Tag,
-           typename DiagonalizeTraits>
+	   typename Tag,
+	   typename DiagonalizeTraits>
 inline
 typename Kernel::FT
 linear_least_squares_fitting_2(InputIterator first,
-                               InputIterator beyond,
+                               InputIterator beyond, 
                                typename Kernel::Line_2& line,
                                typename Kernel::Point_2& centroid,
                                const Tag& tag,
-                               const Kernel& kernel,
-                               const DiagonalizeTraits& diagonalize_traits)
+			       const Kernel& kernel,
+			       const DiagonalizeTraits& diagonalize_traits)
 {
   typedef typename std::iterator_traits<InputIterator>::value_type Value_type;
   return internal::linear_least_squares_fitting_2(first, beyond, line,
-                                                  centroid,(Value_type*)nullptr,kernel,tag,
-                                                  diagonalize_traits);
+						  centroid,(Value_type*)NULL,kernel,tag,
+						  diagonalize_traits);
 }
 
 // deduces the kernel from the points in container.
 // Use default DiagonalizeTraits
-template < typename InputIterator,
+template < typename InputIterator, 
            typename Line,
            typename Point,
-           typename Tag>
+	   typename Tag>
 inline
 typename Kernel_traits<Line>::Kernel::FT
 linear_least_squares_fitting_2(InputIterator first,
-                               InputIterator beyond,
+                               InputIterator beyond, 
                                Line& line,
                                Point& centroid,
-                               const Tag& tag)
+			       const Tag& tag)
 {
   typedef typename std::iterator_traits<InputIterator>::value_type Value_type;
   typedef typename Kernel_traits<Value_type>::Kernel Kernel;
@@ -70,13 +79,13 @@ linear_least_squares_fitting_2(InputIterator first,
      Default_diagonalize_traits<typename Kernel::FT, 2>());
 }
 
-template < typename InputIterator,
+template < typename InputIterator, 
            typename Line,
-           typename Tag>
+	   typename Tag>
 inline
 typename Kernel_traits<Line>::Kernel::FT
 linear_least_squares_fitting_2(InputIterator first,
-                               InputIterator beyond,
+                               InputIterator beyond, 
                                Line& line,
                                const Tag& tag)
 {
@@ -84,7 +93,7 @@ linear_least_squares_fitting_2(InputIterator first,
   typedef typename Kernel_traits<Value_type>::Kernel Kernel;
   typename Kernel::Point_2 centroid; // unused
   return CGAL::linear_least_squares_fitting_2(first,beyond,line,centroid,tag,Kernel(),
-                                              Default_diagonalize_traits<typename Kernel::FT, 2>());
+					      Default_diagonalize_traits<typename Kernel::FT, 2>());
 }
 
 

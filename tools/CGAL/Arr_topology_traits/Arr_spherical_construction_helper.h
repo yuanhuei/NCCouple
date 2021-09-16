@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_spherical_construction_helper.h $
-// $Id: Arr_spherical_construction_helper.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_spherical_construction_helper.h $
+// $Id: Arr_spherical_construction_helper.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Ron Wein <wein@post.tau.ac.il>
@@ -105,7 +114,7 @@ public:
   Arr_spherical_construction_helper(Arrangement_2* arr) :
     m_top_traits(arr->topology_traits()),
     m_arr_access(*arr),
-    m_he_ind_map_p(nullptr)
+    m_he_ind_map_p(NULL)
   {}
 
   /*! Destructor. */
@@ -163,7 +172,7 @@ public:
    */
   void splice_indices_list(Halfedge_handle he)
   {
-    CGAL_assertion(m_he_ind_map_p != nullptr);
+    CGAL_assertion(m_he_ind_map_p != NULL);
     Indices_list& list_ref = (*m_he_ind_map_p)[he];
     list_ref.splice(list_ref.end(), m_subcurves_at_nf);
   }

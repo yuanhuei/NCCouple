@@ -2,13 +2,22 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_spherical_vert_decomp_helper.h $
-// $Id: Arr_spherical_vert_decomp_helper.h 436ba5f 2020-06-30T21:23:16+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
-// Author(s): Ron Wein <wein@post.tau.ac.il>
-//            Efi Fogel <efif@post.tau.ac.il>
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_topology_traits/Arr_spherical_vert_decomp_helper.h $
+// $Id: Arr_spherical_vert_decomp_helper.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
+//
+// Author(s)     : Ron Wein <wein@post.tau.ac.il>
+//                 Efi Fogel <efif@post.tau.ac.il>
 
 #ifndef CGAL_ARR_SPHERICAL_VERT_DECOMP_HELPER_H
 #define CGAL_ARR_SPHERICAL_VERT_DECOMP_HELPER_H
@@ -44,13 +53,8 @@ private:
 public:
   typedef typename Gt2::X_monotone_curve_2              X_monotone_curve_2;
 
-  typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
-  typedef typename Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
   typedef typename Arrangement_2::Face_const_handle     Face_const_handle;
-
-  typedef boost::variant<Vertex_const_handle, Halfedge_const_handle,
-                         Face_const_handle>             Cell_type;
-  typedef boost::optional<Cell_type>                    Vert_type;
+  typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
 
 protected:
   typedef typename Arrangement_2::Topology_traits       Topology_traits;
@@ -85,17 +89,17 @@ public:
   //@}
 
   /*! Get the current top object. */
-  Vert_type top_object () const
+  CGAL::Object top_object () const
   {
     return (m_valid_north_pole) ?
-      Vert_type(m_north_pole) : Vert_type(m_north_face);
+      CGAL::make_object (m_north_pole) : CGAL::make_object (m_north_face);
   }
 
   /*! Get the current bottom object. */
-  Vert_type bottom_object () const
+  CGAL::Object bottom_object () const
   {
     return (m_valid_south_pole) ?
-      Vert_type(m_south_pole) : Vert_type(m_south_face);
+      CGAL::make_object(m_south_pole) : CGAL::make_object(m_south_face);
   }
 };
 
@@ -110,14 +114,14 @@ public:
   void Arr_spherical_vert_decomp_helper<Tr, Arr, Evnt, Sbcv>::before_sweep()
 {
   // Get the north pole and the face that intially contains it.
-  m_valid_north_pole = (m_top_traits->north_pole() != nullptr);
+  m_valid_north_pole = (m_top_traits->north_pole() != NULL);
   if (m_valid_north_pole)
     m_north_pole = Vertex_const_handle (m_top_traits->north_pole());
 
   m_north_face = Face_const_handle (m_top_traits->spherical_face());
 
   // Get the south pole and the face that intially contains it.
-  m_valid_south_pole = (m_top_traits->south_pole() != nullptr);
+  m_valid_south_pole = (m_top_traits->south_pole() != NULL);
   if (m_valid_south_pole)
     m_south_pole = Vertex_const_handle (m_top_traits->south_pole());
 

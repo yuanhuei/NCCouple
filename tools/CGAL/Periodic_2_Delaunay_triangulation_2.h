@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Periodic_2_triangulation_2/include/CGAL/Periodic_2_Delaunay_triangulation_2.h $
-// $Id: Periodic_2_Delaunay_triangulation_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Periodic_2_triangulation_2/include/CGAL/Periodic_2_Delaunay_triangulation_2.h $
+// $Id: Periodic_2_Delaunay_triangulation_2.h c8183ab 2019-01-23T10:23:47+01:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Nico Kruithof <Nico@nghk.nl>
 
@@ -48,17 +57,17 @@ public:
 
   typedef typename Gt::Periodic_2_offset_2     Offset;
   typedef typename Gt::Iso_rectangle_2         Iso_rectangle;
-  typedef std::array<int, 2>                   Covering_sheets;
+  typedef array<int, 2>                        Covering_sheets;
 
   typedef typename Gt::FT                      FT;
   typedef typename Gt::Point_2                 Point;
   typedef typename Gt::Segment_2               Segment;
   typedef typename Gt::Triangle_2              Triangle;
 
-  typedef std::pair<Point, Offset>                   Periodic_point;
-  typedef std::array< std::pair<Point, Offset>, 2>   Periodic_segment;
-  typedef std::array< std::pair<Point, Offset>, 3>   Periodic_triangle;
-  typedef std::array< std::pair<Point, Offset>, 4>   Periodic_tetrahedron;
+  typedef std::pair<Point, Offset>              Periodic_point;
+  typedef array< std::pair<Point, Offset>, 2>   Periodic_segment;
+  typedef array< std::pair<Point, Offset>, 3>   Periodic_triangle;
+  typedef array< std::pair<Point, Offset>, 4>   Periodic_tetrahedron;
 
   typedef typename Base::size_type              size_type;
   typedef typename Base::Locate_type            Locate_type;
@@ -143,8 +152,10 @@ public:
   {
     insert(first, last);
   }
-
+  
+#ifndef CGAL_CFG_NO_CPP0X_DELETED_AND_DEFAULT_FUNCTIONS
   Periodic_2_Delaunay_triangulation_2& operator=(const Periodic_2_Delaunay_triangulation_2&)=default;
+#endif
   // \}
 
   /// \name Methods regarding the covering
@@ -211,12 +222,12 @@ public:
          boost::is_convertible <
          typename std::iterator_traits<InputIterator>::value_type,
          Point
-         > >::type* = nullptr)
+         > >::type* = NULL)
 #else
   template < class InputIterator >
   std::ptrdiff_t
   insert(InputIterator first, InputIterator last, bool is_large_point_set = true)
-#endif //CGAL_TRIANGULATION_2_DONT_INSERT_RANGE_OF_POINTS_WITH_INFO
+#endif //CGAL_TRIANGULATION_2_DONT_INSERT_RANGE_OF_POINTS_WITH_INFO 
   {
     if (first == last) return 0;
 
@@ -423,7 +434,7 @@ public:
           boost::is_convertible <
           typename std::iterator_traits<InputIterator>::value_type,
           std::pair<Point, typename internal::Info_check<typename Tds::Vertex>::type>
-          > >::type* = nullptr
+          > >::type* = NULL
         )
   {
     return insert_with_info< std::pair<Point, typename internal::Info_check<typename Tds::Vertex>::type> >(first, last, is_large_point_set);
@@ -438,7 +449,7 @@ public:
           boost::mpl::and_ <
           boost::is_convertible< typename std::iterator_traits<InputIterator_1>::value_type, Point >,
           boost::is_convertible< typename std::iterator_traits<InputIterator_2>::value_type, typename internal::Info_check<typename Tds::Vertex>::type >
-          > >::type* = nullptr)
+          > >::type* = NULL)
   {
     return insert_with_info< boost::tuple<Point, typename internal::Info_check<typename Tds::Vertex>::type> >(first, last, is_large_point_set);
   }
@@ -5231,7 +5242,7 @@ void Periodic_2_Delaunay_triangulation_2<Gt, Tds>::fill_hole_delaunay(std::list<
       typename Hole::iterator cut_after(hit);
 
       // if tested vertex is c with respect to the vertex opposite
-      // to nullptr neighbor,
+      // to NULL neighbor,
       // stop at the before last face;
       hdone--;
       while( hit != hdone)
@@ -5407,7 +5418,7 @@ void Periodic_2_Delaunay_triangulation_2<Gt, Tds>::fill_hole_delaunay(
       typename Hole::iterator cut_after(hit);
 
       // if tested vertex is c with respect to the vertex opposite
-      // to nullptr neighbor,
+      // to NULL neighbor,
       // stop at the before last face;
       hdone--;
       while( hit != hdone)

@@ -1,16 +1,25 @@
-// Copyright (c) 2000
+// Copyright (c) 2000  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Intersections_2/include/CGAL/intersection_2.h $
-// $Id: intersection_2.h 8b41189 2020-03-26T18:58:21+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Intersections_2/include/CGAL/intersection_2.h $
+// $Id: intersection_2.h 38afb85 2019-05-20T10:42:08+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Geert-Jan Giezeman
 
@@ -28,10 +37,6 @@
 #include <CGAL/Intersections_2/Circle_2_Iso_rectangle_2.h>
 #include <CGAL/Intersections_2/Circle_2_Line_2.h>
 #include <CGAL/Intersections_2/Circle_2_Point_2.h>
-#include <CGAL/Intersections_2/Circle_2_Segment_2.h>
-#include <CGAL/Intersections_2/Circle_2_Ray_2.h>
-#include <CGAL/Intersections_2/Circle_2_Triangle_2.h>
-
 
 #include <CGAL/Intersections_2/Iso_rectangle_2_Iso_rectangle_2.h>
 #include <CGAL/Intersections_2/Iso_rectangle_2_Line_2.h>

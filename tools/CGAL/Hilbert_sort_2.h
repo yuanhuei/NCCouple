@@ -1,11 +1,20 @@
 // Copyright (c) 2011  INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Spatial_sorting/include/CGAL/Hilbert_sort_2.h $
-// $Id: Hilbert_sort_2.h 5c41b10 2020-01-02T10:26:44+01:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Spatial_sorting/include/CGAL/Hilbert_sort_2.h $
+// $Id: Hilbert_sort_2.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Olivier Devillers
 
@@ -18,27 +27,27 @@
 
 namespace CGAL {
 
-template <class K,  class Hilbert_policy, class ConcurrencyTag = Sequential_tag >
-class Hilbert_sort_2;
+template <class K,  class Hilbert_policy >
+  class Hilbert_sort_2;
 
-template <class K, class ConcurrencyTag>
-class Hilbert_sort_2<K, Hilbert_sort_median_policy, ConcurrencyTag >
-  : public Hilbert_sort_median_2<K, ConcurrencyTag>
+template <class K>  
+  class Hilbert_sort_2<K, Hilbert_sort_median_policy >
+  : public Hilbert_sort_median_2<K>
 {
-public:
-  Hilbert_sort_2 (const K &k=K(), std::ptrdiff_t limit=1 )
-    : Hilbert_sort_median_2<K, ConcurrencyTag> (k,limit)
-  {}
+ public:
+  Hilbert_sort_2 (const K &k=K() , std::ptrdiff_t limit=1 )
+   : Hilbert_sort_median_2<K> (k,limit)
+    {}
 };
 
-template <class K, class ConcurrencyTag>
-class Hilbert_sort_2<K, Hilbert_sort_middle_policy, ConcurrencyTag >
+template <class K>
+  class Hilbert_sort_2<K, Hilbert_sort_middle_policy >
   : public Hilbert_sort_middle_2<K>
 {
-public:
-  Hilbert_sort_2 (const K &k=K(), std::ptrdiff_t limit=1 )
-    : Hilbert_sort_middle_2<K> (k,limit)
-  {}
+ public:
+ Hilbert_sort_2 (const K &k=K() , std::ptrdiff_t limit=1 )
+   : Hilbert_sort_middle_2<K> (k,limit)
+    {}
 };
 
 } // namespace CGAL

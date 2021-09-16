@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_3/Mesher_level.h $
-// $Id: Mesher_level.h 4fc2f59 2020-07-31T16:17:56+02:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_3/Mesher_level.h $
+// $Id: Mesher_level.h b6f6aeb 2018-12-18T12:55:01+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent RINEAU, Clement JAMIN
@@ -34,7 +43,7 @@
 #include <algorithm>
 
 #ifdef CGAL_LINKED_WITH_TBB
-# include <tbb/task_group.h>
+# include <tbb/task.h>
 #endif
 
 #include <string>
@@ -417,7 +426,7 @@ public:
     for (int i = 0 ; i < 4 ; ++i)
       vertices[i] = e->vertex(i);
   }
-  // Among the 4 values, one of them will be Vertex_handle() (~= nullptr)
+  // Among the 4 values, one of them will be Vertex_handle() (~= NULL)
   void get_valid_vertices_of_element(const Facet &e, Vertex_handle vertices[4]) const
   {
     for (int i = 0 ; i < 4 ; ++i)
@@ -701,7 +710,7 @@ class Mesher_level<Tr, Derived, Element, Previous,
 {
 private:
   typedef Derived Derived_;
-  template <typename ML, typename Container_element,
+  template <typename ML, typename Container_element, 
             typename Quality, typename Mesh_visitor> class Enqueue_element;
 public:
 
@@ -748,7 +757,7 @@ public:
     Concurrent_mesher_config::get().refinement_batch_size)
     , m_lock_ds(0)
     , m_worksharing_ds(0)
-    , m_task_group(0)
+    , m_empty_root_task(0)
 #ifndef CGAL_NO_ATOMIC
     , m_stop_ptr(0)
 #endif
@@ -850,7 +859,7 @@ public:
   {
 
     CGAL_assertion_msg(triangulation().get_lock_data_structure() == 0,
-      "In refine_sequentially_up_to_N_vertices, the triangulation's locking data structure should be nullptr");
+      "In refine_sequentially_up_to_N_vertices, the triangulation's locking data structure should be NULL");
 
     while(! is_algorithm_done()
       && triangulation().number_of_vertices() < approx_max_num_mesh_vertices)
@@ -875,13 +884,13 @@ public:
   void enqueue_task(
     const Container_element &ce, const Quality &quality, Mesh_visitor visitor)
   {
-    CGAL_assertion(m_task_group != 0);
+    CGAL_assertion(m_empty_root_task != 0);
 
     m_worksharing_ds->enqueue_work(
       Enqueue_element<Self, Container_element, Quality, Mesh_visitor>(
         *this, ce, quality, visitor),
       quality,
-      *m_task_group
+      *m_empty_root_task
       // NOTE: if you uncomment this line (Load_based_worksharing_ds), the element may
       // be a zombie at this point => thus, it may be "infinite" and cause an assertion error
       // in debug mode when computing the circumcenter
@@ -905,7 +914,8 @@ public:
     previous_level.add_to_TLS_lists(true);
     add_to_TLS_lists(true);
 
-    m_task_group = new tbb::task_group;
+    m_empty_root_task = new( tbb::task::allocate_root() ) tbb::empty_task;
+    m_empty_root_task->set_ref_count(1);
 
     while (!no_longer_element_to_refine())
     {
@@ -914,7 +924,7 @@ public:
       enqueue_task(qe.second, qe.first, visitor);
     }
 
-    m_task_group->wait();
+    m_empty_root_task->wait_for_all();
 
 #if defined(CGAL_MESH_3_VERBOSE) || defined(CGAL_MESH_3_PROFILING)
     std::cerr << " Flushing";
@@ -922,15 +932,16 @@ public:
     bool keep_flushing = true;
     while (keep_flushing)
     {
-      keep_flushing = m_worksharing_ds->flush_work_buffers(*m_task_group);
-      m_task_group->wait();
+      m_empty_root_task->set_ref_count(1);
+      keep_flushing = m_worksharing_ds->flush_work_buffers(*m_empty_root_task);
+      m_empty_root_task->wait_for_all();
 #if defined(CGAL_MESH_3_VERBOSE) || defined(CGAL_MESH_3_PROFILING)
       std::cerr << ".";
 #endif
     }
 
-    delete m_task_group;
-    m_task_group = 0;
+    tbb::task::destroy(*m_empty_root_task);
+    m_empty_root_task = 0;
 
     splice_local_lists();
     //previous_level.splice_local_lists(); // useless
@@ -1158,8 +1169,8 @@ public:
     if(m_stop_ptr != 0 &&
        m_stop_ptr->load(CGAL::cpp11::memory_order_acquire) == true)
     {
-      CGAL_assertion(m_task_group != 0);
-      m_task_group->cancel();
+      CGAL_assertion(m_empty_root_task != 0);
+      m_empty_root_task->cancel_group_execution();
       return true;
     }
 #endif // not defined CGAL_NO_ATOMIC
@@ -1175,7 +1186,7 @@ protected:
   Lock_data_structure *m_lock_ds;
   WorksharingDataStructureType *m_worksharing_ds;
 
-  tbb::task_group *m_task_group;
+  tbb::task *m_empty_root_task;
 #ifndef CGAL_NO_ATOMIC
   CGAL::cpp11::atomic<bool>* m_stop_ptr;
 #endif
@@ -1194,12 +1205,12 @@ private:
   public:
     // Constructor
     Enqueue_element(ML &ml,
-                    const Container_element &ce,
-                    const Quality &quality,
+                    const Container_element &ce, 
+                    const Quality &quality, 
                     Mesh_visitor visitor)
-    : m_mesher_level(ml),
-      m_container_element(ce),
-      m_quality(quality),
+    : m_mesher_level(ml), 
+      m_container_element(ce), 
+      m_quality(quality), 
       m_visitor(visitor)
     {
     }
@@ -1207,7 +1218,7 @@ private:
     // operator()
     void operator()() const
     {
-      typedef typename ML::Derived_::Container::value_type
+      typedef typename ML::Derived_::Container::value_type 
                                                  Container_quality_and_element;
 
       Mesher_level_conflict_status status;
@@ -1217,7 +1228,7 @@ private:
           return;
         }
 
-        status = m_mesher_level.try_lock_and_refine_element(m_container_element,
+        status = m_mesher_level.try_lock_and_refine_element(m_container_element, 
                                                             m_visitor);
       }
       while (status != NO_CONFLICT
@@ -1235,7 +1246,7 @@ private:
       // Finally we add the new local bad_elements to the feeder
       while (m_mesher_level.no_longer_local_element_to_refine() == false)
       {
-        Container_quality_and_element qe =
+        Container_quality_and_element qe = 
           m_mesher_level.derived().get_next_local_raw_element_impl();
         m_mesher_level.pop_next_local_element();
         m_mesher_level.enqueue_task(qe.second, qe.first, m_visitor);

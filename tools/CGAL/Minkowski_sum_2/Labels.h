@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Minkowski_sum_2/include/CGAL/Minkowski_sum_2/Labels.h $
-// $Id: Labels.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Minkowski_sum_2/include/CGAL/Minkowski_sum_2/Labels.h $
+// $Id: Labels.h 8cdfad0 2017-11-15T22:58:57+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Ron Wein   <wein_r@yahoo.com>
 
@@ -62,7 +71,7 @@ public:
       return (false);
 
     return (_component == label._component &&
-      _index == label._index);
+	    _index == label._index);
   }
 
   /*! Get the component. */
@@ -168,7 +177,7 @@ public:
       return (false);
 
     return (_component == label._component &&
-      _index == label._index);
+	    _index == label._index);
   }
 
   /*! Check whether the given label is the predecessor of this label. */
@@ -178,8 +187,8 @@ public:
       return (false);
 
     return (_component == label._component &&
-      (label._index + 1 == _index ||
-       (label._is_last && _index == 0)));
+	    (label._index + 1 == _index ||
+	     (label._is_last && _index == 0)));
   }
 
   /*! Check whether the given label is the succcessor of this label. */
@@ -189,8 +198,8 @@ public:
       return (false);
 
     return (_component == label._component &&
-      (_index + 1 == label._index ||
-       (_is_last && label._index == 0)));
+	    (_index + 1 == label._index ||
+	     (_is_last && label._index == 0)));
   }
 
   /*!

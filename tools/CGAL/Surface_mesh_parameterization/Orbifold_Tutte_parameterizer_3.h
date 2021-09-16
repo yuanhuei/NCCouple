@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Orbifold_Tutte_parameterizer_3.h $
-// $Id: Orbifold_Tutte_parameterizer_3.h 1b80ca4 2020-10-20T14:51:00+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_parameterization/include/CGAL/Surface_mesh_parameterization/Orbifold_Tutte_parameterizer_3.h $
+// $Id: Orbifold_Tutte_parameterizer_3.h 5806b88 2020-01-03T11:07:43+01:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Mael Rouxel-Labbé
 
@@ -25,7 +34,6 @@
 #include <CGAL/Surface_mesh_parameterization/Error_code.h>
 #include <CGAL/Surface_mesh_parameterization/orbifold_shortest_path.h>
 
-#include <CGAL/assertions.h>
 #include <CGAL/Polygon_mesh_processing/Weights.h>
 
 #include <CGAL/assertions.h>
@@ -42,6 +50,7 @@
 #endif
 
 #include <boost/array.hpp>
+#include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/unordered_map.hpp>
@@ -67,7 +76,7 @@ namespace Surface_mesh_parameterization {
 
 /// \ingroup PkgSurfaceMeshParameterizationOrbifoldHelperFunctions
 ///
-/// reads a serie of cones from an input stream. Cones are passed as an
+/// Read a serie of cones from an input stream. Cones are passed as an
 /// integer value that is the index of a vertex handle in the mesh tm`, using
 /// the vertex index property map `vpmap` for correspondency.
 ///
@@ -192,7 +201,7 @@ Error_code read_cones(const TriangleMesh& tm, const char* filename, ConeOutputIt
 
 /// \ingroup PkgSurfaceMeshParameterizationOrbifoldHelperFunctions
 ///
-/// locates the cones on the seam mesh (that is, find the corresponding seam mesh
+/// Locate the cones on the seam mesh (that is, find the corresponding seam mesh
 /// `vertex_descriptor`) and mark them with a tag to indicate whether the cone is a
 /// simple cone or a duplicated cone (see \link PkgSurfaceMeshParameterizationEnums Cone_type \endlink).
 ///
@@ -202,7 +211,7 @@ Error_code read_cones(const TriangleMesh& tm, const char* filename, ConeOutputIt
 ///                  but is passed here as a template parameter for convenience, to avoid
 ///                  having to pass the multiple template parameters of the class `CGAL::Seam_mesh`.
 /// \tparam ConeInputBidirectionalIterator must be a model of `BidirectionalIterator`
-///                  with value type `boost::graph_traits<SeamMesh::Triangle_mesh>::%vertex_descriptor`.
+///                  with value type `boost::graph_traits<SeamMesh::TriangleMesh>::%vertex_descriptor`.
 /// \tparam ConeMap must be a model of `AssociativeContainer`
 ///                 with `boost::graph_traits<SeamMesh>::%vertex_descriptor` as key type and
 ///                 \link PkgSurfaceMeshParameterizationEnums Cone_type \endlink as value type.
@@ -216,20 +225,20 @@ bool locate_cones(const SeamMesh& mesh,
                   ConeInputBidirectionalIterator first, ConeInputBidirectionalIterator beyond,
                   ConeMap& cones)
 {
-  typedef typename SeamMesh::Triangle_mesh                                 Triangle_mesh;
+  typedef typename SeamMesh::TriangleMesh                                  TriangleMesh;
 
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor   TM_vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor    TM_vertex_descriptor;
   typedef typename boost::graph_traits<SeamMesh>::vertex_descriptor        vertex_descriptor;
 
   // property map to go from TM_vertex_descriptor to Point_3
-  typedef typename internal::Kernel_traits<Triangle_mesh>::PPM             PM_PPM;
+  typedef typename internal::Kernel_traits<TriangleMesh>::PPM              PM_PPM;
   const PM_PPM pm_ppmap = get(boost::vertex_point, mesh.mesh());
 
   // property map to go from vertex_descriptor to Point_3
   typedef typename internal::Kernel_traits<SeamMesh>::PPM                  PPM;
   const PPM ppmap = get(boost::vertex_point, mesh);
 
-  for(vertex_descriptor vd : vertices(mesh)) {
+  BOOST_FOREACH(vertex_descriptor vd, vertices(mesh)) {
     for(ConeInputBidirectionalIterator cit=first; cit!=beyond; ++cit) {
       ConeInputBidirectionalIterator last = (--beyond)++;
 
@@ -264,15 +273,15 @@ bool locate_unordered_cones(const SeamMesh& mesh,
   CGAL_precondition(cones.empty());
   CGAL_precondition(std::distance(first, beyond) == 3 || std::distance(first, beyond) == 4);
 
-  typedef typename SeamMesh::Triangle_mesh                                 Triangle_mesh;
+  typedef typename SeamMesh::TriangleMesh                                  TriangleMesh;
 
-  typedef typename boost::graph_traits<Triangle_mesh>::vertex_descriptor   TM_vertex_descriptor;
+  typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor    TM_vertex_descriptor;
   typedef typename boost::graph_traits<SeamMesh>::vertex_descriptor        vertex_descriptor;
   typedef typename boost::graph_traits<SeamMesh>::halfedge_descriptor      halfedge_descriptor;
 
   // find a vertex on the seam
   vertex_descriptor vertex_on_seam;
-  for(vertex_descriptor vd : vertices(mesh)) {
+  BOOST_FOREACH(vertex_descriptor vd, vertices(mesh)) {
     if(mesh.has_on_seam(vd)) {
       vertex_on_seam = vd;
       break;
@@ -282,7 +291,7 @@ bool locate_unordered_cones(const SeamMesh& mesh,
   CGAL_assertion(vertex_on_seam != vertex_descriptor());
 
   // property map to go from TM_vertex_descriptor to Point_3
-  typedef typename internal::Kernel_traits<Triangle_mesh>::PPM           PM_PPM;
+  typedef typename internal::Kernel_traits<TriangleMesh>::PPM            PM_PPM;
   const PM_PPM pm_ppmap = get(boost::vertex_point, mesh.mesh());
 
   // property map to go from vertex_descriptor to Point_3
@@ -358,8 +367,7 @@ bool locate_unordered_cones(const SeamMesh& mesh,
 /// shows how to select cones on the input mesh and automatically construct
 /// the seams and the cones on the `Seam_mesh`.
 ///
-/// \attention The global function `CGAL::Surface_mesh_parameterization::parameterize()` cannot be used
-/// with this parameterizer. Users should use this class's member function `parameterize()` instead.
+/// \cgalModels `Parameterizer_3`
 ///
 /// \tparam SeamMesh must be a `Seam_mesh`, with underlying mesh any model of `FaceListGraph` and `HalfedgeListGraph`.
 ///
@@ -406,15 +414,12 @@ public:
   #endif
   >::type                                                     Solver_traits;
 #else
-  /// Solver traits type
   typedef SolverTraits_                                       Solver_traits;
 #endif
 
-  /// Mesh halfedge type
-  typedef typename boost::graph_traits<SeamMesh>::halfedge_descriptor  halfedge_descriptor;
-
 private:
   typedef typename boost::graph_traits<SeamMesh>::vertex_descriptor    vertex_descriptor;
+  typedef typename boost::graph_traits<SeamMesh>::halfedge_descriptor  halfedge_descriptor;
   typedef typename boost::graph_traits<SeamMesh>::face_descriptor      face_descriptor;
 
   typedef typename boost::graph_traits<SeamMesh>::vertex_iterator      vertex_iterator;
@@ -765,7 +770,7 @@ private:
   {
     const PPM ppmap = get(vertex_point, mesh);
 
-    for(face_descriptor fd : faces(mesh)) {
+    BOOST_FOREACH(face_descriptor fd, faces(mesh)) {
       const halfedge_descriptor hd = halfedge(fd, mesh);
 
       const vertex_descriptor vd_i = target(hd, mesh);
@@ -800,7 +805,7 @@ private:
 
     Cotan_weights cotan_weight_calculator(mesh, ppmap);
 
-    for(halfedge_descriptor hd : halfedges(mesh)) {
+    BOOST_FOREACH(halfedge_descriptor hd, halfedges(mesh)) {
       const vertex_descriptor vi = source(hd, mesh);
       const vertex_descriptor vj = target(hd, mesh);
       const int i = get(vimap, vi);
@@ -839,7 +844,7 @@ private:
   {
     CGAL_assertion(X.dimension() == static_cast<int>(2 * num_vertices(mesh)));
 
-    for(vertex_descriptor vd : vertices(mesh)) {
+    BOOST_FOREACH(vertex_descriptor vd, vertices(mesh)) {
       const int index = get(vimap, vd);
       const NT u = X(2*index);
       const NT v = X(2*index + 1);
@@ -892,7 +897,7 @@ private:
   }
 
 public:
-  /// computes a one-to-one mapping from a triangular 3D surface mesh
+  /// Compute a one-to-one mapping from a triangular 3D surface mesh
   /// to a piece of the 2D space.
   /// The mapping is piecewise linear (linear in each triangle).
   /// The result is the (u,v) pair image of each vertex of the 3D surface.
@@ -940,8 +945,6 @@ public:
                           VertexUVMap uvmap,
                           VertexIndexMap vimap) const
   {
-    CGAL_precondition(is_valid_polygon_mesh(mesh));
-    CGAL_precondition(is_triangle_mesh(mesh));
     CGAL_USE(bhd);
 
     Error_code status;

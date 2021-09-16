@@ -1,10 +1,19 @@
 // Copyright (c) 2017  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polyhedron/include/CGAL/boost/graph/properties_Polyhedron_3_features.h $
-// $Id: properties_Polyhedron_3_features.h fbd9628 2020-05-15T18:27:33+02:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polyhedron/include/CGAL/boost/graph/properties_Polyhedron_3_features.h $
+// $Id: properties_Polyhedron_3_features.h 598fd59 2018-03-22T18:01:50+01:00 Andreas Fabri
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Andreas Fabri
@@ -19,7 +28,7 @@
 
 namespace CGAL {
 
-
+  
 namespace internal{
 BOOST_MPL_HAS_XXX_TRAIT_DEF(Plane_3)
 
@@ -27,8 +36,8 @@ BOOST_MPL_HAS_XXX_TRAIT_DEF(Plane_3)
 template <class Gt, class I, CGAL_HDS_PARAM_, class A>
 struct Get_static_property_map {
   typedef boost::graph_traits<CGAL::Polyhedron_3<Gt,I,HDS,A> > Graph_traits;
-  typedef CGAL::Constant_property_map<typename Graph_traits::face_descriptor,
-                                      std::pair<int,int> > type;
+  typedef CGAL::Static_property_map<typename Graph_traits::face_descriptor,
+                                    std::pair<int,int> > type;
 };
 
 } // end namespace internal
@@ -218,7 +227,7 @@ void put(Polyhedron_incident_patches_pmap<Patch_id>,
          Handle_type h, const std::set<Patch_id>& v)
 {
   h->clear_incident_patches();
-  for(Patch_id n : v)
+  BOOST_FOREACH(Patch_id n, v)
     h->add_incident_patch(n);
 }
 

@@ -1,16 +1,25 @@
-// Copyright (c) 1998-2004
+// Copyright (c) 1998-2004  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Distance_3/include/CGAL/squared_distance_3_2.h $
-// $Id: squared_distance_3_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Distance_3/include/CGAL/squared_distance_3_2.h $
+// $Id: squared_distance_3_2.h 8251bb9 2019-10-25T11:21:05+02:00 Maxime Gimeno
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Geert-Jan Giezeman, Andreas Fabri
 
@@ -35,9 +44,9 @@ namespace internal {
 
 template <class K>
 bool
-contains_vector(const typename K::Plane_3 &pl,
-                const typename K::Vector_3 &vec,
-                const K&)
+contains_vector(const typename K::Plane_3 &pl, 
+		const typename K::Vector_3 &vec,
+		const K&)
 {
   typedef typename K::RT RT;
   return pl.a()*vec.hx() + pl.b()*vec.hy() + pl.c() * vec.hz() == RT(0);
@@ -209,10 +218,10 @@ on_left_of_triangle_edge(const typename K::Point_3 & pt,
 
   typedef typename K::RT RT;
 
-  const bool result =
+  const bool result = 
     RT(wdot(wcross(edge,
                    normal,
-                   k),
+                   k), 
             diff,
             k)) <= RT(0);
   return result;
@@ -245,16 +254,16 @@ squared_distance_to_triangle(
         // The case normal==NULL_VECTOR covers the case when the triangle
         // is colinear, or even more degenerate. In that case, we can
         // simply take also the distance to the three segments.
-        typename K::FT d1 = squared_distance(pt,
+        typename K::FT d1 = squared_distance(pt, 
                                              typename K::Segment_3(t2, t0),
                                              k);
-        typename K::FT d2 = squared_distance(pt,
+        typename K::FT d2 = squared_distance(pt, 
                                              typename K::Segment_3(t1, t2),
                                              k);
-        typename K::FT d3 = squared_distance(pt,
+        typename K::FT d3 = squared_distance(pt, 
                                              typename K::Segment_3(t0, t1),
                                              k);
-
+       
         return (std::min)( (std::min)(d1, d2), d3);
       }
 }
@@ -286,7 +295,7 @@ contains_vector(const Plane_3<K> &pl, const Vector_3<K> &vec)
 
 
 template <class K>
-inline
+inline 
 typename K::FT
 squared_distance(
     const Point_3<K> & pt,
@@ -298,7 +307,7 @@ squared_distance(
 
 
 template <class K>
-inline
+inline 
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,
@@ -319,7 +328,7 @@ squared_distance(
 
 
 template <class K>
-inline
+inline 
 typename K::FT
 squared_distance(
     const Plane_3<K> & p,
@@ -341,7 +350,7 @@ squared_distance(
 
 
 template <class K>
-inline
+inline 
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,
@@ -363,7 +372,7 @@ squared_distance(
 
 
 template <class K>
-inline
+inline 
 typename K::FT
 squared_distance(
     const Plane_3<K> & plane,

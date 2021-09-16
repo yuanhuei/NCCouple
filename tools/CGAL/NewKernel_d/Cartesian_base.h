@@ -1,11 +1,20 @@
 // Copyright (c) 2014
 // INRIA Saclay-Ile de France (France)
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/NewKernel_d/include/CGAL/NewKernel_d/Cartesian_base.h $
-// $Id: Cartesian_base.h 52164b1 2019-10-19T15:34:59+02:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/NewKernel_d/include/CGAL/NewKernel_d/Cartesian_base.h $
+// $Id: Cartesian_base.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Marc Glisse
 
@@ -22,8 +31,8 @@ namespace CGAL {
 template < typename FT_, typename Dim_, typename Derived_=Default>
 struct Cartesian_base_d : public CGAL_BASE
 {
-    constexpr Cartesian_base_d(){}
-    constexpr Cartesian_base_d(int d):CGAL_BASE(d){}
+    CGAL_CONSTEXPR Cartesian_base_d(){}
+    CGAL_CONSTEXPR Cartesian_base_d(int d):CGAL_BASE(d){}
 };
 #undef CGAL_BASE
 

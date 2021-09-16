@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Corefinement/face_graph_utils.h $
-// $Id: face_graph_utils.h 3254365 2021-03-03T17:10:16+01:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Corefinement/face_graph_utils.h $
+// $Id: face_graph_utils.h 3501af6 2020-02-13T14:38:19+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Sebastien Loriot
@@ -46,7 +55,7 @@ template<class G,
          class EdgeMarkMap>
 void mark_all_edges(G& tm, EdgeMarkMap& edge_mark_map)
 {
-  for(typename boost::graph_traits<G>::edge_descriptor ed :
+  BOOST_FOREACH(typename boost::graph_traits<G>::edge_descriptor ed,
                 edges(tm))
   {
     put(edge_mark_map, ed, true);
@@ -64,7 +73,7 @@ void unmark_edges(      G& tm,
                         EdgeMarkMap& edge_mark_map,
                   const HalfedgeRange& hedges)
 {
-  for(typename boost::graph_traits<G>::halfedge_descriptor hd : hedges)
+  BOOST_FOREACH(typename boost::graph_traits<G>::halfedge_descriptor hd, hedges)
     put(edge_mark_map, edge(hd, tm), false);
 }
 
@@ -121,7 +130,7 @@ void copy_edge_mark(G& g,
                     const EdgeMarkMapIn & edge_mark_map_in,
                           EdgeMarkMapOut& edge_mark_map_out)
 {
-  for(typename boost::graph_traits<G>::edge_descriptor ed : edges(g))
+  BOOST_FOREACH(typename boost::graph_traits<G>::edge_descriptor ed, edges(g))
     if(get(edge_mark_map_in, ed))
       put(edge_mark_map_out, ed, true);
 }
@@ -145,207 +154,6 @@ void copy_edge_mark(G&,
                     const No_mark<G>&,
                           No_mark<G>&)
 {} // nothing to do
-
-
-// For exact side_of_triangle_mesh
-template <class Node_id_map,
-          class VertexPointMap,
-          class NodeVector>
-struct Node_vector_exact_vertex_point_map
-{
-// map type definitions
-  typedef typename boost::property_traits<VertexPointMap>::key_type key_type;
-  typedef typename NodeVector::Exact_kernel Exact_kernel;
-  typedef typename Exact_kernel::Point_3 value_type;
-  typedef value_type reference;
-  typedef boost::readable_property_map_tag category;
-// internal type definitions
-  typedef std::size_t Node_id;
-
-  Node_vector_exact_vertex_point_map(){}
-
-  Node_vector_exact_vertex_point_map(const Node_id_map& node_ids,
-                                     const VertexPointMap& vpm,
-                                     const NodeVector& node_vector)
-    : node_ids(&node_ids)
-    , vpm(&vpm)
-    , node_vector(&node_vector)
-  {}
-
-  friend value_type get(Node_vector_exact_vertex_point_map m, key_type k)
-  {
-    typename Node_id_map::const_iterator it = m.node_ids->find(k);
-    if (it == m.node_ids->end())
-      return m.node_vector->to_exact( get(*(m.vpm), k) );
-    return m.node_vector->exact_node(it->second);
-  }
-
-  const Node_id_map* node_ids;
-  const VertexPointMap* vpm;
-  const NodeVector* node_vector;
-};
-
-// For exact side_of_triangle_mesh
-template <class TriangleMesh, class PPM, class TreeTraits>
-struct Split_primitives
-{
-  Split_primitives(TriangleMesh& tm, PPM ppm)
-    : tm(tm)
-    , ppm(ppm)
-  {}
-
-  template<typename PrimitiveIterator>
-  void operator()(PrimitiveIterator first,
-                  PrimitiveIterator beyond,
-                  const CGAL::Bbox_3& bbox) const
-    {
-      typedef typename std::iterator_traits<PrimitiveIterator>::value_type Prmtv;
-      PrimitiveIterator middle = first + (beyond - first)/2;
-      typedef typename std::iterator_traits<PrimitiveIterator>::value_type Prmtv;
-      switch(TreeTraits::longest_axis(bbox))
-      {
-      case TreeTraits::CGAL_AXIS_X: // sort along x
-        std::nth_element(first, middle, beyond, [this](const Prmtv& p1, const Prmtv& p2){ return get(ppm, p1.id()).x() < get(ppm,p2.id()).x(); });
-        break;
-      case TreeTraits::CGAL_AXIS_Y: // sort along y
-        std::nth_element(first, middle, beyond, [this](const Prmtv& p1, const Prmtv& p2){ return get(ppm, p1.id()).y() < get(ppm,p2.id()).y(); });
-        break;
-      case TreeTraits::CGAL_AXIS_Z: // sort along z
-        std::nth_element(first, middle, beyond, [this](const Prmtv& p1, const Prmtv& p2){ return get(ppm, p1.id()).z() < get(ppm,p2.id()).z(); });
-        break;
-      default:
-        CGAL_error();
-      }
-    }
-  TriangleMesh& tm;
-  PPM ppm;
-};
-
-// For exact side_of_triangle_mesh
-template <class BPM>
-struct Compute_bbox {
-  Compute_bbox(const BPM& bpm)
-    : bpm(bpm)
-  {}
-
-  template<typename ConstPrimitiveIterator>
-  CGAL::Bbox_3 operator()(ConstPrimitiveIterator first,
-                          ConstPrimitiveIterator beyond) const
-  {
-    CGAL::Bbox_3 bbox = get(bpm, first->id());
-    for(++first; first != beyond; ++first)
-    {
-      bbox += get(bpm, first->id());
-    }
-    return bbox;
-  }
-  BPM bpm;
-};
-
-// For exact side_of_triangle_mesh
-template <class TriangleMesh,
-          class Node_id_map,
-          class VertexPointMap,
-          class NodeVector,
-          class Input_Kernel>
-struct Side_of_helper
-{
-  typedef Node_vector_exact_vertex_point_map<Node_id_map, VertexPointMap, NodeVector> VPM;
-
-  typedef CGAL::AABB_face_graph_triangle_primitive<TriangleMesh, VPM> Primitive;
-  typedef CGAL::AABB_traits<typename NodeVector::Exact_kernel, Primitive> Traits;
-  typedef CGAL::AABB_tree<Traits> Tree_type;
-
-  static
-  VPM get_vpm(const Node_id_map& node_ids,
-               const VertexPointMap& vpm,
-               const NodeVector& node_vector)
-  {
-    return VPM(node_ids, vpm, node_vector);
-  }
-
-  template <class FaceIdMap>
-  static
-  void build_tree(TriangleMesh& tm,
-                  Tree_type& tree,
-                  const Node_id_map& node_ids,
-                  FaceIdMap fid,
-                  const VertexPointMap& vpm,
-                  const NodeVector& node_vector)
-  {
-    typedef typename boost::graph_traits<TriangleMesh>::face_descriptor face_descriptor;
-    typedef typename boost::graph_traits<TriangleMesh>::halfedge_descriptor halfedge_descriptor;
-    typedef typename boost::graph_traits<TriangleMesh>::vertex_descriptor vertex_descriptor;
-
-    // add primitives
-    tree.insert(faces(tm).begin(), faces(tm).end(), tm, get_vpm(node_ids, vpm, node_vector));
-
-    // pre-build bboxes (using approximation)
-    std::vector<Bbox_3> face_bboxes(num_faces(tm));
-
-    auto get_v_box = [&node_ids, &node_vector, &vpm](vertex_descriptor v)
-    {
-      typename Node_id_map::const_iterator it = node_ids.find(v);
-      if (it == node_ids.end())
-        return get(vpm, v).bbox();
-      return approx(node_vector.exact_node(it->second)).bbox();
-    };
-
-    for (face_descriptor f : faces(tm))
-    {
-      halfedge_descriptor h = halfedge(f, tm);
-      face_bboxes[get(fid, f)] = get_v_box( source(h, tm) ) +
-                                 get_v_box( target(h, tm) ) +
-                                 get_v_box( target(next(h, tm), tm) );
-    }
-
-    typedef CGAL::Pointer_property_map<CGAL::Bbox_3>::type Id_to_box;
-    Id_to_box id_to_box = CGAL::make_property_map(face_bboxes);
-    typedef Property_map_binder<FaceIdMap, Id_to_box> BPM;
-    BPM bpm(fid, id_to_box);
-    Compute_bbox<BPM> compute_bbox(bpm);
-
-    typedef One_point_from_face_descriptor_map<TriangleMesh, VertexPointMap> PPM;
-    PPM ppm(&tm, vpm);
-
-    Split_primitives<TriangleMesh, PPM, Traits> split_primitives(tm, ppm);
-    tree.custom_build(compute_bbox, split_primitives);
-  }
-};
-
-template <class TriangleMesh,
-          class Node_id_map,
-          class VertexPointMap,
-          class NodeVector>
-struct Side_of_helper<TriangleMesh, Node_id_map, VertexPointMap, NodeVector, typename NodeVector::Exact_kernel>
-{
-  typedef VertexPointMap VPM;
-  static
-  VPM get_vpm(const Node_id_map&,
-              const VertexPointMap& vpm,
-              const NodeVector&)
-  {
-    return vpm;
-  }
-
-  typedef CGAL::AABB_face_graph_triangle_primitive<TriangleMesh, VPM> Primitive;
-  typedef CGAL::AABB_traits<typename NodeVector::Exact_kernel, Primitive> Traits;
-  typedef CGAL::AABB_tree<Traits> Tree_type;
-
-
-  template <class FaceIdMap>
-  static
-  void build_tree(TriangleMesh& tm,
-                  Tree_type& tree,
-                  const Node_id_map& /* node_ids */,
-                  FaceIdMap /* fid */,
-                  const VertexPointMap& vpm,
-                  const NodeVector& /* node_vector */)
-  {
-    tree.insert(faces(tm).begin(), faces(tm).end(), tm, vpm);
-    tree.build();
-  }
-};
 
 // Parts to get default property maps for output meshes based on the value type
 // of input vertex point maps.
@@ -481,7 +289,7 @@ triangulate_a_face(
   //insert the intersection point interior to the face inside the mesh and
   //save their vertex_descriptor
   CGAL_assertion( node_ids.size()== std::set<Node_id>(node_ids.begin(), node_ids.end()).size() );
-  for(Node_id node_id : node_ids)
+  BOOST_FOREACH(Node_id node_id, node_ids)
   {
     vertex_descriptor v=add_vertex(tm);
 //    user_visitor.new_vertex_added(node_id, v, tm); // NODE_VISITOR_TAG
@@ -621,9 +429,12 @@ struct Patch_description{
 // shared_edges will be filled by halfedges pointing in the patch
 // that are inside `is_intersection_edge`, thus mesh boundary halfedges
 // are not necessarily inside.
-template <class PolygonMesh, class IsIntersectionEdge>
+template <class PolygonMesh, class FaceIndexMap, class IsIntersectionEdge>
 void extract_patch_simplices(
+  std::size_t patch_id,
   PolygonMesh& pm,
+  const FaceIndexMap& fids,
+  const std::vector<std::size_t>& patch_ids,
   std::vector<typename boost::graph_traits<PolygonMesh>::face_descriptor>& patch_faces,
   std::set<typename boost::graph_traits<PolygonMesh>::vertex_descriptor>& interior_vertices,
   std::vector<typename boost::graph_traits<PolygonMesh>::halfedge_descriptor>& interior_edges,
@@ -635,30 +446,34 @@ void extract_patch_simplices(
   typedef typename GT::vertex_descriptor vertex_descriptor;
   typedef typename GT::face_descriptor face_descriptor;
 
-  for(face_descriptor f : patch_faces)
+  BOOST_FOREACH(face_descriptor f, faces(pm))
   {
-    for(halfedge_descriptor h :
-                  halfedges_around_face(halfedge(f, pm),pm))
+    if ( patch_ids[ get(fids, f) ]==patch_id )
     {
-      if ( !is_intersection_edge.count(edge(h, pm)) )
+      patch_faces.push_back( f );
+      BOOST_FOREACH(halfedge_descriptor h,
+                    halfedges_around_face(halfedge(f, pm),pm))
       {
-        if ( h < opposite(h,pm) || is_border(opposite(h,pm),pm) )
-          interior_edges.push_back( h );
+        if ( !is_intersection_edge.count(edge(h, pm)) )
+        {
+          if ( h < opposite(h,pm) || is_border(opposite(h,pm),pm) )
+            interior_edges.push_back( h );
+        }
+        else
+          shared_edges.push_back(h);
       }
-      else
-        shared_edges.push_back(h);
     }
   }
 
   std::set<vertex_descriptor> border_vertices;
-  for(halfedge_descriptor h : shared_edges)
+  BOOST_FOREACH(halfedge_descriptor h, shared_edges)
   {
     border_vertices.insert( target(h,pm) );
     // if the model is not closed i.e. patch_border_halfedge is not cycle-only
     border_vertices.insert( source(h,pm) );
   }
 
-  for(halfedge_descriptor h : interior_edges)
+  BOOST_FOREACH(halfedge_descriptor h, interior_edges)
   {
     if ( !border_vertices.count( target(h,pm) ) )
       interior_vertices.insert( target(h,pm) );
@@ -674,13 +489,13 @@ struct Patch_container{
 // external data members
   PolygonMesh& pm;
   const std::vector<std::size_t>& patch_ids;
-  const FaceIndexMap fids;
+  const FaceIndexMap& fids;
   const IsIntersectionEdge& is_intersection_edge;
 // constructor
   Patch_container(
     PolygonMesh& pm,
     const std::vector<std::size_t>& patch_ids,
-    const FaceIndexMap fids,
+    const FaceIndexMap& fids,
     const IsIntersectionEdge& is_intersection_edge,
     std::size_t nb_patches
   ) : patches(nb_patches)
@@ -688,19 +503,14 @@ struct Patch_container{
     , patch_ids(patch_ids)
     , fids(fids)
     , is_intersection_edge(is_intersection_edge)
-  {
-    typedef boost::graph_traits<PolygonMesh> GT;
-    typedef typename GT::face_descriptor face_descriptor;
-
-    for(face_descriptor f : faces(pm))
-      patches[patch_ids[ get(fids, f) ]].faces.push_back( f );
-  }
+  {}
 
   Patch_description<PolygonMesh>& operator[](std::size_t i) {
     if ( !patches[i].is_initialized )
     {
       extract_patch_simplices(
-        pm,
+        i, pm,
+        fids, patch_ids,
         patches[i].faces, patches[i].interior_vertices,
         patches[i].interior_edges, patches[i].shared_edges,
         is_intersection_edge
@@ -725,19 +535,19 @@ struct Patch_container{
     out << " " << patch.faces.size() << " 0\n";
     std::map<vertex_descriptor, int> vertexid;
     int id=0;
-    for(vertex_descriptor vh : patch.interior_vertices)
+    BOOST_FOREACH(vertex_descriptor vh, patch.interior_vertices)
     {
       vertexid[vh]=id++;
       out << get(vertex_point, pm, vh) << "\n";
     }
 
-    for(halfedge_descriptor hh : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor hh, patch.shared_edges)
     {
       vertexid[target(hh, pm)]=id++;
       out << get(vertex_point, pm, target(hh, pm)) << "\n";
     }
 
-    for(face_descriptor f : patch.faces)
+    BOOST_FOREACH(face_descriptor f, patch.faces)
     {
       out << "3 " << vertexid[source(halfedge(f,pm),pm)] <<
              " "  << vertexid[target(halfedge(f,pm),pm)] <<
@@ -782,8 +592,7 @@ next_marked_halfedge_around_target_vertex(
 template <class PolygonMesh,
           class EdgeMap,
           class VertexMap,
-          class VertexPointMap1,
-          class VertexPointMap2,
+          class VertexPointMap,
           class VertexPointMapOut,
           class IntersectionEdgeMap>
 void import_polyline(
@@ -798,8 +607,8 @@ void import_polyline(
   VertexMap& pm1_to_output_vertices,
   const IntersectionEdgeMap& intersection_edges1,
   const IntersectionEdgeMap& intersection_edges2,
-  const VertexPointMap1& vpm1,
-  const VertexPointMap2& /*vpm2*/,
+  const VertexPointMap& vpm1,
+  const VertexPointMap& /*vpm2*/,
   const VertexPointMapOut& vpm_out,
   std::vector<typename boost::graph_traits<PolygonMesh>
                 ::edge_descriptor>& output_shared_edges)
@@ -941,7 +750,7 @@ struct Triangle_mesh_extension_helper<TriangleMesh, true>
            : opposite(halfedge(key_and_value.second, output), output);
   }
 
-  std::array<halfedge_descriptor,3>
+  cpp11::array<halfedge_descriptor,3>
   halfedges(face_descriptor f)
   {
      halfedge_descriptor h=halfedge(f,tm);
@@ -982,7 +791,7 @@ struct Triangle_mesh_extension_helper<TriangleMesh, false>
            : opposite(halfedge(key_and_value.second, output), output);
   }
 
-  std::array<halfedge_descriptor,3>
+  cpp11::array<halfedge_descriptor,3>
   halfedges(face_descriptor f)
   {
      halfedge_descriptor h=halfedge(f,tm);
@@ -1041,7 +850,7 @@ void append_patches_to_triangle_mesh(
     std::vector<halfedge_descriptor> interior_vertex_halfedges;
 
     //insert interior halfedges and create interior vertices
-    for(halfedge_descriptor h : patch.interior_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.interior_edges)
     {
       edge_descriptor new_edge = add_edge(output), ed = edge(h,tm);
 
@@ -1081,9 +890,9 @@ void append_patches_to_triangle_mesh(
     }
 
     //create faces and connect halfedges
-    for(face_descriptor f : patch.faces)
+    BOOST_FOREACH(face_descriptor f, patch.faces)
     {
-      std::array<halfedge_descriptor,3> hedges = helper.halfedges(f);
+      cpp11::array<halfedge_descriptor,3> hedges = helper.halfedges(f);
 
       user_visitor.before_face_copy(f, patches.pm, output);
       face_descriptor new_f = add_face(output);
@@ -1111,7 +920,7 @@ void append_patches_to_triangle_mesh(
     // pointer to be set
     std::vector<halfedge_descriptor> border_halfedges_source_to_link;
     std::vector<halfedge_descriptor> border_halfedges_target_to_link;
-    for(halfedge_descriptor h : patch.interior_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.interior_edges)
       if (is_border_edge(h,tm))
       {
         if (!is_border(h, tm)) h=opposite(h, tm);
@@ -1139,7 +948,7 @@ void append_patches_to_triangle_mesh(
       }
     // now the step (ii) we look for the candidate halfedge by turning around
     // the vertex in the direction of the interior of the patch
-    for(halfedge_descriptor h_out : border_halfedges_target_to_link)
+    BOOST_FOREACH(halfedge_descriptor h_out, border_halfedges_target_to_link)
     {
       halfedge_descriptor candidate =
         opposite(prev(opposite(h_out, output), output), output);
@@ -1150,7 +959,7 @@ void append_patches_to_triangle_mesh(
       }
       set_next(h_out, candidate, output);
     }
-    for(halfedge_descriptor h_out : border_halfedges_source_to_link)
+    BOOST_FOREACH(halfedge_descriptor h_out, border_halfedges_source_to_link)
     {
       halfedge_descriptor candidate =
       opposite(next(opposite(h_out, output), output), output);
@@ -1161,7 +970,7 @@ void append_patches_to_triangle_mesh(
 
     // For all interior vertices, update the vertex pointer
     // of all but the vertex halfedge
-    for(halfedge_descriptor h_out : interior_vertex_halfedges)
+    BOOST_FOREACH(halfedge_descriptor h_out, interior_vertex_halfedges)
     {
       vertex_descriptor v = target(h_out, output);
       halfedge_descriptor next_around_vertex=h_out;
@@ -1174,7 +983,7 @@ void append_patches_to_triangle_mesh(
 
     // For all patch boundary vertices, update the vertex pointer
     // of all but the vertex halfedge
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
     {
       //check for a halfedge pointing inside an already imported patch
       halfedge_descriptor h_out = helper.get_hedge(h);
@@ -1204,29 +1013,27 @@ void append_patches_to_triangle_mesh(
 
 template < class TriangleMesh,
            class IntersectionEdgeMap,
-           class VertexPointMap1,
-           class VertexPointMap2,
+           class VertexPointMap,
            class VertexPointMapOut,
            class EdgeMarkMap1,
            class EdgeMarkMap2,
            class EdgeMarkMapOut,
            class IntersectionPolylines,
-           class PatchContainer1,
-           class PatchContainer2,
+           class PatchContainer,
            class UserVisitor>
 void fill_new_triangle_mesh(
   TriangleMesh& output,
   const boost::dynamic_bitset<>& patches_of_tm1_to_import,
   const boost::dynamic_bitset<>& patches_of_tm2_to_import,
-  PatchContainer1& patches_of_tm1,
-  PatchContainer2& patches_of_tm2,
+  PatchContainer& patches_of_tm1,
+  PatchContainer& patches_of_tm2,
   bool reverse_orientation_of_patches_from_tm1,
   bool reverse_orientation_of_patches_from_tm2,
   const IntersectionPolylines& polylines,
   const IntersectionEdgeMap& intersection_edges1,
   const IntersectionEdgeMap& intersection_edges2,
-  const VertexPointMap1& vpm1,
-  const VertexPointMap2& vpm2,
+  const VertexPointMap& vpm1,
+  const VertexPointMap& vpm2,
   const VertexPointMapOut& vpm_out,
   const EdgeMarkMap1& edge_mark_map1,
   const EdgeMarkMap2& edge_mark_map2,
@@ -1339,7 +1146,7 @@ void disconnect_patches(
     // to be duplicated on the boundary
     std::vector<face_descriptor> face_backup;
     face_backup.reserve( nb_shared_edges );
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
     {
       face_backup.push_back( face(h, tm1) );
       set_face(h, GT::null_face(), tm1);
@@ -1350,7 +1157,7 @@ void disconnect_patches(
     std::vector<halfedge_descriptor> shared_next, shared_prev;
     shared_next.reserve( nb_shared_edges );
     shared_prev.reserve( nb_shared_edges );
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
     {
       halfedge_descriptor nxt=next(h, tm1);
       while(!is_border(nxt, tm1))
@@ -1391,7 +1198,7 @@ void disconnect_patches(
     }
 
     // update next/prev pointer of new hedges in case it is one of the new hedges
-    for(halfedge_descriptor h : new_patch_border)
+    BOOST_FOREACH(halfedge_descriptor h, new_patch_border)
       if (is_border(next(h, tm1), tm1))
         set_next(h, old_to_new[next(h,tm1)], tm1);
 
@@ -1404,7 +1211,7 @@ void disconnect_patches(
     }
 
     // update next/prev pointers on the border of the patch
-    for(halfedge_descriptor h : new_patch_border)
+    BOOST_FOREACH(halfedge_descriptor h, new_patch_border)
     {
       halfedge_descriptor h_opp = opposite(h, tm1);
       //set next pointer if not already set
@@ -1458,12 +1265,10 @@ void disconnect_patches(
 }
 
 template <class TriangleMesh,
-          class PatchContainer1,
-          class PatchContainer2,
+          class PatchContainer,
           class IntersectionPolylines,
           class EdgeMap,
-          class VertexPointMap1,
-          class VertexPointMap2,
+          class VertexPointMap,
           class EdgeMarkMapIn1,
           class EdgeMarkMapIn2,
           class EdgeMarkMapOut,
@@ -1473,12 +1278,12 @@ void compute_inplace_operation_delay_removal_and_insideout(
   TriangleMesh& tm2,
   const boost::dynamic_bitset<>& patches_of_tm1_to_keep,
   const boost::dynamic_bitset<>& patches_of_tm2_to_import,
-  PatchContainer1& patches_of_tm1,
-  PatchContainer2& patches_of_tm2,
+  PatchContainer& patches_of_tm1,
+  PatchContainer& patches_of_tm2,
   bool reverse_patch_orientation_tm2,
   const IntersectionPolylines& polylines,
-  const VertexPointMap1& vpm1,
-  const VertexPointMap2& vpm2,
+  const VertexPointMap& vpm1,
+  const VertexPointMap& vpm2,
         EdgeMarkMapIn1&,
   const EdgeMarkMapIn2& edge_mark_map2,
   const EdgeMarkMapOut& edge_mark_map_out1,
@@ -1568,11 +1373,11 @@ remove_patches(TriangleMesh& tm,
     Patch_description<TriangleMesh>& patch=patches[i];
 
     // put the halfedges on the boundary of the patch on the boundary of tm
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
       set_face(h, GT::null_face(), tm);
 
     // set next/prev relationship of border halfedges
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
     {
       halfedge_descriptor nxt=next(h, tm);
       while(!is_border(nxt,tm))
@@ -1590,7 +1395,7 @@ remove_patches(TriangleMesh& tm,
     // prev pointer set correctly. To fix that, we consider all interior edges
     // and check for one that is on the border of the patch and that is incident
     // to a border vertex and use it to get the missing prev pointer.
-    for(halfedge_descriptor h : patch.interior_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.interior_edges)
       if(is_border_edge(h, tm))
       {
         if (is_border(h, tm)) h=opposite(h, tm);
@@ -1610,20 +1415,18 @@ remove_patches(TriangleMesh& tm,
       }
 
      //now remove the simplices
-    for(halfedge_descriptor h : patch.interior_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.interior_edges)
       remove_edge(edge(h, tm), tm);
-    for(face_descriptor f : patch.faces)
+    BOOST_FOREACH(face_descriptor f, patch.faces)
       remove_face(f, tm);
-    for(vertex_descriptor v : patch.interior_vertices)
+    BOOST_FOREACH(vertex_descriptor v, patch.interior_vertices)
       remove_vertex(v, tm);
   }
 }
 
 template <class TriangleMesh,
-          class PatchContainer1,
-          class PatchContainer2,
-          class VertexPointMap1,
-          class VertexPointMap2,
+          class PatchContainer,
+          class VertexPointMap,
           class EdgeMarkMapIn1,
           class EdgeMarkMapIn2,
           class EdgeMarkMapOut1,
@@ -1633,12 +1436,12 @@ void compute_inplace_operation(
   const TriangleMesh& /*tm2*/,
   const boost::dynamic_bitset<>& patches_of_tm1_to_keep,
   const boost::dynamic_bitset<>& patches_of_tm2_to_import,
-  PatchContainer1& patches_of_tm1,
-  PatchContainer2& patches_of_tm2,
+  PatchContainer& patches_of_tm1,
+  PatchContainer& patches_of_tm2,
   bool reverse_patch_orientation_tm1,
   bool reverse_patch_orientation_tm2,
-  const VertexPointMap1& vpm1,
-  const VertexPointMap2& vpm2,
+  const VertexPointMap& vpm1,
+  const VertexPointMap& vpm2,
         EdgeMarkMapIn1& edge_mark_map_in1,
   const EdgeMarkMapIn2& edge_mark_map_in2,
         EdgeMarkMapOut1& edge_mark_map_out1,
@@ -1662,7 +1465,7 @@ void compute_inplace_operation(
       reverse_face_orientations_of_mesh_with_polylines(tm1);
     // here we need to update the mapping to use the correct border
     // halfedges while appending the patches from tm2
-    for(typename EdgeMap::value_type& v : tm2_edge_to_tm1_edge)
+    BOOST_FOREACH(typename EdgeMap::value_type& v, tm2_edge_to_tm1_edge)
       v.second=edge(opposite(halfedge(v.second, tm1), tm1), tm1);
   }
 
@@ -1691,15 +1494,14 @@ void compute_inplace_operation(
 
 template <class TriangleMesh,
           class IntersectionPolylines,
-          class PatchContainer1,
-          class PatchContainer2,
+          class PatchContainer,
           class EdgeMap>
 void compute_border_edge_map(
   const TriangleMesh& tm1,
   const TriangleMesh& tm2,
   const IntersectionPolylines& polylines,
-  PatchContainer1& patches_of_tm1,
-  PatchContainer2& patches_of_tm2,
+  PatchContainer& patches_of_tm1,
+  PatchContainer& patches_of_tm2,
   EdgeMap& tm2_edge_to_tm1_edge)
 {
   typedef boost::graph_traits<TriangleMesh> GT;
@@ -1727,11 +1529,9 @@ void compute_border_edge_map(
 
 
 template <class TriangleMesh,
-          class PatchContainer1,
-          class PatchContainer2,
+          class PatchContainer,
           class IntersectionPolylines,
-          class VertexPointMap1,
-          class VertexPointMap2,
+          class VertexPointMap,
           class EdgeMarkMapIn1,
           class EdgeMarkMapIn2,
           class EdgeMarkMapOut1,
@@ -1741,12 +1541,12 @@ void compute_inplace_operation(
   const TriangleMesh& tm2,
   const boost::dynamic_bitset<>& patches_of_tm1_to_keep,
   const boost::dynamic_bitset<>& patches_of_tm2_to_import,
-  PatchContainer1& patches_of_tm1,
-  PatchContainer2& patches_of_tm2,
+  PatchContainer& patches_of_tm1,
+  PatchContainer& patches_of_tm2,
   bool reverse_patch_orientation_tm1,
   bool reverse_patch_orientation_tm2,
-  const VertexPointMap1& vpm1,
-  const VertexPointMap2& vpm2,
+  const VertexPointMap& vpm1,
+  const VertexPointMap& vpm2,
   const EdgeMarkMapIn1& edge_mark_map_in1,
   const EdgeMarkMapIn2& edge_mark_map_in2,
   const EdgeMarkMapOut1& edge_mark_map_out1,
@@ -1805,7 +1605,7 @@ void remove_unused_polylines(
                    i = patches_to_remove.find_next(i))
   {
     Patch_description<TriangleMesh>& patch=patches[i];
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
     {
       if (is_border(h, tm) && is_border(opposite(h, tm), tm)){
         vertices_to_remove.insert(target(h, tm));
@@ -1816,10 +1616,10 @@ void remove_unused_polylines(
   }
 
   std::vector<vertex_descriptor> vertices_kept;
-  for(vertex_descriptor v : vertices_to_remove)
+  BOOST_FOREACH(vertex_descriptor v, vertices_to_remove)
   {
     bool to_remove=true;
-    for(halfedge_descriptor h : halfedges_around_target(v,tm))
+    BOOST_FOREACH(halfedge_descriptor h, halfedges_around_target(v,tm))
       if (!is_border(h, tm) || !is_border(opposite(h,tm),tm))
       {
         to_remove=false;
@@ -1835,7 +1635,7 @@ void remove_unused_polylines(
   }
 
   // update next/prev pointers around vertices in vertices_kept
-  for(vertex_descriptor v: vertices_kept)
+  BOOST_FOREACH(vertex_descriptor v, vertices_kept)
   {
     halfedge_descriptor h = halfedge(v, tm), start=GT::null_halfedge();
 
@@ -1868,7 +1668,7 @@ void remove_unused_polylines(
     while(true);//this loop handles non-manifold vertices
   }
 
-  for(edge_descriptor e : edges_to_remove)
+  BOOST_FOREACH(edge_descriptor e, edges_to_remove)
     remove_edge(e,tm);
 }
 
@@ -1894,18 +1694,18 @@ void remove_disconnected_patches(
     // that could be marked because they retrieve a previously set property
     unmark_edges(tm, edge_mark_map, patch.interior_edges);
 
-    for(halfedge_descriptor h : patch.interior_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.interior_edges)
       remove_edge(edge(h, tm), tm);
     // There is no shared halfedge between duplicated patches even
     // if they were before the duplication. Thus the erase that follows is safe.
     // However remember that vertices were not duplicated which is why their
     // removal is not handled here (still in use or to be removed in
     // remove_unused_polylines())
-    for(halfedge_descriptor h : patch.shared_edges)
+    BOOST_FOREACH(halfedge_descriptor h, patch.shared_edges)
       remove_edge(edge(h, tm), tm);
-    for(face_descriptor f : patch.faces)
+    BOOST_FOREACH(face_descriptor f, patch.faces)
       remove_face(f, tm);
-    for(vertex_descriptor v : patch.interior_vertices)
+    BOOST_FOREACH(vertex_descriptor v, patch.interior_vertices)
       remove_vertex(v, tm);
   }
 }

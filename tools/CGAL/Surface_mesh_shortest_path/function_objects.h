@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesh_shortest_path/include/CGAL/Surface_mesh_shortest_path/function_objects.h $
-// $Id: function_objects.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesh_shortest_path/include/CGAL/Surface_mesh_shortest_path/function_objects.h $
+// $Id: function_objects.h 6dccde3 2020-01-13T16:20:51+01:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Stephen Kiazyk
 
@@ -613,7 +622,7 @@ public:
   {
     FT angle_sum = 0;
 
-    for(halfedge_descriptor h : halfedges_around_target(v, g))
+    BOOST_FOREACH(halfedge_descriptor h, halfedges_around_target(v, g))
     {
       if(is_border(h, g))
         continue;

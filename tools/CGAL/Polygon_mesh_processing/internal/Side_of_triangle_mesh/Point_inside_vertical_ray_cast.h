@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Side_of_triangle_mesh/Point_inside_vertical_ray_cast.h $
-// $Id: Point_inside_vertical_ray_cast.h 3b2da64 2020-07-01T21:03:31+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/internal/Side_of_triangle_mesh/Point_inside_vertical_ray_cast.h $
+// $Id: Point_inside_vertical_ray_cast.h df15af6 2018-08-24T10:51:21+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Ilker O. Yaz and Sebastien Loriot
@@ -74,6 +83,13 @@ public:
     typename Kernel::Construct_vector_3 vector_functor = Kernel().construct_vector_3_object() ) const
   {
     typename Traits::Bounding_box bbox = m_helper.get_tree_bbox(tree);
+
+    if(   point.x() < bbox.xmin() || point.x() > bbox.xmax()
+      || point.y() < bbox.ymin() || point.y() > bbox.ymax()
+      || point.z() < bbox.zmin() || point.z() > bbox.zmax() )
+    {
+      return ON_UNBOUNDED_SIDE;
+    }
 
     //the direction of the vertical ray depends on the position of the point in the bbox
     //in order to limit the expected number of nodes visited.

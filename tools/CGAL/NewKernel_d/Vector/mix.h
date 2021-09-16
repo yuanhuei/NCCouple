@@ -1,11 +1,20 @@
 // Copyright (c) 2014
 // INRIA Saclay-Ile de France (France)
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/NewKernel_d/include/CGAL/NewKernel_d/Vector/mix.h $
-// $Id: mix.h 52164b1 2019-10-19T15:34:59+02:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/NewKernel_d/include/CGAL/NewKernel_d/Vector/mix.h $
+// $Id: mix.h 0698f79 2017-10-20T23:34:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Marc Glisse
 
@@ -24,7 +33,6 @@ struct Mix_vector
   };
 };
 
-// FIXME: shouldn't we dispatch based on Max_dim_ instead?
 template <class Static_, class Dynamic_, class NT_, int d, class Max_dim_>
 struct Mix_vector<Static_, Dynamic_, NT_, Dimension_tag<d>, Max_dim_>
 : Static_::template Rebind_dimension<Dimension_tag<d>, Max_dim_>::Other

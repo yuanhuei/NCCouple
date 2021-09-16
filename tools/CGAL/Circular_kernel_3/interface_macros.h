@@ -2,16 +2,25 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Circular_kernel_3/include/CGAL/Circular_kernel_3/interface_macros.h $
-// $Id: interface_macros.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
-// Author(s) : Monique Teillaud, Sylvain Pion, Pedro Machado,
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Circular_kernel_3/include/CGAL/Circular_kernel_3/interface_macros.h $
+// $Id: interface_macros.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+//
+// Author(s) : Monique Teillaud, Sylvain Pion, Pedro Machado, 
 //             Sebastien Loriot, Julien Hazebrouck, Damien Leroy
 
-// Partially supported by the IST Programme of the EU as a
-// STREP (FET Open) Project under Contract No  IST-006413
+// Partially supported by the IST Programme of the EU as a 
+// STREP (FET Open) Project under Contract No  IST-006413 
 // (ACS -- Algorithms for Complex Shapes)
 
 // This file is intentionally not protected against re-inclusion.
@@ -22,7 +31,7 @@
 // macros CGAL_Kernel_pred and CGAL_Kernel_cons.
 // And they are #undefed at the end of this file.
 
-  CGAL_Spherical_Kernel_cons(Get_equation, get_equation_object)
+  CGAL_Spherical_Kernel_cons(Get_equation, get_equation_object) 
   CGAL_Spherical_Kernel_cons(Construct_circular_arc_point_3, construct_circular_arc_point_3_object)
   CGAL_Spherical_Kernel_overload_cons(Construct_sphere_3, construct_sphere_3_object)
   CGAL_Spherical_Kernel_overload_cons(Construct_plane_3, construct_plane_3_object)

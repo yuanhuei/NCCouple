@@ -1,11 +1,20 @@
 // Copyright (c) 2014 GeometryFactory Sarl (France)
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/STL_Extension/include/CGAL/Time_stamper.h $
-// $Id: Time_stamper.h e82ea5d 2020-01-29T17:13:11+01:00 Laurent Rineau
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/STL_Extension/include/CGAL/Time_stamper.h $
+// $Id: Time_stamper.h 8993817 2018-10-03T17:33:45+02:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
 //
 // Author(s)     : Jane Tournois
 
@@ -17,23 +26,29 @@
 
 namespace CGAL {
 
-namespace internal {
-
-constexpr size_t rounded_down_log2(size_t n)
-{
-  return ( (n<2) ? 0 : 1+rounded_down_log2(n/2));
-}
-} // namespace internal
-
 template <typename T>
 struct Time_stamper
 {
+  Time_stamper()
+   : time_stamp_() {}
+
+  Time_stamper(const Time_stamper& ts)
+    : time_stamp_()
+  {
+    time_stamp_ = std::size_t(ts.time_stamp_);
+  }
+
+  Time_stamper& operator=(const Time_stamper& ts)
+  {
+    time_stamp_ = std::size_t(ts.time_stamp_);
+    return *this;
+  }
+
   static void initialize_time_stamp(T* pt) {
     pt->set_time_stamp(std::size_t(-1));
   }
 
-  template <typename time_stamp_t>
-  static void set_time_stamp(T* pt, time_stamp_t& time_stamp_) {
+  void set_time_stamp(T* pt) {
     if(pt->time_stamp() == std::size_t(-1)) {
       const std::size_t new_ts = time_stamp_++;
       pt->set_time_stamp(new_ts);
@@ -61,35 +76,44 @@ struct Time_stamper
 
   static std::size_t time_stamp(const T* pt)
   {
-    if(pt == nullptr){
+    if(pt == NULL){
       return std::size_t(-1);
     }
     return pt->time_stamp();
   }
 
   static std::size_t hash_value(const T* p) {
-    if(nullptr == p)
+    if(NULL == p)
       return std::size_t(-1);
     else
       return p->time_stamp();
   }
 
   static bool less(const T* p_t1, const T* p_t2) {
-    if(p_t1 == nullptr)      return (p_t2 != nullptr);
-    else if(p_t2 == nullptr) return false;
+    if(p_t1 == NULL)      return (p_t2 != NULL);
+    else if(p_t2 == NULL) return false;
     else {
       CGAL_assertion((p_t1 == p_t2) == (time_stamp(p_t1) == time_stamp(p_t2)));
       return time_stamp(p_t1) < time_stamp(p_t2);
     }
   }
+
+  void reset() {
+    time_stamp_ = 0;
+  }
+private:
+#ifdef CGAL_NO_ATOMIC
+  std::size_t time_stamp_;
+#else
+  CGAL::cpp11::atomic<std::size_t> time_stamp_;
+#endif
 }; // end class template Time_stamper<T>
 
 template <typename T>
 struct No_time_stamp
 {
 public:
-  template <typename time_stamp_t>
-  static void set_time_stamp(T*, time_stamp_t&)  {}
+  void set_time_stamp(T*)  {}
   static bool less(const T* p_t1,const T* p_t2) {
     return p_t1 < p_t2;
   }
@@ -103,10 +127,10 @@ public:
   }
 
   static std::size_t hash_value(const T* p) {
-
-    constexpr std::size_t shift = internal::rounded_down_log2(sizeof(T));
-    return reinterpret_cast<std::size_t>(p) >> shift;
+    return reinterpret_cast<std::size_t>(p)/sizeof(T);
   }
+
+  void reset()                {}
 }; // end class template No_time_stamp<T>
 
 // That class template is an auxiliary class.  It has a
@@ -133,17 +157,6 @@ struct Get_time_stamper<T,false>{
 // in `Compact_container` for example is possible with an incomplete type.
 template <class T>
 struct Time_stamper_impl : public Get_time_stamper<T>::type {};
-
-struct Hash_handles_with_or_without_timestamps
-{
-  template <typename Handle>
-  std::size_t operator()(const Handle h) const
-  {
-    typedef typename std::iterator_traits<Handle>::value_type Type;
-
-    return Get_time_stamper<Type>::type::hash_value(&*h);
-  }
-};
 
 } //end of namespace CGAL
 

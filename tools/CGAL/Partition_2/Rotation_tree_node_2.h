@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Partition_2/include/CGAL/Partition_2/Rotation_tree_node_2.h $
-// $Id: Rotation_tree_node_2.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Partition_2/include/CGAL/Partition_2/Rotation_tree_node_2.h $
+// $Id: Rotation_tree_node_2.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Susan Hert <hert@mpi-sb.mpg.de>
 
@@ -36,9 +45,8 @@ namespace CGAL {
 template <class Traits> class Rotation_tree_2;
 
 template <class Traits>
-class Rotation_tree_node_2
+class Rotation_tree_node_2 : public Traits::Point_2
 {
-  typename Traits::Point_2 point;
 public:
 
    typedef typename Traits::Point_2          Base_point;
@@ -48,16 +56,13 @@ public:
    typedef std::pair<Tree_iterator, bool>    Node_ref;
 
 
-   Rotation_tree_node_2(Base_point p) : point(p)
-   {
+   Rotation_tree_node_2(Base_point p) : Base_point(p)
+   { 
       _parent.second = false;
       _left_sibling.second = false;
       _right_sibling.second = false;
       _rightmost_child.second = false;
    }
-
-   operator Base_point() const
-   { return point;}
 
    bool has_left_sibling() const
    {  return _left_sibling.second; }
@@ -146,16 +151,16 @@ std::ostream& operator<<(std::ostream& os,
 {
    os << node.x() << " " << node.y() << " ";
    if (node.has_parent())
-      os << "  parent " << (*node.parent()).x()
+      os << "  parent " << (*node.parent()).x() 
          << " " << (*node.parent()).y() << " ";
    if (node.has_left_sibling())
-      os << "  left sibling " << (*node.left_sibling()).x()
+      os << "  left sibling " << (*node.left_sibling()).x() 
          << " " << (*node.left_sibling()).y() << " ";
    if (node.has_right_sibling())
-      os << "  right sibling " << (*node.right_sibling()).x()
+      os << "  right sibling " << (*node.right_sibling()).x() 
          << " " << (*node.right_sibling()).y() << " ";
    if (node.has_children())
-      os << "  rightmost child " << (*node.rightmost_child()).x()
+      os << "  rightmost child " << (*node.rightmost_child()).x() 
          << " " << (*node.rightmost_child()).y();
    return os;
 }

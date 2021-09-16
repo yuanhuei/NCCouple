@@ -4,11 +4,19 @@
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
  This file is part of a fork of the QGLViewer library version 2.7.0.
+ http://www.libqglviewer.com - contact@libqglviewer.com
+
+ This file may be used under the terms of the GNU General Public License 
+ version 3.0 as published by the Free Software Foundation and
+ appearing in the LICENSE file included in the packaging of this file.
+
+ This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 *****************************************************************************/
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/GraphicsView/include/CGAL/Qt/mouseGrabber_impl.h $
-// $Id: mouseGrabber_impl.h 1ef976e 2019-10-19T16:09:56+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-only
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/GraphicsView/include/CGAL/Qt/mouseGrabber_impl.h $
+// $Id: mouseGrabber_impl.h c4b28fd 2018-06-06T16:15:55+02:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0
 
 #ifdef CGAL_HEADER_ONLY
 #define CGAL_INLINE_FUNCTION inline

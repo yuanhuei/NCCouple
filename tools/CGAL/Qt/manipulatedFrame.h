@@ -4,11 +4,19 @@
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
  This file is part of a fork of the QGLViewer library version 2.7.0.
+ http://www.libqglviewer.com - contact@libqglviewer.com
+
+ This file may be used under the terms of the GNU General Public License 
+ version 3.0 as published by the Free Software Foundation and
+ appearing in the LICENSE file included in the packaging of this file.
+
+ This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 *****************************************************************************/
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/GraphicsView/include/CGAL/Qt/manipulatedFrame.h $
-// $Id: manipulatedFrame.h 1968f2c 2020-01-02T10:00:05+01:00 Maxime Gimeno
-// SPDX-License-Identifier: GPL-3.0-only
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/GraphicsView/include/CGAL/Qt/manipulatedFrame.h $
+// $Id: manipulatedFrame.h 2bb22ad 2020-01-02T10:00:05+01:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0
 
 #ifndef QGLVIEWER_MANIPULATED_FRAME_H
 #define QGLVIEWER_MANIPULATED_FRAME_H

@@ -3,10 +3,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Classification/include/CGAL/Classification/Feature/Distance_to_plane.h $
-// $Id: Distance_to_plane.h 0e934b1 2020-08-04T13:16:13+02:00 Simon Giraudot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Classification/include/CGAL/Classification/Feature/Distance_to_plane.h $
+// $Id: Distance_to_plane.h 7fa4b38 2018-01-26T12:49:27+01:00 Maxime Gimeno
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Simon Giraudot, Florent Lafarge
 
@@ -35,7 +44,7 @@ namespace Feature {
     plane.
 
     Its default name is "distance_to_plane".
-
+    
     \tparam PointRange model of `ConstRange`. Its iterator type
     is `RandomAccessIterator` and its value type is the key type of
     `PointMap`.
@@ -46,8 +55,9 @@ namespace Feature {
 template <typename PointRange, typename PointMap>
 class Distance_to_plane : public Feature_base
 {
-  using Kernel = typename CGAL::Kernel_traits<typename PointMap::value_type>::Kernel;
 
+  typedef typename CGAL::Kernel_traits<typename PointMap::value_type>::Kernel Kernel;
+  
 #ifdef CGAL_CLASSIFICATION_PRECOMPUTE_FEATURES
   std::vector<float> distance_to_plane_feature;
 #else
@@ -55,10 +65,10 @@ class Distance_to_plane : public Feature_base
   PointMap point_map;
   const Local_eigen_analysis& eigen;
 #endif
-
+  
 public:
   /*!
-    \brief constructs the feature.
+    \brief Constructs the feature.
 
     \param input point range.
     \param point_map property map to access the input points.
@@ -72,7 +82,7 @@ public:
 #endif
   {
     this->set_name ("distance_to_plane");
-#ifdef CGAL_CLASSIFICATION_PRECOMPUTE_FEATURES
+#ifdef CGAL_CLASSIFICATION_PRECOMPUTE_FEATURES    
     for(std::size_t i = 0; i < input.size(); i++)
       distance_to_plane_feature.push_back
         (CGAL::sqrt (CGAL::squared_distance (get(point_map, *(input.begin()+i)), eigen.plane<Kernel>(i))));
@@ -96,7 +106,7 @@ public:
 } // namespace Feature
 
 } // namespace Classification
-
+  
 } // namespace CGAL
 
 #endif // CGAL_CLASSIFICATION_FEATURE_DISTANCE_TO_PLANE_H

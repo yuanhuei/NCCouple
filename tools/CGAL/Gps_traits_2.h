@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Boolean_set_operations_2/include/CGAL/Gps_traits_2.h $
-// $Id: Gps_traits_2.h 7436c14 2020-04-06T01:23:45+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Boolean_set_operations_2/include/CGAL/Gps_traits_2.h $
+// $Id: Gps_traits_2.h fb262e4 2018-01-18T16:25:50+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Baruch Zukerman <baruchzu@post.tau.ac.il>
@@ -35,8 +44,6 @@ public:
 
   typedef typename Base::Point_2                        Point_2;
   typedef typename Base::X_monotone_curve_2             X_monotone_curve_2;
-  typedef typename Base::Multiplicity                   Multiplicity;
-
   //Polygon_2 type is required by GeneralPolygonSetTraits Concept
   typedef General_polygon_t                             Polygon_2;
   //Polygon_2 is a model of the GeneralPolygon2 concept

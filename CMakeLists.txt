@@ -8,7 +8,7 @@ set(PROJECT_NAME NCCouple)
 project (${PROJECT_NAME} VERSION 1.0)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 aux_source_directory(./NCCouple SOURCE_FILE)

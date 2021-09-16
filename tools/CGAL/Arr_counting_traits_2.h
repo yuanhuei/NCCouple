@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arr_counting_traits_2.h $
-// $Id: Arr_counting_traits_2.h 40152a2 2020-06-13T16:43:09+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arr_counting_traits_2.h $
+// $Id: Arr_counting_traits_2.h 5b35b2f 2018-04-07T16:03:32+03:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s): Efi Fogel      <efif@post.tau.ac.il>
 //            Eric Berberich <ericb@post.tau.ac.il>
@@ -101,120 +110,120 @@ public:
   }
 
   /*! Obtain the counter of the given operation */
-  size_t count(Operation_id id) const
+  unsigned int count(Operation_id id) const
   { return m_counters[id]; }
 
-  size_t count_compare_x() const
+  unsigned int count_compare_x() const
   { return m_counters[COMPARE_X_OP]; }
 
-  size_t count_compare_xy() const
+  unsigned int count_compare_xy() const
   { return m_counters[COMPARE_XY_OP]; }
 
-  size_t count_construct_min_vertex() const
+  unsigned int count_construct_min_vertex() const
   { return m_counters[CONSTRUCT_MIN_VERTEX_OP]; }
 
-  size_t count_construct_max_vertex() const
+  unsigned int count_construct_max_vertex() const
   { return m_counters[CONSTRUCT_MAX_VERTEX_OP]; }
 
-  size_t count_is_vertical() const
+  unsigned int count_is_vertical() const
   { return m_counters[IS_VERTICAL_OP]; }
 
-  size_t count_compare_y_at_x() const
+  unsigned int count_compare_y_at_x() const
   { return m_counters[COMPARE_Y_AT_X_OP]; }
 
-  size_t count_equal_points() const
+  unsigned int count_equal_points() const
   { return m_counters[EQUAL_POINTS_OP]; }
 
-  size_t count_equal_curves() const
+  unsigned int count_equal_curves() const
   { return m_counters[EQUAL_CURVES_OP]; }
 
-  size_t count_compare_y_at_x_left() const
+  unsigned int count_compare_y_at_x_left() const
   { return m_counters[COMPARE_Y_AT_X_LEFT_OP]; }
 
-  size_t count_compare_y_at_x_right() const
+  unsigned int count_compare_y_at_x_right() const
   { return m_counters[COMPARE_Y_AT_X_RIGHT_OP]; }
 
-  size_t count_make_x_monotone() const
+  unsigned int count_make_x_monotone() const
   { return m_counters[MAKE_X_MONOTONE_OP]; }
 
-  size_t count_split() const
+  unsigned int count_split() const
   { return m_counters[SPLIT_OP]; }
 
-  size_t count_intersect() const
+  unsigned int count_intersect() const
   { return m_counters[INTERSECT_OP]; }
 
-  size_t count_are_mergeable() const
+  unsigned int count_are_mergeable() const
   { return m_counters[ARE_MERGEABLE_OP]; }
 
-  size_t count_merge() const
+  unsigned int count_merge() const
   { return m_counters[MERGE_OP]; }
 
-  size_t count_construct_opposite() const
+  unsigned int count_construct_opposite() const
   { return m_counters[CONSTRUCT_OPPOSITE_OP]; }
 
-  size_t count_compare_endpoints_xy() const
+  unsigned int count_compare_endpoints_xy() const
   { return m_counters[COMPARE_ENDPOINTS_XY_OP]; }
 
   // left-right
 
-  size_t count_parameter_space_in_x_curve_end() const
+  unsigned int count_parameter_space_in_x_curve_end() const
   { return m_counters[PARAMETER_SPACE_IN_X_CURVE_END_OP]; }
 
-  size_t count_parameter_space_in_x_curve() const
+  unsigned int count_parameter_space_in_x_curve() const
   { return m_counters[PARAMETER_SPACE_IN_X_CURVE_OP]; }
 
-  size_t count_parameter_space_in_x_point() const
+  unsigned int count_parameter_space_in_x_point() const
   { return m_counters[PARAMETER_SPACE_IN_X_POINT_OP]; }
 
-  size_t count_is_on_x_identification_point() const
+  unsigned int count_is_on_x_identification_point() const
   { return m_counters[IS_ON_X_IDENTIFICATION_POINT_OP]; }
 
-  size_t count_is_on_x_identification_curve() const
+  unsigned int count_is_on_x_identification_curve() const
   { return m_counters[IS_ON_X_IDENTIFICATION_CURVE_OP]; }
 
-  size_t count_compare_y_on_boundary() const
+  unsigned int count_compare_y_on_boundary() const
   { return m_counters[COMPARE_Y_ON_BOUNDARY_OP]; }
 
-  size_t count_compare_y_near_boundary() const
+  unsigned int count_compare_y_near_boundary() const
   { return m_counters[COMPARE_Y_NEAR_BOUNDARY_OP]; }
 
 
   // bottom-top
 
-  size_t count_parameter_space_in_y_curve_end() const
+  unsigned int count_parameter_space_in_y_curve_end() const
   { return m_counters[PARAMETER_SPACE_IN_Y_CURVE_END_OP]; }
 
-  size_t count_parameter_space_in_y_curve() const
+  unsigned int count_parameter_space_in_y_curve() const
   { return m_counters[PARAMETER_SPACE_IN_Y_CURVE_OP]; }
 
-  size_t count_parameter_space_in_y_point() const
+  unsigned int count_parameter_space_in_y_point() const
   { return m_counters[PARAMETER_SPACE_IN_Y_POINT_OP]; }
 
-  size_t count_is_on_y_identification_point() const
+  unsigned int count_is_on_y_identification_point() const
   { return m_counters[IS_ON_Y_IDENTIFICATION_POINT_OP]; }
 
-  size_t count_is_on_y_identification_curve() const
+  unsigned int count_is_on_y_identification_curve() const
   { return m_counters[IS_ON_Y_IDENTIFICATION_CURVE_OP]; }
 
-  size_t count_compare_x_at_limit_point_curve_end() const
+  unsigned int count_compare_x_at_limit_point_curve_end() const
   { return m_counters[COMPARE_X_AT_LIMIT_POINT_CURVE_END_OP]; }
 
-  size_t count_compare_x_at_limit_curve_ends() const
+  unsigned int count_compare_x_at_limit_curve_ends() const
   { return m_counters[COMPARE_X_AT_LIMIT_CURVE_ENDS_OP]; }
 
-  size_t count_compare_x_near_limit() const
+  unsigned int count_compare_x_near_limit() const
   { return m_counters[COMPARE_X_NEAR_LIMIT_OP]; }
 
-  size_t count_compare_x_on_boundary_points() const
+  unsigned int count_compare_x_on_boundary_points() const
   { return m_counters[COMPARE_X_ON_BOUNDARY_POINTS_OP]; }
 
-  size_t count_compare_x_on_boundary_point_curve_end() const
+  unsigned int count_compare_x_on_boundary_point_curve_end() const
   { return m_counters[COMPARE_X_ON_BOUNDARY_POINT_CURVE_END_OP]; }
 
-  size_t count_compare_x_on_boundary_curve_ends() const
+  unsigned int count_compare_x_on_boundary_curve_ends() const
   { return m_counters[COMPARE_X_ON_BOUNDARY_CURVE_ENDS_OP]; }
 
-  size_t count_compare_x_near_boundary() const
+  unsigned int count_compare_x_near_boundary() const
   { return m_counters[COMPARE_X_NEAR_BOUNDARY_OP]; }
 
   /// \name Types and functors inherited from the base
@@ -242,11 +251,11 @@ public:
   class Compare_x_2 {
   private:
     typename Base::Compare_x_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_x_2(const Base* base, size_t& counter) :
+    Compare_x_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_x_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -258,11 +267,11 @@ public:
   class Compare_xy_2 {
   private:
     typename Base::Compare_xy_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_xy_2(const Base* base, size_t& counter) :
+    Compare_xy_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_xy_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -274,11 +283,11 @@ public:
   class Construct_min_vertex_2 {
   private:
     typename Base::Construct_min_vertex_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Construct_min_vertex_2(const Base* base, size_t& counter) :
+    Construct_min_vertex_2(const Base* base, unsigned int& counter) :
       m_object(base->construct_min_vertex_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -290,11 +299,11 @@ public:
   class Construct_max_vertex_2 {
   private:
     typename Base::Construct_max_vertex_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Construct_max_vertex_2(const Base* base, size_t& counter) :
+    Construct_max_vertex_2(const Base* base, unsigned int& counter) :
       m_object(base->construct_max_vertex_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -306,11 +315,11 @@ public:
   class Is_vertical_2 {
   private:
     typename Base::Is_vertical_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Is_vertical_2(const Base* base, size_t& counter) :
+    Is_vertical_2(const Base* base, unsigned int& counter) :
       m_object(base->is_vertical_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -324,11 +333,11 @@ public:
   class Compare_y_at_x_2 {
   private:
     typename Base::Compare_y_at_x_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_y_at_x_2(const Base* base, size_t& counter) :
+    Compare_y_at_x_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_y_at_x_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -343,12 +352,12 @@ public:
   class Equal_2 {
   private:
     typename Base::Equal_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
 
   public:
     /*! Construct */
-    Equal_2(const Base* base, size_t& counter1, size_t& counter2) :
+    Equal_2(const Base* base, unsigned int& counter1, unsigned int& counter2) :
       m_object(base->equal_2_object()),
       m_counter1(counter1), m_counter2(counter2)
     {}
@@ -369,11 +378,11 @@ public:
   class Compare_y_at_x_left_2 {
   private:
     typename Base::Compare_y_at_x_left_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_y_at_x_left_2(const Base* base, size_t& counter) :
+    Compare_y_at_x_left_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_y_at_x_left_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -389,11 +398,11 @@ public:
   class Compare_y_at_x_right_2 {
   private:
     typename Base::Compare_y_at_x_right_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_y_at_x_right_2(const Base* base, size_t& counter) :
+    Compare_y_at_x_right_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_y_at_x_right_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -403,27 +412,19 @@ public:
     { ++m_counter; return m_object(xc1, xc2, p); }
   };
 
-  /*! \class Make_x_monotone_2
-   * A functor that subdivides a curve into x-monotone curves.
-   */
+  /*! A functor that divides a curve into x-monotone curves. */
   class Make_x_monotone_2 {
   private:
     typename Base::Make_x_monotone_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Make_x_monotone_2(const Base* base, size_t& counter) :
+    Make_x_monotone_2(const Base* base, unsigned int& counter) :
       m_object(base->make_x_monotone_2_object()), m_counter(counter) {}
 
-    /*! Subdivide a given curve into x-monotone subcurves and insert them into
-     * a given output iterator.
-     * \param cv the curve.
-     * \param oi the output iterator for the result. Its value type is a variant
-     *           that wraps Point_2 or an X_monotone_curve_2 objects.
-     * \return The past-the-end iterator.
-     */
-    template <typename OutputIterator>
+    /*! Operate */
+    template<class OutputIterator>
     OutputIterator operator()(const Curve_2& cv, OutputIterator oi) const
     { ++m_counter; return m_object(cv, oi); }
   };
@@ -432,11 +433,11 @@ public:
   class Split_2 {
   private:
     typename Base::Split_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Split_2(const Base* base, size_t& counter) :
+    Split_2(const Base* base, unsigned int& counter) :
       m_object(base->split_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -449,11 +450,11 @@ public:
   class Intersect_2 {
   private:
     typename Base::Intersect_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Intersect_2(const Base* base, size_t& counter) :
+    Intersect_2(const Base* base, unsigned int& counter) :
       m_object(base->intersect_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -468,11 +469,11 @@ public:
   class Are_mergeable_2 {
   private:
     typename Base::Are_mergeable_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Are_mergeable_2(const Base* base, size_t& counter) :
+    Are_mergeable_2(const Base* base, unsigned int& counter) :
       m_object(base->are_mergeable_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -485,11 +486,11 @@ public:
   class Merge_2 {
   private:
     typename Base::Merge_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Merge_2(const Base* base, size_t& counter) :
+    Merge_2(const Base* base, unsigned int& counter) :
       m_object(base->merge_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -503,11 +504,11 @@ public:
   class Construct_opposite_2 {
   private:
     typename Base::Construct_opposite_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Construct_opposite_2(const Base* base, size_t& counter) :
+    Construct_opposite_2(const Base* base, unsigned int& counter) :
       m_object(base->construct_opposite_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -521,11 +522,11 @@ public:
   class Compare_endpoints_xy_2 {
   private:
     typename Base::Compare_endpoints_xy_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_endpoints_xy_2(const Base* base, size_t& counter) :
+    Compare_endpoints_xy_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_endpoints_xy_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -541,14 +542,14 @@ public:
   class Parameter_space_in_x_2 {
   private:
     typename Base::Parameter_space_in_x_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
-    size_t& m_counter3;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
+    unsigned int& m_counter3;
 
   public:
     /*! Construct */
-    Parameter_space_in_x_2(const Base* base, size_t& counter1,
-                           size_t& counter2, size_t& counter3) :
+    Parameter_space_in_x_2(const Base* base, unsigned int& counter1,
+                           unsigned int& counter2, unsigned int& counter3) :
       m_object(base->parameter_space_in_x_2_object()),
       m_counter1(counter1),
       m_counter2(counter2),
@@ -577,13 +578,13 @@ public:
   class Is_on_x_identification_2 {
   private:
     typename Base::Is_on_x_identificiation_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
 
   public:
     /*! Construct */
     Is_on_x_identification_2(const Base* base,
-                             size_t& counter1, size_t& counter2) :
+                             unsigned int& counter1, unsigned int& counter2) :
       m_object(base->is_on_x_identificiation_2_object()),
       m_counter1(counter1),
       m_counter2(counter2) {}
@@ -605,11 +606,11 @@ public:
   class Compare_y_on_boundary_2 {
   private:
     typename Base::Compare_y_on_boundary_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_y_on_boundary_2(const Base* base, size_t& counter) :
+    Compare_y_on_boundary_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_y_on_boundary_2_object()),
       m_counter(counter)
     {}
@@ -625,11 +626,11 @@ public:
   class Compare_y_near_boundary_2 {
   private:
     typename Base::Compare_y_near_boundary_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_y_near_boundary_2(const Base* base, size_t& counter) :
+    Compare_y_near_boundary_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_y_near_boundary_2_object()), m_counter(counter) {}
 
     /*! Operate */
@@ -647,14 +648,14 @@ public:
   class Parameter_space_in_y_2 {
   private:
     typename Base::Parameter_space_in_y_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
-    size_t& m_counter3;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
+    unsigned int& m_counter3;
 
   public:
     /*! Construct */
-    Parameter_space_in_y_2(const Base* base, size_t& counter1,
-                           size_t& counter2, size_t& counter3) :
+    Parameter_space_in_y_2(const Base* base, unsigned int& counter1,
+                           unsigned int& counter2, unsigned int& counter3) :
       m_object(base->parameter_space_in_y_2_object()),
       m_counter1(counter1),
       m_counter2(counter2),
@@ -681,13 +682,13 @@ public:
   class Is_on_y_identification_2 {
   private:
     typename Base::Is_on_y_identificiation_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
 
   public:
     /*! Construct */
     Is_on_y_identification_2(const Base* base,
-                             size_t& counter1, size_t& counter2) :
+                             unsigned int& counter1, unsigned int& counter2) :
       m_object(base->is_on_y_identificiation_2_object()),
       m_counter1(counter1),
       m_counter2(counter2) {}
@@ -709,13 +710,13 @@ public:
   class Compare_x_at_limit_2 {
   private:
     typename Base::Compare_x_at_limit_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
 
   public:
     /*! Construct */
     Compare_x_at_limit_2(const Base* base,
-                         size_t& counter1, size_t& counter2) :
+                         unsigned int& counter1, unsigned int& counter2) :
       m_object(base->compare_x_at_limit_2_object()),
       m_counter1(counter1),
       m_counter2(counter2) {}
@@ -741,11 +742,11 @@ public:
   class Compare_x_near_limit_2 {
   private:
     typename Base::Compare_x_near_limit_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
-    Compare_x_near_limit_2(const Base* base, size_t& counter) :
+    Compare_x_near_limit_2(const Base* base, unsigned int& counter) :
       m_object(base->compare_x_near_limit_2_object()),
       m_counter(counter) {}
 
@@ -763,14 +764,14 @@ public:
   class Compare_x_on_boundary_2 {
   private:
     typename Base::Compare_x_on_boundary_2 m_object;
-    size_t& m_counter1;
-    size_t& m_counter2;
-    size_t& m_counter3;
+    unsigned int& m_counter1;
+    unsigned int& m_counter2;
+    unsigned int& m_counter3;
 
   public:
     /*! Construct */
-  Compare_x_on_boundary_2(const Base* base,  size_t& counter1,
-                          size_t& counter2, size_t& counter3 ) :
+  Compare_x_on_boundary_2(const Base* base,  unsigned int& counter1,
+                          unsigned int& counter2, unsigned int& counter3 ) :
       m_object(base->compare_x_on_boundary_2_object()),
       m_counter1(counter1),
       m_counter2(counter2),
@@ -802,12 +803,12 @@ public:
   class Compare_x_near_boundary_2 {
   private:
     typename Base::Compare_x_near_boundary_2 m_object;
-    size_t& m_counter;
+    unsigned int& m_counter;
 
   public:
     /*! Construct */
     Compare_x_near_boundary_2(const Base* base,
-                              size_t& counter) :
+                              unsigned int& counter) :
       m_object(base->compare_x_near_boundary_2_object()),
       m_counter(counter) {}
 
@@ -953,12 +954,12 @@ public:
    * \param doit indicates whethet to actually inceremnt the counter or not
    * \return the counter at the end of the operation
    */
-  static size_t increment(bool doit = true)
+  static unsigned int increment(bool doit = true)
   {
 #ifdef CGAL_NO_ATOMIC
-    static size_t counter;
+    static unsigned int counter;
 #else
-    static CGAL::cpp11::atomic<size_t> counter;
+    static CGAL::cpp11::atomic<unsigned int> counter;
 #endif
     if (doit) ++counter;
     return counter;
@@ -970,7 +971,7 @@ public:
 
 private:
   /*! The operation counters */
-  mutable size_t m_counters[NUMBER_OF_OPERATIONS];
+  mutable unsigned int m_counters[NUMBER_OF_OPERATIONS];
 };
 
 template <class Out_stream, class Base_traits>
@@ -979,8 +980,8 @@ Out_stream& operator<<(Out_stream& os,
                        const Arr_counting_traits_2<Base_traits>& traits)
 {
   typedef Arr_counting_traits_2<Base_traits>            Traits;
-  size_t sum = 0;
-  size_t i;
+  unsigned int sum = 0;
+  unsigned int i;
   for (i = 0; i < Traits::NUMBER_OF_OPERATIONS; ++i)
     sum += traits.count(static_cast<typename Traits::Operation_id>(i));
   os << "# of COMPARE_X operation = "

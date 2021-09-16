@@ -1,11 +1,20 @@
 // Copyright (c) 2001-2006  INRIA Sophia-Antipolis (France).
 // All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Number_types/include/CGAL/NT_converter.h $
-// $Id: NT_converter.h 848aa7d 2021-02-08T10:16:59+01:00 Simon Giraudot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Number_types/include/CGAL/NT_converter.h $
+// $Id: NT_converter.h 26c857a 2018-06-13T15:11:45+02:00 Mael Rouxel-Labbé
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Sylvain Pion
@@ -61,34 +70,12 @@ struct NT_converter < NT1, double >
     }
 };
 
-template < class NT1 >
-struct NT_converter < NT1, float >
-  : public CGAL::cpp98::unary_function< NT1, float >
-{
-    float
-    operator()(const NT1 &a) const
-    {
-        return static_cast<float>(to_double(a));
-    }
-};
-
 template <>
 struct NT_converter < double, double >
   : public CGAL::cpp98::unary_function< double, double >
 {
     const double &
     operator()(const double &a) const
-    {
-        return a;
-    }
-};
-
-template <>
-struct NT_converter < float, float >
-  : public CGAL::cpp98::unary_function< float, float >
-{
-    const float &
-    operator()(const float &a) const
     {
         return a;
     }

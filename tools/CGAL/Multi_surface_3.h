@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Surface_mesher/include/CGAL/Multi_surface_3.h $
-// $Id: Multi_surface_3.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Surface_mesher/include/CGAL/Multi_surface_3.h $
+// $Id: Multi_surface_3.h 07b0ddf 2018-02-13T14:15:38+00:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Laurent RINEAU
 
@@ -22,7 +31,7 @@ namespace CGAL {
     typename Surface_a,
     typename Surface_b
     >
-  class Multi_surface_3
+  class Multi_surface_3 
   {
     const Surface_a& surf_a;
     const Surface_b& surf_b;
@@ -36,8 +45,8 @@ namespace CGAL {
     {
       return surf_a;
     }
-
-
+    
+      
     const Surface_b& surface_b() const
     {
       return surf_b;
@@ -61,7 +70,7 @@ namespace CGAL {
       Oracle_a,
       Oracle_b
       > Type;
-
+    
     typedef Type type; // Boost meta-programming compatibility
   };
 } // end namespace CGAL, second occurrence.

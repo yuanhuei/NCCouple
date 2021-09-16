@@ -1,10 +1,19 @@
 // Copyright (c) 2005, 2006 Fernando Luis Cacciola Carballal. All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Straight_skeleton_2/include/CGAL/Straight_skeleton_2/Straight_skeleton_builder_events_2.h $
-// $Id: Straight_skeleton_builder_events_2.h 4d85f84 2020-09-29T20:00:27+02:00 Mael Rouxel-Labbé
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Straight_skeleton_2/include/CGAL/Straight_skeleton_2/Straight_skeleton_builder_events_2.h $
+// $Id: Straight_skeleton_builder_events_2.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Fernando Cacciola <fernando_cacciola@ciudad.com.ar>
 //
@@ -13,24 +22,24 @@
 
 #include <CGAL/license/Straight_skeleton_2.h>
 
+
+#include<ostream>
+
 #include <CGAL/Straight_skeleton_2/Straight_skeleton_aux.h>
-
-#include <boost/intrusive_ptr.hpp>
-
-#include <ostream>
 
 namespace CGAL {
 
-namespace CGAL_SS_i {
+namespace CGAL_SS_i
+{
 
 template<class SSkel_, class Traits_>
 class Event_2 : public Ref_counted_base
 {
   typedef SSkel_  SSkel ;
   typedef Traits_ Traits ;
-
+  
 public:
-
+ 
   typedef Event_2<SSkel,Traits> Self ;
 
   typedef boost::intrusive_ptr<Self> SelfPtr ;
@@ -38,14 +47,14 @@ public:
   typedef typename Traits::Point_2          Point_2 ;
   typedef typename Traits::FT               FT ;
   typedef typename Traits::Trisegment_2_ptr Trisegment_2_ptr ;
-
+  
   typedef typename SSkel::Vertex                Vertex ;
   typedef typename SSkel::Halfedge_handle       Halfedge_handle ;
   typedef typename SSkel::Halfedge_const_handle Halfedge_const_handle ;
   typedef typename SSkel::Vertex_handle         Vertex_handle ;
-
+  
   typedef CGAL_SS_i::Triedge<Halfedge_handle> Triedge ;
-
+  
   enum Type { cEdgeEvent, cSplitEvent, cPseudoSplitEvent } ;
 
 public:
@@ -74,7 +83,7 @@ public:
   {
     ss << "[" ;
     e.dump(ss);
-    ss << " p=(" << e.point().x() << "," << e.point().y() << ") t=" << e.time() << "] "
+    ss << " p=(" << e.point().x() << "," << e.point().y() << ") t=" << e.time() << "] " 
        << trisegment_collinearity_to_string(e.trisegment()->collinearity()) ;
     return ss ;
   }
@@ -109,7 +118,7 @@ class Edge_event_2 : public Event_2<SSkel_,Traits_>
 public:
 
   Edge_event_2 ( Triedge const&          aTriedge
-               , Trisegment_2_ptr const& aTrisegment
+               , Trisegment_2_ptr const& aTrisegment 
                , Vertex_handle           aLSeed
                , Vertex_handle           aRSeed
                )
@@ -129,7 +138,7 @@ private :
   virtual void dump ( std::ostream& ss ) const
   {
     this->Base::dump(ss);
-    ss << " (Edge Event, LSeed=" << mLSeed->id() << " RSeed=" << mRSeed->id() << ')' ;
+    ss << " (LSeed=" << mLSeed->id() << " RSeed=" << mRSeed->id() << ')' ;
   }
 
 private :
@@ -148,7 +157,7 @@ class Split_event_2 : public Event_2<SSkel_,Traits_>
 
   typedef typename SSkel::Halfedge_handle Halfedge_handle ;
   typedef typename SSkel::Vertex_handle   Vertex_handle ;
-
+  
   typedef typename Base::Type             Type ;
   typedef typename Base::Triedge          Triedge ;
   typedef typename Base::Trisegment_2_ptr Trisegment_2_ptr ;
@@ -156,7 +165,7 @@ class Split_event_2 : public Event_2<SSkel_,Traits_>
 public:
 
   Split_event_2 ( Triedge const&          aTriedge
-                , Trisegment_2_ptr const& aTrisegment
+                , Trisegment_2_ptr const& aTrisegment 
                 , Vertex_handle           aSeed
                 )
     :
@@ -170,15 +179,15 @@ public:
   virtual Vertex_handle seed1() const { return mSeed ; }
 
   void set_opposite_rnode( Vertex_handle aOppR ) { mOppR = aOppR ; }
-
+  
   Vertex_handle opposite_rnode() const { return mOppR ; }
-
+  
 private :
 
   virtual void dump ( std::ostream& ss ) const
   {
     this->Base::dump(ss);
-    ss << " (Split Event, Seed=" << mSeed->id() << " (" << mSeed->point() << ") OppBorder=" << this->triedge().e2()->id() << ')' ;
+    ss << " (Seed=" << mSeed->id() << " OppBorder=" << this->triedge().e2()->id() << ')' ;
   }
 
 private :
@@ -192,7 +201,7 @@ class Pseudo_split_event_2 : public Event_2<SSkel_,Traits_>
 {
   typedef SSkel_  SSkel ;
   typedef Traits_ Traits ;
-
+  
   typedef Event_2<SSkel,Traits> Base ;
 
   typedef typename SSkel::Halfedge_handle Halfedge_handle ;
@@ -205,7 +214,7 @@ class Pseudo_split_event_2 : public Event_2<SSkel_,Traits_>
 public:
 
   Pseudo_split_event_2 ( Triedge const&          aTriedge
-                       , Trisegment_2_ptr const& aTrisegment
+                       , Trisegment_2_ptr const& aTrisegment 
                        , Vertex_handle           aSeed0
                        , Vertex_handle           aSeed1
                        , bool                    aOppositeIs0
@@ -223,20 +232,20 @@ public:
   virtual Vertex_handle seed1() const { return mSeed1 ; }
 
   bool opposite_node_is_seed_0() const { return mOppositeIs0 ; }
-
+  
   bool is_at_source_vertex() const { return opposite_node_is_seed_0() ; }
-
+  
   Vertex_handle opposite_seed() const { return opposite_node_is_seed_0() ? seed0() : seed1() ; }
-
+  
 private :
 
   virtual void dump ( std::ostream& ss ) const
   {
     this->Base::dump(ss);
-
-    ss << " (Pseudo-split Event, "
-       << "Seed0=" << mSeed0->id() << (  mOppositeIs0 ? " {Opp} " : " " )
-       << "Seed1=" << mSeed1->id() << ( !mOppositeIs0 ? " {Opp}"  : "" )
+    
+    ss << " ("
+       << "Seed0=" << mSeed0->id() << (  mOppositeIs0 ? " {Opp} " : " " ) 
+       << "Seed1=" << mSeed1->id() << ( !mOppositeIs0 ? " {Opp}"  : "" ) 
        << ")" ;
   }
 

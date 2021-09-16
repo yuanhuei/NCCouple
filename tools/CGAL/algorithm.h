@@ -1,15 +1,24 @@
-// Copyright (c) 2003
+// Copyright (c) 2003  
 // Utrecht University (The Netherlands),
 // ETH Zurich (Switzerland),
 // INRIA Sophia-Antipolis (France),
 // Max-Planck-Institute Saarbruecken (Germany),
-// and Tel-Aviv University (Israel).  All rights reserved.
+// and Tel-Aviv University (Israel).  All rights reserved. 
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/STL_Extension/include/CGAL/algorithm.h $
-// $Id: algorithm.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/STL_Extension/include/CGAL/algorithm.h $
+// $Id: algorithm.h 1dd7473 2019-03-31T22:09:24+02:00 albert-github
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Michael Hoffmann <hoffmann@inf.ethz.ch>
@@ -30,7 +39,77 @@
 #include <boost/random.hpp>
 #include <boost/random/linear_congruential.hpp>
 
+#ifdef CGAL_CFG_NO_CPP0X_NEXT_PREV
+#  include <boost/next_prior.hpp>
+#endif
+
 namespace CGAL {
+
+namespace cpp11 {
+#ifndef CGAL_CFG_NO_CPP0X_NEXT_PREV
+  using std::next;
+  using std::prev;
+#else
+  using boost::next;
+
+  // boost provides prior, we go with the standard declaration as
+  // described in $24.4.4 and forward it to boost prior
+  template<typename BidirectionalIterator>
+  BidirectionalIterator prev( BidirectionalIterator x, 
+			      typename std::iterator_traits<BidirectionalIterator>::difference_type n = 1)
+  {
+    return boost::prior(x, n);
+  }
+#endif
+} // namespace cpp11
+
+namespace cpp0x = cpp11;
+
+// copy_n is usually in the STL as well, but not in the official
+// standard. We provide our own copy_n.  It is planned for C++0x. 
+// Our own version is declared deprecated, if std::copy_n is
+// available.
+
+#ifndef CGAL_CFG_NO_CPP0X_COPY_N
+#ifndef CGAL_NO_DEPRECATED_CODE
+template <class InputIterator, class Size, class OutputIterator>
+CGAL_DEPRECATED OutputIterator copy_n( InputIterator first, Size n, OutputIterator result )
+{
+  // copies the first `n' items from `first' to `result'. Returns
+  // the value of `result' after inserting the `n' items.
+  while( n--) {
+    *result = *first;
+    first++;
+    result++;
+  }
+  return result;
+}
+#endif // no CGAL_NO_DEPRECATED_CODE
+#else // CGAL_CFG_NO_CPP0X_COPY_N
+template <class InputIterator, class Size, class OutputIterator>
+OutputIterator copy_n( InputIterator first, Size n, OutputIterator result )
+{
+  // copies the first `n' items from `first' to `result'. Returns
+  // the value of `result' after inserting the `n' items.
+  while( n--) {
+    *result = *first;
+    first++;
+    result++;
+  }
+  return result;
+}
+#endif // CGAL_CFG_NO_CPP0X_COPY_N
+
+namespace cpp11 {
+#ifndef CGAL_CFG_NO_CPP0X_COPY_N
+  using std::copy_n;
+#else
+  using CGAL::copy_n;
+#endif
+} // cpp11
+
+namespace cpp0x = cpp11;
+
 
 // Not documented
 template <class T> inline
@@ -277,10 +356,10 @@ lexicographical_compare_three_valued( InputIterator1 first1, InputIterator1 last
     produces \c (1):(2):(3)
  */
 template <class InputIterator>
-std::ostream&
+std::ostream& 
 output_range(std::ostream& os,
              InputIterator first, InputIterator beyond,
-             const char* sep = ", ", const char* pre = "", const char* post = "")
+             const char* sep = ", ", const char* pre = "", const char* post = "") 
 {
     InputIterator it = first;
     if (it != beyond) {
@@ -366,12 +445,12 @@ void nth_element(RandomAccessIterator left,
   if(left == right) return; // exit if there is only one element
   while(true) {
     RandomAccessIterator pivot_it = left + ((right - left) / 2);
-    RandomAccessIterator new_pivot_it =
-      internal::algorithm::partition(left, right, pivot_it, comp);
+    RandomAccessIterator new_pivot_it = 
+      internal::algorithm::partition(left, right, pivot_it, comp);    
     if(new_pivot_it == nth) return;
-    if(nth < new_pivot_it)
+    if(nth < new_pivot_it) 
       right = new_pivot_it - 1;
-    else
+    else 
       left = new_pivot_it + 1;
   } // end while(true)
 }

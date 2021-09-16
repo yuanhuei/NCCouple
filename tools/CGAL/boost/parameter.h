@@ -1,11 +1,20 @@
 // Copyright (c) 2014  GeometryFactory (France).  All rights reserved.
 //
-// This file is part of CGAL (www.cgal.org)
+// This file is part of CGAL (www.cgal.org); you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 3 of the License,
+// or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/BGL/include/CGAL/boost/parameter.h $
-// $Id: parameter.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/BGL/include/CGAL/boost/parameter.h $
+// $Id: parameter.h 8648a72 2019-05-03T15:49:49+02:00 Laurent Rineau
+// SPDX-License-Identifier: LGPL-3.0+
+// 
 //
 // Author(s)     : Andreas Fabri
 
@@ -57,7 +66,7 @@ struct Base
 private:
   T t_;
 };
-
+  
 #define CGAL_BOOLEAN_PARAMETER(Class, function_true, function_false)     \
   struct Class : public Base<bool> { Class(bool b) : Base<bool>(b){} };       \
   inline Class function_true() { return Class(true); }                        \
@@ -86,10 +95,10 @@ BOOST_PARAMETER_NAME( (time_limit, tag) time_limit_ )
 BOOST_PARAMETER_NAME( (convergence, tag) convergence_)
 BOOST_PARAMETER_NAME( (max_iteration_number, tag) max_iteration_number_ )
 BOOST_PARAMETER_NAME( (freeze_bound, tag) freeze_bound_)
-
+  
 BOOST_PARAMETER_NAME( (sliver_bound, tag) sliver_bound_)
 BOOST_PARAMETER_NAME( (sliver_criterion, tag) sliver_criterion_)
-BOOST_PARAMETER_NAME( (perturbation_vector, tag) perturbation_vector_)
+BOOST_PARAMETER_NAME( (perturbation_vector, tag) perturbation_vector_) 
 BOOST_PARAMETER_NAME( (do_freeze, tag) do_freeze_)
 
 BOOST_PARAMETER_NAME( (mesh_topology, tag) mesh_topology_)

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Point_set_processing_3/include/CGAL/Point_set_processing_3/internal/Voronoi_covariance_3/voronoi_covariance_3.h $
-// $Id: voronoi_covariance_3.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Point_set_processing_3/include/CGAL/Point_set_processing_3/internal/Voronoi_covariance_3/voronoi_covariance_3.h $
+// $Id: voronoi_covariance_3.h 643aaf2 2018-03-29T10:43:52+01:00 Andreas Fabri
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s) : Jocelyn Meyron and Quentin Mérigot
 //
@@ -40,7 +49,7 @@ namespace CGAL {
                 covariance_matrix_tetrahedron (FT ax, FT ay, FT az,
                                                FT bx, FT by, FT bz,
                                                FT cx, FT cy, FT cz,
-                                               std::array<FT,6> &R)
+                                               cpp11::array<FT,6> &R)
                 {
                     const FT det = (ax*cz*by - ax*bz*cy - ay*bx*cz +
                                     ay*cx*bz + az*bx*cy - az*cx*by) / 60.0;
@@ -68,7 +77,7 @@ namespace CGAL {
                 class Covariance_accumulator_3
                 {
                     public:
-                        typedef std::array<FT, 6> Result_type;
+                        typedef cpp11::array<FT, 6> Result_type;
 
                     private:
                         Result_type _result;
@@ -169,10 +178,10 @@ namespace CGAL {
                        boost::make_optional(Point(CGAL::ORIGIN)));
 
                     // apply f to the triangles on the boundary of P
-                    for(typename boost::graph_traits<Polyhedron>::face_descriptor fd : faces(P))
+                    BOOST_FOREACH(typename boost::graph_traits<Polyhedron>::face_descriptor fd, faces(P))
                     {
                       Halfedge_around_face_circulator<Polyhedron>
-                        h0(halfedge(fd,P),P), hf = h0--, hs = std::next(hf);
+                        h0(halfedge(fd,P),P), hf = h0--, hs = cpp11::next(hf);
 
                         while(hs != h0)
                         {
@@ -198,7 +207,7 @@ namespace CGAL {
             }
 
         template <class DT, class Sphere>
-            std::array<typename DT::Geom_traits::FT, 6>
+            array<typename DT::Geom_traits::FT, 6>
             voronoi_covariance_3 (const DT &dt,
                                   typename DT::Vertex_handle v,
                                   const Sphere &sphere)

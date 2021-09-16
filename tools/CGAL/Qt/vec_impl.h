@@ -4,11 +4,19 @@
  Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
 
  This file is part of a fork of the QGLViewer library version 2.7.0.
+ http://www.libqglviewer.com - contact@libqglviewer.com
+
+ This file may be used under the terms of the GNU General Public License 
+ version 3.0 as published by the Free Software Foundation and
+ appearing in the LICENSE file included in the packaging of this file.
+
+ This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 *****************************************************************************/
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/GraphicsView/include/CGAL/Qt/vec_impl.h $
-// $Id: vec_impl.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-only
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/GraphicsView/include/CGAL/Qt/vec_impl.h $
+// $Id: vec_impl.h 865e6bf 2018-09-11T17:26:15+02:00 Guillaume Damiand
+// SPDX-License-Identifier: GPL-3.0
 
 #ifdef CGAL_HEADER_ONLY
 #define CGAL_INLINE_FUNCTION inline
@@ -169,6 +177,6 @@ void Vec::initFromDOMElement(const QDomElement &element) {
 CGAL_INLINE_FUNCTION
 std::ostream &operator<<(std::ostream &o, const Vec &v) {
   return o << v.x << '\t' << v.y << '\t' << v.z;
-}
+}  
 
 }} // namespace CGAL::qglviewer

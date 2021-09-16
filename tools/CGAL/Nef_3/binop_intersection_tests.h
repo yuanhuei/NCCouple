@@ -2,11 +2,20 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Nef_3/include/CGAL/Nef_3/binop_intersection_tests.h $
-// $Id: binop_intersection_tests.h 0779373 2020-03-26T13:31:46+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
 //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Nef_3/include/CGAL/Nef_3/binop_intersection_tests.h $
+// $Id: binop_intersection_tests.h ee57fc2 2017-10-21T01:03:14+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
+// 
 //
 // Author(s)     : Andreas Meyer  <ameyer@mpi-sb.mpg.de>
 #ifndef CGAL_BINOP_INTERSECTION_TESTS_H
@@ -35,7 +44,7 @@ struct binop_intersection_test_segment_tree {
   typedef typename SNC_decorator::Point_3                 Point_3;
 
   typedef CGAL::SNC_const_decorator<SNC_structure>        Const_decorator;
-  typedef CGAL::Nef_box<SNC_decorator>                    Nef_box;
+  typedef CGAL::Nef_box<SNC_decorator>                    Nef_box; 
 
   template<class Callback>
   struct Bop_edge0_face1_callback {
@@ -144,7 +153,7 @@ struct binop_intersection_test_segment_tree {
 #ifdef CGAL_NEF3_BOX_INTERSECTION_CUTOFF
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge0_edge1,
-                        CGAL_NEF3_BOX_INTERSECTION_CUTOFF,);
+			CGAL_NEF3_BOX_INTERSECTION_CUTOFF,);
 #else
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge0_edge1);
@@ -159,7 +168,7 @@ struct binop_intersection_test_segment_tree {
 #ifdef CGAL_NEF3_BOX_INTERSECTION_CUTOFF
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge0_face1,
-                        CGAL_NEF3_BOX_INTERSECTION_CUTOFF);
+			CGAL_NEF3_BOX_INTERSECTION_CUTOFF);
 #else
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge0_face1);
@@ -174,7 +183,7 @@ struct binop_intersection_test_segment_tree {
 #ifdef CGAL_NEF3_BOX_INTERSECTION_CUTOFF
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge1_face0,
-                        CGAL_NEF3_BOX_INTERSECTION_CUTOFF);
+			CGAL_NEF3_BOX_INTERSECTION_CUTOFF);
 #else
     box_intersection_d( a.begin(), a.end(), b.begin(), b.end(),
                         callback_edge1_face0);

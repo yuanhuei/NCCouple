@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_basic_insertion_traits_2.h $
-// $Id: Arr_basic_insertion_traits_2.h 0626eb0 2020-06-11T12:32:33+03:00 Efi Fogel
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Surface_sweep_2/Arr_basic_insertion_traits_2.h $
+// $Id: Arr_basic_insertion_traits_2.h 7936109 2017-11-16T16:31:52+02:00 Efi Fogel
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Baruch Zukerman <baruchzu@post.tau.ac.il>
@@ -23,6 +32,7 @@
  * Defintion of the Arr_basic_insertion_traits_2<Traits,Arrangement> class.
  */
 
+#include <CGAL/Object.h>
 #include <CGAL/Arr_tags.h>
 
 #include <list>
@@ -410,7 +420,7 @@ public:
   Compare_y_at_x_right_2 compare_y_at_x_right_2_object() const
   {
     return (Compare_y_at_x_right_2
-            (m_base_traits->compare_y_at_x_right_2_object()));
+	    (m_base_traits->compare_y_at_x_right_2_object()));
   }
 
   /*! A functor that checks whether two points and two x-monotone curves are

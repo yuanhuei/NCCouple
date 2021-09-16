@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Arrangement_on_surface_2/include/CGAL/Arrangement_on_surface_2.h $
-// $Id: Arrangement_on_surface_2.h 06cd942 2021-03-10T10:33:19+01:00 Laurent Rineau
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Arrangement_on_surface_2/include/CGAL/Arrangement_on_surface_2.h $
+// $Id: Arrangement_on_surface_2.h 095c27e 2018-04-17T16:42:25+02:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s): Ron Wein          <wein@post.tau.ac.il>
@@ -46,8 +55,6 @@
 #include <CGAL/Iterator_project.h>
 #include <CGAL/Iterator_transform.h>
 
-#include <boost/pool/pool_alloc.hpp>
-
 namespace CGAL {
 
 /*! \class Arrangement_on_surface_2
@@ -66,7 +73,7 @@ class Arrangement_on_surface_2 {
 public:
   typedef GeomTraits_                                     Geometry_traits_2;
   typedef TopTraits_                                      Topology_traits;
-  typedef boost::fast_pool_allocator<int>                 Allocator;
+  typedef CGAL_ALLOCATOR(int)                             Allocator;
 
   // first define adaptor ...
   typedef Arr_traits_basic_adaptor_2<Geometry_traits_2>   Traits_adaptor_2;
@@ -158,7 +165,7 @@ protected:
     const Topology_traits* m_topol_traits;
 
   public:
-    _Is_concrete_vertex() : m_topol_traits(nullptr) {}
+    _Is_concrete_vertex() : m_topol_traits(NULL) {}
 
     _Is_concrete_vertex(const Topology_traits* topol_traits) :
       m_topol_traits(topol_traits)
@@ -166,7 +173,7 @@ protected:
 
     bool operator()(const DVertex& v) const
     {
-      if (m_topol_traits == nullptr)
+      if (m_topol_traits == NULL)
         return true;
 
       return (m_topol_traits->is_concrete_vertex(&v));
@@ -181,7 +188,7 @@ protected:
     const Topology_traits* m_topol_traits;
 
   public:
-    _Is_valid_vertex() : m_topol_traits(nullptr) {}
+    _Is_valid_vertex() : m_topol_traits(NULL) {}
 
     _Is_valid_vertex(const Topology_traits* topol_traits) :
       m_topol_traits(topol_traits)
@@ -189,7 +196,7 @@ protected:
 
     bool operator()(const DVertex& v) const
     {
-      if (m_topol_traits == nullptr)
+      if (m_topol_traits == NULL)
         return true;
 
       return (m_topol_traits->is_valid_vertex(&v));
@@ -204,7 +211,7 @@ protected:
     const Topology_traits* m_topol_traits;
 
   public:
-    _Is_valid_halfedge() : m_topol_traits(nullptr) {}
+    _Is_valid_halfedge() : m_topol_traits(NULL) {}
 
     _Is_valid_halfedge(const Topology_traits* topol_traits) :
       m_topol_traits(topol_traits)
@@ -212,7 +219,7 @@ protected:
 
     bool operator()(const DHalfedge& he) const
     {
-      if (m_topol_traits == nullptr)
+      if (m_topol_traits == NULL)
         return true;
 
       return (m_topol_traits->is_valid_halfedge(&he));
@@ -227,7 +234,7 @@ protected:
     const Topology_traits* m_topol_traits;
 
   public:
-    _Is_valid_face() : m_topol_traits(nullptr) {}
+    _Is_valid_face() : m_topol_traits(NULL) {}
 
     _Is_valid_face(const Topology_traits* topol_traits) :
       m_topol_traits(topol_traits)
@@ -235,7 +242,7 @@ protected:
 
     bool operator()(const DFace& f) const
     {
-      if (m_topol_traits == nullptr)
+      if (m_topol_traits == NULL)
         return true;
 
       return (m_topol_traits->is_valid_face(&f));
@@ -250,7 +257,7 @@ protected:
     const Topology_traits* m_topol_traits;
 
   public:
-    _Is_unbounded_face() : m_topol_traits(nullptr) {}
+    _Is_unbounded_face() : m_topol_traits(NULL) {}
 
     _Is_unbounded_face(const Topology_traits* topol_traits) :
       m_topol_traits(topol_traits)
@@ -310,10 +317,6 @@ public:
       Base(iter, iend, pred)
     {}
 
-    Edge_iterator(const Base& base) :
-      Base(base)
-    {}
-
     // Casting to a halfedge iterator.
     operator Halfedge_iterator() const
     {
@@ -346,10 +349,6 @@ public:
     Edge_const_iterator(DEdge_const_iter iter, DEdge_const_iter iend,
                         const _Is_valid_halfedge& pred) :
       Base(iter, iend, pred)
-    {}
-
-    Edge_const_iterator(const Base& base) :
-      Base(base)
     {}
 
     // Casting to a halfedge iterator.
@@ -440,10 +439,6 @@ public:
                                   DFace_const_iter iend,
                                   const _Is_unbounded_face& is_unbounded) :
       Base(iter, iend, is_unbounded)
-    {}
-
-    Unbounded_face_const_iterator(const Base& base) :
-      Base(base)
     {}
 
     // Casting to a face iterator.
@@ -592,7 +587,7 @@ public:
       const DHalfedge* he_curr = he_first;
       Size n = 0;
 
-      if (he_curr != nullptr) {
+      if (he_curr != NULL) {
         do {
           ++n;
           he_curr = he_curr->next()->opposite();
@@ -911,14 +906,6 @@ protected:
   bool                    m_own_traits;    // inidicates whether the geometry
                                            // traits should be freed up.
 
-  bool                    m_sweep_mode = false;
-                                           // sweep mode efficiently
-                                           // merges inner CCB but
-                                           // keeps invalid inner CCB
-                                           // and memory overhead that
-                                           // should be cleaned
-                                           // afterwards
-
 public:
   /// \name Constructors.
   //@{
@@ -948,9 +935,6 @@ public:
 
   /*! Destructor. */
   virtual ~Arrangement_on_surface_2();
-
-  /*! Change mode. */
-  void set_sweep_mode (bool mode) { m_sweep_mode = mode; }
 
   /*! Clear the arrangement. */
   virtual void clear();
@@ -1529,39 +1513,6 @@ public:
 
   //@}
 
-  /*!
-   * Cleans the inner CCB if sweep mode was used, by removing all
-   * non-valid inner CCBs
-   */
-  void clean_inner_ccbs_after_sweep()
-  {
-    for (DHalfedge_iter he = _dcel().halfedges_begin();
-         he != _dcel().halfedges_end(); ++ he)
-    {
-      if (!he->is_on_inner_ccb())
-        continue;
-
-      DInner_ccb* ic1 = he->inner_ccb_no_redirect();
-      if (ic1->is_valid())
-        continue;
-
-      // Calling Halfedge::inner_ccb() reduces the path and makes the
-      // halfedge point to a correct CCB
-      DInner_ccb* ic2 = he->inner_ccb();
-      CGAL_USE(ic2);
-      CGAL_assertion (ic2->halfedge()->is_on_inner_ccb()
-                      && ic2->halfedge()->inner_ccb_no_redirect() == ic2);
-    }
-
-    typename Dcel::Inner_ccb_iterator it = _dcel().inner_ccbs_begin();
-    while (it != _dcel().inner_ccbs_end())
-    {
-      typename Dcel::Inner_ccb_iterator current = it ++;
-      if (!current->is_valid())
-        _dcel().delete_inner_ccb(&*current);
-    }
-  }
-
 protected:
   /// \name Determining the boundary-side conditions.
   //@{
@@ -1605,7 +1556,11 @@ protected:
   Point_2*_new_point(const Point_2& pt)
   {
     Point_2* p_pt = m_points_alloc.allocate(1);
+#ifdef CGAL_CXX11
     std::allocator_traits<Points_alloc>::construct(m_points_alloc, p_pt, pt);
+#else
+    m_points_alloc.construct(p_pt, pt);
+#endif
     return (p_pt);
   }
 
@@ -1613,7 +1568,11 @@ protected:
   void _delete_point(Point_2& pt)
   {
     Point_2* p_pt = &pt;
+#ifdef CGAL_CXX11
     std::allocator_traits<Points_alloc>::destroy(m_points_alloc, p_pt);
+#else
+    m_points_alloc.destroy(p_pt);
+#endif
     m_points_alloc.deallocate(p_pt, 1);
   }
 
@@ -1621,7 +1580,11 @@ protected:
   X_monotone_curve_2* _new_curve(const X_monotone_curve_2& cv)
   {
     X_monotone_curve_2* p_cv = m_curves_alloc.allocate(1);
+#ifdef CGAL_CXX11
     std::allocator_traits<Curves_alloc>::construct(m_curves_alloc, p_cv, cv);
+#else
+    m_curves_alloc.construct(p_cv, cv);
+#endif
     return (p_cv);
   }
 
@@ -1629,7 +1592,11 @@ protected:
   void _delete_curve(X_monotone_curve_2& cv)
   {
     X_monotone_curve_2* p_cv = &cv;
+#ifdef CGAL_CXX11
     std::allocator_traits<Curves_alloc>::destroy(m_curves_alloc, p_cv);
+#else      
+    m_curves_alloc.destroy(p_cv);
+#endif
     m_curves_alloc.deallocate(p_cv, 1);
   }
   //@}
@@ -1810,7 +1777,7 @@ protected:
    * \return A pointer to a halfedge whose target is v, where cv should be
    *         inserted between this halfedge and the next halfedge around this
    *         vertex (in a clockwise order).
-   *         A nullptr return value indicates a precondition violation.
+   *         A NULL return value indicates a precondition violation.
    */
   DHalfedge* _locate_around_vertex(DVertex* v, const X_monotone_curve_2& cv,
                                    Arr_curve_end ind) const;
@@ -2064,7 +2031,7 @@ protected:
    * \param bx The boundary condition at the x-coordinate.
    * \param by The boundary condition at the y-coordinate.
    * \param p_pred Output: The predecessor halfedge around this vertex
-   *                       (may be nullptr, if no such halfedge exists).
+   *                       (may be NULL, if no such halfedge exists).
    * \return The vertex that corresponds to the curve end.
    */
   DVertex* _place_and_set_curve_end(DFace* f,
@@ -2876,8 +2843,7 @@ void insert(Arrangement_on_surface_2<GeomTraits, TopTraits>& arr,
 template <typename GeomTraits, typename TopTraits>
 void insert(Arrangement_on_surface_2<GeomTraits, TopTraits>& arr,
             const typename GeomTraits::X_monotone_curve_2& c,
-            typename Arr_point_location_result<
-              Arrangement_on_surface_2<GeomTraits, TopTraits> >::type obj);
+            const Object& obj);
 
 /*!
  * Insert an x-monotone curve into the arrangement, such that the curve
@@ -2993,16 +2959,16 @@ remove_vertex(Arrangement_on_surface_2<GeomTraits, TopTraits>& arr,
 template <typename GeomTraits, typename TopTraits>
 bool is_valid(const Arrangement_on_surface_2<GeomTraits, TopTraits>& arr);
 
-/*! Compute the zone of the given x-monotone curve in the existing arrangement.
+/*!
+ * Compute the zone of the given x-monotone curve in the existing arrangement.
  * Meaning, it output the arrangment's vertices, edges and faces that the
  * x-monotone curve intersects.
  * \param arr The arrangement.
- * \param c the x-monotone curve that its zone is computed.
- * \param oi the output iterator for the resulting zone elements. Its
- *           dereference type is a variant that wraps a \c Vertex_handle, a
- *           \c Halfedge_handle, or a \c Face_handle.
- * \param pl the point location strategy used to locate the starting point.
- * \return the past-the-end output iterator.
+ * \param c The x-monotone curve that its zone was computed.
+ * \param oi Output iterator of CGAL::Object to insert the zone elements to.
+ * \param pi The point location strategy that is used to locate the starting
+ * point.
+ * \return The output iterator that the curves were inserted to.
  */
 template <typename GeomTraits, typename TopTraits,
           typename OutputIterator, typename PointLocation>
@@ -3016,11 +2982,9 @@ OutputIterator zone(Arrangement_on_surface_2<GeomTraits, TopTraits>& arr,
  * Overloaded version with no point location object - the walk point-location
  * strategy is used as default.
  * \param arr The arrangement.
- * \param c the x-monotone curve that its zone was computed.
- * \param oi the output iterator for the resulting zone elements. Its
- *           dereference type is a variant that wraps a \c Vertex_handle, a
- *           \c Halfedge_handle, or a \c Face_handle.
- * \return the past-the-end output iterator.
+ * \param c The x-monotone curve that its zone was computed.
+ * \param oi Output iterator of CGAL::Object to insert the zone elements to.
+ * \return The output iterator that the curves were inserted to.
  */
 template <typename GeomTraits, typename TopTraits, typename OutputIterator>
 OutputIterator zone(Arrangement_on_surface_2<GeomTraits, TopTraits>& arr,

@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Mesh_3/include/CGAL/Mesh_domain_with_polyline_features_3.h $
-// $Id: Mesh_domain_with_polyline_features_3.h 58b10a3 2020-03-26T18:58:50+01:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Mesh_3/include/CGAL/Mesh_domain_with_polyline_features_3.h $
+// $Id: Mesh_domain_with_polyline_features_3.h 821f9c0 2018-10-29T10:27:53+01:00 Laurent Rineau
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Stéphane Tayeb, Laurent Rineau
@@ -38,6 +47,7 @@
 
 #include <boost/next_prior.hpp> // for boost::prior and boost::next
 #include <boost/variant.hpp>
+#include <boost/foreach.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/shared_ptr.hpp>
@@ -583,6 +593,7 @@ public:
     , current_curve_index_(1)
     , curves_aabb_tree_is_built(false) {}
 
+#ifndef CGAL_CFG_NO_CPP0X_VARIADIC_TEMPLATES
   template <typename T1, typename T2, typename ... T>
   Mesh_domain_with_polyline_features_3(const T1& o1, const T2& o2, const T& ...o)
     : MeshDomain_3(o1, o2, o...)
@@ -590,6 +601,32 @@ public:
     , current_curve_index_(1)
     , curves_aabb_tree_is_built(false) {}
 /// @}
+#else
+  /// Constructors
+  /// Call the base class constructor
+  template <typename T1, typename T2>
+  Mesh_domain_with_polyline_features_3(const T1& o1, const T2& o2)
+    : MeshDomain_3(o1, o2)
+    , current_corner_index_(1)
+    , current_curve_index_(1)
+    , curves_aabb_tree_is_built(false) {}
+
+  template <typename T1, typename T2, typename T3>
+  Mesh_domain_with_polyline_features_3(const T1& o1, const T2& o2,
+                                       const T3& o3)
+    : MeshDomain_3(o1, o2, o3)
+    , current_corner_index_(1)
+    , current_curve_index_(1)
+    , curves_aabb_tree_is_built(false) {}
+
+  template <typename T1, typename T2, typename T3, typename T4>
+  Mesh_domain_with_polyline_features_3(const T1& o1, const T2& o2,
+                                       const T3& o3, const T4& o4)
+    : MeshDomain_3(o1, o2, o3, o4)
+    , current_corner_index_(1)
+    , current_curve_index_(1)
+    , curves_aabb_tree_is_built(false) {}
+#endif
 
 /// \name Operations
 /// @{
@@ -635,7 +672,7 @@ public:
    PolylinePMap polyline_pmap,
    IncidentPatchesIndicesPMap incident_paches_indices_pmap,
    IndicesOutputIterator out /* = CGAL::Emptyset_iterator() */);
-
+  
   template <typename InputIterator, typename IndicesOutputIterator>
   IndicesOutputIterator
   add_features_with_context(InputIterator first, InputIterator end,
@@ -644,7 +681,7 @@ public:
   /// @}
   /// \endcond
   /*!
-    Add 1-dimensional features in the domain. `InputIterator` value type must
+    Add 1-dimensional features in the domain. `InputIterator` value type must 
     be a model of the concept `MeshPolyline_3`.
   */
   template <typename InputIterator>
@@ -664,9 +701,9 @@ public:
   /*!
     Add 1-dimensional features (curves) from the range `[first, end)` in the domain with their incidences
     with 2-dimensional features (patches) of the domain.
-
+ 
     \tparam InputIterator input iterator over curves
-    \tparam PolylinePMap is a model of `ReadablePropertyMap` with key type
+    \tparam PolylinePMap is a model of `ReadablePropertyMap` with key type 
       `std::iterator_traits<InputIterator>::%reference` and a value type
       that is a model of `MeshPolyline_3`.
     \tparam IncidentPatchesIndicesPMap is a model of `ReadablePropertyMap`
@@ -681,7 +718,7 @@ public:
     \param incident_patches_indices_pmap the property map that provides
       access to the set of indices of the surface patches that are incident to
       a given 1D-feature (curve)
-  */
+  */ 
   template <typename InputIterator,
             typename PolylinePMap,
             typename IncidentPatchesIndicesPMap>
@@ -696,7 +733,7 @@ public:
                                 CGAL::Emptyset_iterator());
   }
 /// @}
-
+  
 /// \name Implementation of the concept MeshDomainWithFeatures_3
 /// The following methods implement the requirement of the concept
 /// `MeshDomainWithFeatures_3`.
@@ -708,7 +745,7 @@ public:
   OutputIterator get_corners(OutputIterator out) const;
 
   /// Implements `MeshDomainWithFeatures_3::get_curves()`.
-  /// OutputIterator value type is std::tuple<Curve_index,
+  /// OutputIterator value type is CGAL::cpp11::tuple<Curve_index,
   /// std::pair<Point_3,Index>, std::pair<Point_3,Index> >
   template <typename OutputIterator>
   OutputIterator get_curves(OutputIterator out) const;
@@ -831,9 +868,6 @@ public:
   template <typename InputIterator>
   Curve_index insert_edge(InputIterator first, InputIterator end);
   /// @endcond
-
-/// @}
-
 private:
   void compute_corners_incidences();
 
@@ -965,7 +999,7 @@ get_curves(OutputIterator out) const
       q_index = p_index;
     }
 
-    *out++ = std::make_tuple(eit->first,
+    *out++ = CGAL::cpp11::make_tuple(eit->first,
                                      std::make_pair(p,p_index),
                                      std::make_pair(q,q_index));
   }
@@ -1165,13 +1199,6 @@ add_features_and_incidences(InputIterator first, InputIterator end,
 
     Curve_index curve_id = insert_edge(polyline.begin(), polyline.end());
     edges_incidences_[curve_id].insert(patches_ids.begin(), patches_ids.end());
-#if CGAL_MESH_3_PROTECTION_DEBUG & 1
-    std::cerr << "Curve #" << curve_id << " is incident to the following patches: {";
-    for(auto id: patches_ids) {
-      std::cerr << " " << id;
-    }
-    std::cerr << "}\n";
-#endif // CGAL_MESH_3_PROTECTION_DEBUG & 1
     *indices_out++ = curve_id;
   }
 
@@ -1217,7 +1244,7 @@ Mesh_domain_with_polyline_features_3<MD_>::
 reindex_patches(const std::vector<Surf_p_index>& map,
                 IncidenceMap& incidence_map)
 {
-  for(typename IncidenceMap::value_type& pair :
+  BOOST_FOREACH(typename IncidenceMap::value_type& pair,
                 incidence_map)
   {
     Surface_patch_index_set& patch_index_set = pair.second;
@@ -1305,7 +1332,7 @@ operator()(std::ostream& os, Point p, typename MDwPF_::Curve_index id,
 {
   os << "Corner #" << id << " (" << p
      << ") is incident to the following curves: {";
-  for(typename MDwPF_::Curve_index curve_index :
+  BOOST_FOREACH(typename MDwPF_::Curve_index curve_index,
                 corners_tmp_incidences_of_id)
   {
     os << " " << curve_index;
@@ -1337,7 +1364,7 @@ operator()(std::ostream& os, Point p, typename MDwPF_::Curve_index id,
 {
   os << "Corner #" << id << " (" << p
      << ") is incident to the following patches: {";
-  for(typename MDwPF_::Surface_patch_index i :
+  BOOST_FOREACH(typename MDwPF_::Surface_patch_index i,
                 corners_incidences_of_id)
   {
     os << " " << i;
@@ -1411,13 +1438,13 @@ compute_corners_incidences()
 
     Surface_patch_index_set& incidences = corners_incidences_[id];
 
-    for(Curve_index curve_index : corner_tmp_incidences)
+    BOOST_FOREACH(Curve_index curve_index, corner_tmp_incidences)
     {
       get_incidences(curve_index,
                      std::inserter(incidences,
                                    incidences.begin()));
     }
-#if CGAL_MESH_3_PROTECTION_DEBUG & 1
+#ifdef CGAL_MESH_3_PROTECTION_DEBUG
     display_corner_incidences(std::cerr, cit->first, id);
 #endif // CGAL_MESH_3_PROTECTION_DEBUG
 

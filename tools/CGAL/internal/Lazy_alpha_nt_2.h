@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Alpha_shapes_2/include/CGAL/internal/Lazy_alpha_nt_2.h $
-// $Id: Lazy_alpha_nt_2.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Alpha_shapes_2/include/CGAL/internal/Lazy_alpha_nt_2.h $
+// $Id: Lazy_alpha_nt_2.h a3050d2 2018-11-12T11:25:04+01:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Sébastien Loriot <sebastien.loriot@geometryfactory.com>
 //                 Mael Rouxel-Labbé
@@ -251,26 +260,26 @@ public:
     : exact_(Exact_nt(0)), approx_(0)
   {
     data().nbpts=0;
-    data().p0=nullptr;
-    data().p1=nullptr;
-    data().p2=nullptr;
+    data().p0=NULL;
+    data().p1=NULL;
+    data().p2=NULL;
   }
 
   Lazy_alpha_nt_2(double d)
    : exact_(Exact_nt(d)), approx_(d)
   {
     data().nbpts=0;
-    data().p0=nullptr;
-    data().p1=nullptr;
-    data().p2=nullptr;
+    data().p0=NULL;
+    data().p1=NULL;
+    data().p2=NULL;
   }
 
   Lazy_alpha_nt_2(const Input_point& wp0)
   {
     data().nbpts=1;
     data().p0=&wp0;
-    data().p1=nullptr;
-    data().p2=nullptr;
+    data().p1=NULL;
+    data().p2=NULL;
     set_approx();
   }
 
@@ -280,7 +289,7 @@ public:
     data().nbpts=2;
     data().p0=&wp0;
     data().p1=&wp1;
-    data().p2=nullptr;
+    data().p2=NULL;
     set_approx();
   }
 

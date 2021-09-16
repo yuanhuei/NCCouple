@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Boolean_set_operations_2/include/CGAL/Boolean_set_operations_2/Gps_on_surface_base_2.h $
-// $Id: Gps_on_surface_base_2.h 254d60f 2019-10-19T15:23:19+02:00 Sébastien Loriot
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Boolean_set_operations_2/include/CGAL/Boolean_set_operations_2/Gps_on_surface_base_2.h $
+// $Id: Gps_on_surface_base_2.h 4117fcd 2019-06-13T09:31:02+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Baruch Zukerman <baruchzu@post.tau.ac.il>
 //                 Ophir Setter    <ophir.setter@cs.tau.ac.il>
@@ -37,12 +46,13 @@
 #include <CGAL/Boolean_set_operations_2/Ccb_curve_iterator.h>
 #include <CGAL/Union_find.h>
 
+#include <boost/foreach.hpp>
 
 /*!
   \file   Gps_on_surface_base_2.h
   \brief  A class that allows Boolean set operations.
   This class is the base class for General_polygon_set_on_surface_2 and
-  receives extra template parameter which allows different validation
+  recieves extra template parameter which allows different validation
   policies. If you do not want validation then use the default validation
   policy. A different validation policy example can be found in
   General_polygon_set_on_surface_2.
@@ -66,7 +76,7 @@ namespace Boolean_set_operation_2_internal
 
 //! General_polygon_set_on_surface_2
 /*! This class is the base class for General_polygon_set_on_surface_2 and
-    receives extra template parameter which allows different validation
+    recieves extra template parameter which allows different validation
     policies. If you do not want validation then use the default validation
     policy. A different validation policy example can be found in
     General_polygon_set_on_surface_2.
@@ -1083,7 +1093,7 @@ protected:
 
       // update halfedge flag according to the flag of the twin halfedge
       // or if the outer ccb of the cc was set
-      for(Halfedge_handle h : halfedges_that_was_on_an_outer_ccb)
+      BOOST_FOREACH(Halfedge_handle h, halfedges_that_was_on_an_outer_ccb)
       {
         if (h->flag()!=NOT_VISITED) continue;
         std::size_t face_master_id=(*uf_faces.find(face_handles[h->face()->id()]))->id();
@@ -1104,7 +1114,7 @@ protected:
     while(something_was_updated);
     // last loop, if some tags are not set it means that they are the only ccb
     // of the face and that they have to be the outer ccb
-    for(Halfedge_handle h : halfedges_that_was_on_an_outer_ccb)
+    BOOST_FOREACH(Halfedge_handle h, halfedges_that_was_on_an_outer_ccb)
     {
       if (h->flag()!=NOT_VISITED) continue;
       std::size_t face_master_id=(*uf_faces.find(face_handles[h->face()->id()]))->id();
@@ -1181,9 +1191,9 @@ protected:
       }
 
       //collect for reuse/removal all inner and outer ccbs
-      for(void* ptr : (*it)->_outer_ccbs())
+      BOOST_FOREACH(void* ptr, (*it)->_outer_ccbs())
         outer_ccbs_to_remove.push_back( static_cast<typename Aos_2::Dcel::Halfedge*>(ptr)->outer_ccb() );
-      for(void* ptr : (*it)->_inner_ccbs())
+      BOOST_FOREACH(void* ptr, (*it)->_inner_ccbs())
         inner_ccbs_to_remove.push_back( static_cast<typename Aos_2::Dcel::Halfedge*>(ptr)->inner_ccb() );
       (*it)->_outer_ccbs().clear();
       (*it)->_inner_ccbs().clear();
@@ -1266,9 +1276,9 @@ protected:
     }
 
     // now set the new face for all ccbs
-    for(Outer_ccb_and_face& ccb_and_face : outer_ccb_and_new_face_pairs)
+    BOOST_FOREACH(Outer_ccb_and_face& ccb_and_face, outer_ccb_and_new_face_pairs)
       ccb_and_face.first->set_face(ccb_and_face.second);
-    for(Inner_ccb_and_face& ccb_and_face : inner_ccb_and_new_face_pairs)
+    BOOST_FOREACH(Inner_ccb_and_face& ccb_and_face, inner_ccb_and_new_face_pairs)
       ccb_and_face.first->set_face(ccb_and_face.second);
 
     //remove no longer used edges, vertices and faces

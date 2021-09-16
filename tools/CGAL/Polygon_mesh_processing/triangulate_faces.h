@@ -2,10 +2,19 @@
 // All rights reserved.
 //
 // This file is part of CGAL (www.cgal.org).
+// You can redistribute it and/or modify it under the terms of the GNU
+// General Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
 //
-// $URL: https://github.com/CGAL/cgal/blob/v5.2.1/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/triangulate_faces.h $
-// $Id: triangulate_faces.h bfd4e99 2020-09-15T15:42:24+02:00 Jane Tournois
-// SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Commercial
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $URL: https://github.com/CGAL/cgal/blob/releases/CGAL-4.14.3/Polygon_mesh_processing/include/CGAL/Polygon_mesh_processing/triangulate_faces.h $
+// $Id: triangulate_faces.h 2f81a21 2019-07-28T18:38:59+02:00 Sébastien Loriot
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Laurent Rineau
@@ -35,6 +44,7 @@
 #include <CGAL/Polygon_mesh_processing/internal/named_params_helper.h>
 
 #include <boost/range/size.hpp>
+#include <boost/foreach.hpp>
 
 #include <queue>
 #include <vector>
@@ -45,32 +55,11 @@ namespace CGAL {
 
 namespace Polygon_mesh_processing {
 
-namespace Triangulate_faces
-{
-/** \ingroup PMP_meshing_grp
-*   %Default new face visitor model of `PMPTriangulateFaceVisitor`.
-*   All its functions have an empty body. This class can be used as a
-*   base class if only some of the functions of the concept require to be
-*   overriden.
-*/
-template<class PolygonMesh>
-struct Default_visitor {
-  typedef boost::graph_traits<PolygonMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-
-  void before_subface_creations(face_descriptor /*f_old*/) {}
-  void after_subface_creations() {}
-  void after_subface_created(face_descriptor /*f_new*/) {}
-};
-
-} //end namespace Triangulate_faces
-
 namespace internal {
 
 template <class PM
           , typename VertexPointMap
-          , typename Kernel
-          , typename Visitor>
+          , typename Kernel>
 class Triangulate_modifier
 {
   typedef Kernel Traits;
@@ -101,7 +90,7 @@ public:
     return fh->info().is_external;
   }
 
-  bool triangulate_face(face_descriptor f, PM& pmesh, bool use_cdt, Visitor visitor)
+  bool triangulate_face(face_descriptor f, PM& pmesh, bool use_cdt)
   {
     typedef typename Traits::FT FT;
 
@@ -137,15 +126,14 @@ public:
        */
       FT p1p3 = CGAL::cross_product(p2-p1,p3-p2) * CGAL::cross_product(p0-p3,p1-p0);
       FT p0p2 = CGAL::cross_product(p1-p0,p1-p2) * CGAL::cross_product(p3-p2,p3-p0);
-      visitor.before_subface_creations(f);
-      halfedge_descriptor res = (p0p2>p1p3)
-                              ?  CGAL::Euler::split_face(v0, v2, pmesh)
-                              :  CGAL::Euler::split_face(v1, v3, pmesh);
-
-      visitor.after_subface_created(face(res,pmesh));
-      visitor.after_subface_created(face(opposite(res,pmesh),pmesh));
-
-      visitor.after_subface_creations();
+      if(p0p2>p1p3)
+      {
+        CGAL::Euler::split_face(v0, v2, pmesh);
+      }
+      else
+      {
+        CGAL::Euler::split_face(v1, v3, pmesh);
+      }
     }
     else
     {
@@ -165,18 +153,18 @@ public:
                                                            Itag>             CDT;
         P_traits cdt_traits(normal);
         CDT cdt(cdt_traits);
-        return triangulate_face_with_CDT(f, pmesh, cdt, visitor);
+        return triangulate_face_with_CDT(f, pmesh, cdt);
       }
 #else
       CGAL_USE(use_cdt);
 #endif
-      return triangulate_face_with_hole_filling(f, pmesh, visitor);
+      return triangulate_face_with_hole_filling(f, pmesh);
     }
     return true;
   }
 
   template<class CDT>
-  bool triangulate_face_with_CDT(face_descriptor f, PM& pmesh, CDT& cdt, Visitor visitor)
+  bool triangulate_face_with_CDT(face_descriptor f, PM& pmesh, CDT& cdt)
   {
     std::size_t original_size = CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh).size();
 
@@ -234,7 +222,6 @@ public:
 
 
     // then modify the polyhedron
-    visitor.before_subface_creations(f);
     // make_hole. (see comment in function body)
     this->make_hole(halfedge(f, pmesh), pmesh);
 
@@ -291,14 +278,12 @@ public:
         set_next(h2, h0, pmesh);
 
         Euler::fill_hole(h0, pmesh);
-        visitor.after_subface_created(face(h0, pmesh));
       }
     }
-    visitor.after_subface_creations();
     return true;
   }
 
-  bool triangulate_face_with_hole_filling(face_descriptor f, PM& pmesh, Visitor visitor)
+  bool triangulate_face_with_hole_filling(face_descriptor f, PM& pmesh)
   {
     namespace PMP = CGAL::Polygon_mesh_processing;
 
@@ -306,7 +291,7 @@ public:
     std::vector<Point> hole_points;
     std::vector<vertex_descriptor> border_vertices;
     CGAL_assertion(CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh).size() > 0);
-    for(halfedge_descriptor h : CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh))
+    BOOST_FOREACH(halfedge_descriptor h, CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh))
     {
       vertex_descriptor v = source(h, pmesh);
       hole_points.push_back( get(_vpmap, v) );
@@ -325,26 +310,24 @@ public:
     // triangulate the hole
     std::map< std::pair<int, int> , halfedge_descriptor > halfedge_map;
     int i=0;
-    for(halfedge_descriptor h : CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh))
+    BOOST_FOREACH(halfedge_descriptor h, CGAL::halfedges_around_face(halfedge(f, pmesh), pmesh))
     {
       int j = std::size_t(i+1) == hole_points.size() ? 0 : i+1;
       halfedge_map[ std::make_pair(i, j) ] = h;
       ++i;
     }
 
-    visitor.before_subface_creations(f);
     bool first = true;
     std::vector<halfedge_descriptor> hedges;
     hedges.reserve(4);
-    for(const Face_indices& triangle : patch)
+    BOOST_FOREACH(const Face_indices& triangle, patch)
     {
       if (first)
         first=false;
       else
         f=add_face(pmesh);
-      visitor.after_subface_created(f);
 
-      std::array<int, 4> indices =
+      cpp11::array<int, 4> indices =
         make_array( triangle.first,
                     triangle.second,
                     triangle.third,
@@ -373,12 +356,11 @@ public:
       set_halfedge(f, hedges[0], pmesh);
       hedges.clear();
     }
-    visitor.after_subface_creations();
     return true;
   }
 
   template<typename FaceRange>
-  bool operator()(FaceRange face_range, PM& pmesh, bool use_cdt, Visitor visitor)
+  bool operator()(FaceRange face_range, PM& pmesh, bool use_cdt)
   {
    bool result = true;
     // One need to store facet handles into a vector, because the list of
@@ -388,15 +370,15 @@ public:
     facets.reserve(std::distance(boost::begin(face_range), boost::end(face_range)));
 
     //only consider non-triangular faces
-    for(face_descriptor fit : face_range)
+    BOOST_FOREACH(face_descriptor fit, face_range)
       if ( next( next( halfedge(fit, pmesh), pmesh), pmesh)
         !=       prev( halfedge(fit, pmesh), pmesh) )
         facets.push_back(fit);
 
     // Iterates on the vector of face descriptors
-    for(face_descriptor f : facets)
+    BOOST_FOREACH(face_descriptor f, facets)
     {
-      if(!this->triangulate_face(f, pmesh, use_cdt, visitor))
+     if(!this->triangulate_face(f, pmesh, use_cdt))
        result = false;
     }
     return result;
@@ -412,7 +394,7 @@ public:
     CGAL_assertion(!is_border(h, pmesh));
     face_descriptor fd = face(h, pmesh);
 
-    for(halfedge_descriptor hd : halfedges_around_face(h, pmesh))
+    BOOST_FOREACH(halfedge_descriptor hd, halfedges_around_face(h, pmesh))
     {
       CGAL::internal::set_border(hd, pmesh);
     }
@@ -428,36 +410,18 @@ public:
 * \ingroup PMP_meshing_grp
 * triangulates a single face of a polygon mesh. This function depends on the package \ref PkgTriangulation2
 * @tparam PolygonMesh a model of `FaceListGraph` and `MutableFaceGraph`
-* @tparam NamedParameters a sequence of \ref bgl_namedparameters "Named Parameters"
+* @tparam NamedParameters a sequence of \ref pmp_namedparameters "Named Parameters"
 *
 * @param f face to be triangulated
 * @param pmesh the polygon mesh to which the face to be triangulated belongs
-* @param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
+* @param np optional sequence of \ref pmp_namedparameters "Named Parameters" among the ones listed below
+*
 *
 * \cgalNamedParamsBegin
-*   \cgalParamNBegin{vertex_point_map}
-*     \cgalParamDescription{a property map associating points to the vertices of `pmesh`}
-*     \cgalParamType{a class model of `ReadWritePropertyMap` with `boost::graph_traits<PolygonMesh>::%vertex_descriptor`
-*                    as key type and `%Point_3` as value type}
-*     \cgalParamDefault{`boost::get(CGAL::vertex_point, pmesh)`}
-*     \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-*                     must be available in `PolygonMesh`.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{geom_traits}
-*     \cgalParamDescription{an instance of a geometric traits class}
-*     \cgalParamType{a class model of `Kernel`}
-*     \cgalParamDefault{a \cgal Kernel deduced from the point type, using `CGAL::Kernel_traits`}
-*     \cgalParamExtra{The geometric traits class must be compatible with the vertex point type.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{visitor}
-*     \cgalParamDescription{a visitor that enables to track how faces are triangulated into subfaces}
-*     \cgalParamType{a class model of `PMPTriangulateFaceVisitor`}
-*     \cgalParamDefault{`Triangulate_faces::Default_visitor<PolygonMesh>`}
-*     \cgalParamExtra{Note that the visitor will be copied, so
-*                     it must not have any data member that does not have a reference-like type.}
-*   \cgalParamNEnd
+*    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `pmesh`.
+*   If this parameter is omitted, an internal property map for
+*   `CGAL::vertex_point_t` must be available in `PolygonMesh`\cgalParamEnd
+*    \cgalParamBegin{geom_traits} a geometric traits class instance \cgalParamEnd
 * \cgalNamedParamsEnd
 *
 * @return `true` if the face has been triangulated.
@@ -477,22 +441,13 @@ bool triangulate_face(typename boost::graph_traits<PolygonMesh>::face_descriptor
 
   //Kernel
   typedef typename GetGeomTraits<PolygonMesh, NamedParameters>::type Kernel;
-  Kernel traits = choose_parameter<Kernel>(get_parameter(np, internal_np::geom_traits));
+  Kernel traits = choose_parameter(get_parameter(np, internal_np::geom_traits), Kernel());
 
   //Option
   bool use_cdt = choose_parameter(get_parameter(np, internal_np::use_delaunay_triangulation), true);
 
-  typedef typename internal_np::Lookup_named_param_def<
-    internal_np::visitor_t,
-    NamedParameters,
-    Triangulate_faces::Default_visitor<PolygonMesh>//default
-  >::type Visitor;
-  Visitor visitor = choose_parameter<Visitor>(
-                             get_parameter(np, internal_np::visitor),
-                             Triangulate_faces::Default_visitor<PolygonMesh>());
-
-  internal::Triangulate_modifier<PolygonMesh, VPMap, Kernel, Visitor> modifier(vpmap, traits);
-  return modifier.triangulate_face(f, pmesh, use_cdt, visitor);
+  internal::Triangulate_modifier<PolygonMesh, VPMap, Kernel> modifier(vpmap, traits);
+  return modifier.triangulate_face(f, pmesh, use_cdt);
 }
 
 template<typename PolygonMesh>
@@ -510,40 +465,20 @@ bool triangulate_face(typename boost::graph_traits<PolygonMesh>::face_descriptor
           model of `Range`.
           Its iterator type is `InputIterator`.
 * @tparam PolygonMesh a model of `FaceListGraph` and `MutableFaceGraph`
-* @tparam NamedParameters a sequence of \ref bgl_namedparameters "Named Parameters"
+* @tparam NamedParameters a sequence of \ref pmp_namedparameters "Named Parameters"
 *
 * @param face_range the range of faces to be triangulated
 * @param pmesh the polygon mesh to be triangulated
-* @param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
+* @param np optional sequence of \ref pmp_namedparameters "Named Parameters" among the ones listed below
 *
 * \cgalNamedParamsBegin
-*   \cgalParamNBegin{vertex_point_map}
-*     \cgalParamDescription{a property map associating points to the vertices of `pmesh`}
-*     \cgalParamType{a class model of `ReadWritePropertyMap` with `boost::graph_traits<PolygonMesh>::%vertex_descriptor`
-*                    as key type and `%Point_3` as value type}
-*     \cgalParamDefault{`boost::get(CGAL::vertex_point, pmesh)`}
-*     \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-*                     must be available in `PolygonMesh`.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{geom_traits}
-*     \cgalParamDescription{an instance of a geometric traits class}
-*     \cgalParamType{a class model of `Kernel`}
-*     \cgalParamDefault{a \cgal Kernel deduced from the point type, using `CGAL::Kernel_traits`}
-*     \cgalParamExtra{The geometric traits class must be compatible with the vertex point type.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{visitor}
-*     \cgalParamDescription{a visitor that enables to track how faces are triangulated into subfaces}
-*     \cgalParamType{a class model of `PMPTriangulateFaceVisitor`}
-*     \cgalParamDefault{`Triangulate_faces::Default_visitor<PolygonMesh>`}
-*     \cgalParamExtra{Note that the visitor will be copied, so
-*                     it must not have any data member that does not have a reference-like type.}
-*  `\cgalParamNEnd
+*    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `pmesh`.
+*   If this parameter is omitted, an internal property map for
+*   `CGAL::vertex_point_t` must be available in `PolygonMesh`\cgalParamEnd
+*    \cgalParamBegin{geom_traits} a geometric traits class instance \cgalParamEnd
 * \cgalNamedParamsEnd
 *
 * @return `true` if all the faces have been triangulated.
-*
 * @see triangulate_face()
 */
 template <typename FaceRange, typename PolygonMesh, typename NamedParameters>
@@ -561,22 +496,13 @@ bool triangulate_faces(FaceRange face_range,
 
   //Kernel
   typedef typename GetGeomTraits<PolygonMesh, NamedParameters>::type Kernel;
-  Kernel traits = choose_parameter<Kernel>(get_parameter(np, internal_np::geom_traits));
+  Kernel traits = choose_parameter(get_parameter(np, internal_np::geom_traits), Kernel());
 
   //Option
   bool use_cdt = choose_parameter(get_parameter(np, internal_np::use_delaunay_triangulation), true);
 
-  typedef typename internal_np::Lookup_named_param_def<
-    internal_np::visitor_t,
-    NamedParameters,
-    Triangulate_faces::Default_visitor<PolygonMesh>//default
-  >::type Visitor;
-  Visitor visitor = choose_parameter<Visitor>(
-                                  get_parameter(np, internal_np::visitor),
-                                  Triangulate_faces::Default_visitor<PolygonMesh>());
-
-  internal::Triangulate_modifier<PolygonMesh, VPMap, Kernel, Visitor> modifier(vpmap, traits);
-  return modifier(face_range, pmesh, use_cdt, visitor);
+  internal::Triangulate_modifier<PolygonMesh, VPMap, Kernel> modifier(vpmap, traits);
+  return modifier(face_range, pmesh, use_cdt);
 }
 
 template <typename FaceRange, typename PolygonMesh>
@@ -589,39 +515,19 @@ bool triangulate_faces(FaceRange face_range, PolygonMesh& pmesh)
 * \ingroup PMP_meshing_grp
 * triangulates all faces of a polygon mesh. This function depends on the package \ref PkgTriangulation2
 * @tparam PolygonMesh a model of `FaceListGraph` and `MutableFaceGraph`
-* @tparam NamedParameters a sequence of \ref bgl_namedparameters "Named Parameters"
+* @tparam NamedParameters a sequence of \ref pmp_namedparameters "Named Parameters"
 *
 * @param pmesh the polygon mesh to be triangulated
-* @param np an optional sequence of \ref bgl_namedparameters "Named Parameters" among the ones listed below
+* @param np optional sequence of \ref pmp_namedparameters "Named Parameters" among the ones listed below
 *
 * \cgalNamedParamsBegin
-*   \cgalParamNBegin{vertex_point_map}
-*     \cgalParamDescription{a property map associating points to the vertices of `pmesh`}
-*     \cgalParamType{a class model of `ReadWritePropertyMap` with `boost::graph_traits<PolygonMesh>::%vertex_descriptor`
-*                    as key type and `%Point_3` as value type}
-*     \cgalParamDefault{`boost::get(CGAL::vertex_point, pmesh)`}
-*     \cgalParamExtra{If this parameter is omitted, an internal property map for `CGAL::vertex_point_t`
-*                     must be available in `PolygonMesh`.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{geom_traits}
-*     \cgalParamDescription{an instance of a geometric traits class}
-*     \cgalParamType{a class model of `Kernel`}
-*     \cgalParamDefault{a \cgal Kernel deduced from the point type, using `CGAL::Kernel_traits`}
-*     \cgalParamExtra{The geometric traits class must be compatible with the vertex point type.}
-*   \cgalParamNEnd
-*
-*   \cgalParamNBegin{visitor}
-*     \cgalParamDescription{a visitor that enables to track how faces are triangulated into subfaces}
-*     \cgalParamType{a class model of `PMPTriangulateFaceVisitor`}
-*     \cgalParamDefault{`Triangulate_faces::Default_visitor<PolygonMesh>`}
-*     \cgalParamExtra{Note that the visitor will be copied, so
-*                     it must not have any data member that does not have a reference-like type.}
-*   \cgalParamNEnd
+*    \cgalParamBegin{vertex_point_map} the property map with the points associated to the vertices of `pmesh`.
+*   If this parameter is omitted, an internal property map for
+*   `CGAL::vertex_point_t` must be available in `PolygonMesh`\cgalParamEnd
+*    \cgalParamBegin{geom_traits} a geometric traits class instance \cgalParamEnd
 * \cgalNamedParamsEnd
 *
 * @return `true` if all the faces have been triangulated.
-*
 * @see triangulate_face()
 */
 template <typename PolygonMesh, typename NamedParameters>
