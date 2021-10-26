@@ -7,6 +7,13 @@ void MeshPoint::Init() {
 	//m_poly = Nef_polyhedron(poly);
 	m_volume = CGAL::to_double(CGAL::Polygon_mesh_processing::volume(m_poly));
 	m_centerPoint = CGAL::centroid(m_poly.points_begin(), m_poly.points_end());
+	for (auto iter = m_poly.vertices_begin(); iter != m_poly.vertices_end(); iter++) {
+		m_verticesVec.push_back(std::tuple<double, double, double>{
+			CGAL::to_double(iter->point().x()),
+				CGAL::to_double(iter->point().y()),
+				CGAL::to_double(iter->point().z())
+		});
+	}
 }
 
 double MeshPoint::IntersectedVolume(const MeshPoint& other) const{

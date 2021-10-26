@@ -26,6 +26,15 @@ public:
 			CGAL::to_double(m_centerPoint.z()));
 	}
 	double IntersectedVolume(const MeshPoint& other) const;
+	int VerticesNum() const {
+		return m_verticesVec.size();
+	}
+	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const {
+		return m_verticesVec.at(verticeID);
+	}
+	void WriteToOFF(std::ostream& out) const {
+		CGAL::write_off(out, m_poly);
+	}
 
 public:
 	virtual void SetValue(double value, ValueType vt) = 0;
@@ -53,6 +62,7 @@ private:
 	Polyhedron m_poly;
 	double m_volume = 0.0;
 	Kernel::Point_3 m_centerPoint;
+	std::vector<std::tuple<double, double, double>> m_verticesVec;
 };
 
 class Mesh
