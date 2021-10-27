@@ -52,9 +52,11 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
 	MOCMesh mocMesh("pin_c1.apl");
-	//
+	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
+	mocMesh.reOrganaziIndex();
+	
+
 	Solver solver(mocMesh, cfdMesh);
 
 	InitCFDMeshValue(cfdMesh);

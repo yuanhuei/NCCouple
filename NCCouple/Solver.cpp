@@ -1,4 +1,4 @@
-#include "Solver.h"
+﻿#include "Solver.h"
 #include "Logger.h"
 #include <future>
 #include <mutex>
@@ -11,6 +11,27 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
+
+		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		int iMocIndex = CalMeshIndexbyCFD(x, y);
+		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
+
+		double cfdPointVolume = cfdPoint.Volume();
+		double mocPointVolume = mocPoint.Volume();
+		double intersectedVolume = 0.0;
+		if (mocPoint.GetMaterialType() == MaterialType::H2O)
+			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
+
+
+		if ((cfdPointVolume - intersectedVolume) <= INTERSECT_JUDGE_LIMIT)
+		{
+			m_CFD_MOC_Map[i][iMocIndex] = intersectedVolume / cfdPointVolume;
+			m_MOC_CFD_Map[iMocIndex][i] = intersectedVolume / mocPointVolume;
+
+			continue;
+		}
 		std::vector<std::future<void>> futureVec;
 		for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
 			auto fun = [this, &mtx, i, j]() {
@@ -29,6 +50,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 					m_MOC_CFD_Map[j][i] = intersectedVolume / mocPointVolume;
 				}
 			};
+			if (j == iMocIndex)
+				continue;
 			fun();
 			//futureVec.push_back(std::async(std::launch::async, fun));
 		}
