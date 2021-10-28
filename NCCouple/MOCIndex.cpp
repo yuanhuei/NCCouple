@@ -60,23 +60,6 @@ void MOCIndex::BuildUpIndex()
 	return;
 }
 
-void MOCIndex::SetAxial
-(
-	Vector startPoint,
-	Vector norm
-)
-{
-}
-
-void MOCIndex::SetCircular
-(
-	int num
-)
-{
-	this->circularCellNum = num;
-	return;
-}
-
 void MOCIndex::SetRadial
 (
 	std::vector<Scalar>& radiusList
