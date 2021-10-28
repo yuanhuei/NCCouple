@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include "MOCMesh.h"
+#include "MOCIndex.h"
 #include "CFDMesh.h"
 #include "Solver.h"
 #include "Logger.h"
@@ -54,8 +55,7 @@ int main()
 {
 	MOCMesh mocMesh("pin_c1.apl");
 	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
-	mocMesh.reOrganaziIndex();
-	
+	MOCMesh mocMesh("pin_c1.apl");
 
 	Solver solver(mocMesh, cfdMesh);
 

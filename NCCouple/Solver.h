@@ -2,6 +2,7 @@
 
 #include "MOCMesh.h"
 #include "CFDMesh.h"
+#include "MOCIndex.h"
 #include <unordered_map>
 #include <memory>
 
@@ -9,6 +10,8 @@ class Solver {
 public:
 	Solver() = delete;
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
+	//Added by LingKong, 20211028
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex);
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {

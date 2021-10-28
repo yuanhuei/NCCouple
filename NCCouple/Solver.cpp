@@ -37,7 +37,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 			auto fun = [this, &mtx, i, j]() {
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
-				
+
 				double cfdPointVolume = cfdPoint.Volume();
 				double mocPointVolume = mocPoint.Volume();
 				double intersectedVolume = 0.0;
@@ -68,6 +68,16 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	//	}
 	//	std::cout << value << std::endl;
 	//}
+}
+
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
+	: m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) 
+{
+	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.5, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.2, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.1, 0.2, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.5, 0.26, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.25, 0.75, 0.4) << std::endl;
 }
 
 void Solver::Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt) {

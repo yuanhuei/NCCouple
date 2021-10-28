@@ -8,7 +8,9 @@ project (${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-aux_source_directory(./NCCouple SOURCE_FILE)
+aux_source_directory(./NCCouple SOURCE_FILE1)
+aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
+set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2})
 set(INCLUDE_DIR 
 	./NCCoouple 
 	./tools)
