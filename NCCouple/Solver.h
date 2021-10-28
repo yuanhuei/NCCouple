@@ -9,7 +9,7 @@
 class Solver {
 public:
 	Solver() = delete;
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
+	//Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
 	//Added by LingKong, 20211028
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex);
 

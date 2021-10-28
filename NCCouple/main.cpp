@@ -53,11 +53,33 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	MOCMesh mocMesh("pin_c1.apl");
 	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
 	MOCMesh mocMesh("pin_c1.apl");
+	MOCIndex mocIndex(mocMesh);
 
-	Solver solver(mocMesh, cfdMesh);
+	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
+	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
+	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	mocIndex.circularCellNum = 8;
+	mocIndex.axialCellNum = 1;
+	mocIndex.axialCellSize = 0.5;
+	std::vector<Scalar> radiusList;
+	radiusList.push_back(0.1024);
+	radiusList.push_back(0.2048);
+	radiusList.push_back(0.3072);
+	radiusList.push_back(0.4096);
+	radiusList.push_back(0.418);
+	radiusList.push_back(0.475);
+	mocIndex.SetRadial(radiusList);
+	mocIndex.BuildUpIndex();
+	/*
+	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.5, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.2, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.1, 0.2, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.5, 0.26, 0.25) << std::endl;
+	std::cout << mocIndex.GetMOCIDWithPoint(0.25, 0.75, 0.4) << std::endl;
+	*/
+	Solver solver(mocMesh, cfdMesh, mocIndex);
 
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);

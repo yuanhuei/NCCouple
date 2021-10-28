@@ -5,7 +5,7 @@
 
 #define INTERSECT_JUDGE_LIMIT 1e-10
 
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
@@ -14,7 +14,9 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 
 		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
 		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
-		int iMocIndex = CalMeshIndexbyCFD(x, y);
+		double z=  std::get<2>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		int iMocIndex = mocIndex.GetMOCIDWithPoint(x,y,z);
+
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 
@@ -69,7 +71,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	//	std::cout << value << std::endl;
 	//}
 }
-
+/*
 Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 	: m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) 
 {
@@ -79,7 +81,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 	std::cout << mocIndex.GetMOCIDWithPoint(0.5, 0.26, 0.25) << std::endl;
 	std::cout << mocIndex.GetMOCIDWithPoint(0.25, 0.75, 0.4) << std::endl;
 }
-
+*/
 void Solver::Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt) {
 	std::vector<std::unordered_map<int, double>>* interMap = nullptr;
 	if (dynamic_cast<const CFDMesh*>(sourceMesh) && dynamic_cast<MOCMesh*>(targetMesh))
