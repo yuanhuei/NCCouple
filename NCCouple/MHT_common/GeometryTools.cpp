@@ -95,7 +95,7 @@ Scalar& volume
 	center = 0.75*baseCenter + 0.25*apex;
 	Point3D<Scalar> norm = baseArea;
 	norm.Normalize();
-	Scalar height = abs(norm & (apex - baseCenter));
+	Scalar height = fabs(norm & (apex - baseCenter));
 	volume = height*baseArea.Mag() / 3.0;
 }
 
@@ -167,7 +167,7 @@ Scalar& volume
 		Point3D<Scalar> norm = faceArea[i];
 		if (norm.Mag()<SMALL) continue;
 		norm.Normalize();
-		Scalar height = abs(norm & (xG - faceCenter[i]));
+		Scalar height = fabs(norm & (xG - faceCenter[i]));
 		Scalar pyramidVolume = height*faceArea[i].Mag() / 3.0;
 		numerator += pyramidVolume*pyramidCenter;
 		dominator += pyramidVolume;

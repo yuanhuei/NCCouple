@@ -80,11 +80,13 @@ int main()
 	std::cout << mocIndex.GetMOCIDWithPoint(0.25, 0.75, 0.4) << std::endl;
 	*/
 	Solver solver(mocMesh, cfdMesh, mocIndex);
+	//Solver solver(mocMesh, cfdMesh);
 
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
 
 	mocMesh.OutputStatus("pin_c1.inp");
+	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
 
 	return 0;
 

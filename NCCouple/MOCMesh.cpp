@@ -607,7 +607,7 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 	ofs.close();
 }
 
-
+/*
 //输入MOC中心点坐标，计算出所属网格的编号
 int CalMeshIndex(double x, double y)
 {
@@ -678,6 +678,7 @@ int CalMeshIndexbyCFD(double x, double y)
 	//Logger::LogInfo(FormatStr("dDistance is : %f,angelNum: %d", dDistance, int(dAngletoX / dAngel)));
 	return iMeshIndex;
 }
+
 void MOCMesh::reOrganaziIndex()
 {
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec_copy(m_meshPointPtrVec);
@@ -694,7 +695,7 @@ void MOCMesh::reOrganaziIndex()
 	}
 
 }
-
+*/
 
 Surface::Surface()
 {

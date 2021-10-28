@@ -104,7 +104,7 @@ public:
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
-	void reOrganaziIndex();
+	//void reOrganaziIndex();
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
@@ -121,6 +121,6 @@ private:
 	int coarseMeshNum;     //coarse mesh number
 	double meshHighZ;   //mesh length in z direction
 };
-int CalMeshIndex(double x, double y);
-int CalMeshIndexbyCFD(double x, double y);
+//int CalMeshIndex(double x, double y);
+//int CalMeshIndexbyCFD(double x, double y);
 #endif
