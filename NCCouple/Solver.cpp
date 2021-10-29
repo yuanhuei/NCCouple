@@ -85,8 +85,6 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 		if (mocPoint.GetMaterialType() == MaterialType::H2O)
 			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 
-		if (/*cfdPoint.PointID()*/i == 2762)
-			printf("dd");
 		if (intersectedVolume > INTERSECT_JUDGE_LIMIT) {
 			
 			m_CFD_MOC_Map[i][iMocIndex] = intersectedVolume / cfdPointVolume;
