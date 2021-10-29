@@ -55,7 +55,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 			double value = 0.0;
 			for (auto& iter : m_MOC_CFD_Map[j]) {
 				value += iter.second;
-				Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
+				//Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
 			}
 			Logger::LogInfo(FormatStr("MOC网格编号:%d,插值权系数总和:%.6lf/n", j, value));
 			//std::cout << value << std::endl;
@@ -67,7 +67,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
-	int iNum = 0;
+	int iNum = 0;//计数完全被包含CFD网格的数量
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
 
@@ -85,15 +85,16 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 		if (mocPoint.GetMaterialType() == MaterialType::H2O)
 			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 
-
-		if ((cfdPointVolume - intersectedVolume) <= INTERSECT_JUDGE_LIMIT)
-		{
+		if (/*cfdPoint.PointID()*/i == 2762)
+			printf("dd");
+		if (intersectedVolume > INTERSECT_JUDGE_LIMIT) {
+			
 			m_CFD_MOC_Map[i][iMocIndex] = intersectedVolume / cfdPointVolume;
 			m_MOC_CFD_Map[iMocIndex][i] = intersectedVolume / mocPointVolume;
-
+		}
+		if ((cfdPointVolume - intersectedVolume) <= INTERSECT_JUDGE_LIMIT)
+		{
 			iNum++;
-
-
 			continue;
 		}
 		std::vector<std::future<void>> futureVec;
@@ -143,7 +144,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			double value = 0.0;
 			for (auto& iter : m_MOC_CFD_Map[j]) {
 				value += iter.second;
-				Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
+				//Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
 			}
 			Logger::LogInfo(FormatStr("MOC网格编号:%d,插值权系数总和:%.6lf/n", j, value));
 			//std::cout << value << std::endl;
