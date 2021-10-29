@@ -57,7 +57,7 @@ void MOCIndex::BuildUpIndex()
 		}
 		int IndexK = int(height / axialCellSize);
 		this->v_MOCID[IndexI][IndexJ][IndexK] = i;
-		Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
+		//Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
 	}
 	return;
 }

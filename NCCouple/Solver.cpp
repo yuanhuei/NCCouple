@@ -43,6 +43,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
+	int iNum = 0;
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
 
@@ -65,6 +66,9 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 		{
 			m_CFD_MOC_Map[i][iMocIndex] = intersectedVolume / cfdPointVolume;
 			m_MOC_CFD_Map[iMocIndex][i] = intersectedVolume / mocPointVolume;
+
+			iNum++;
+			
 
 			continue;
 		}
@@ -96,14 +100,28 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 
 		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
+		if (/*cfdPoint.PointID()*/i == 2762)
+		{
+			double value = 0.0;
+			for (auto& iter : m_CFD_MOC_Map[i]) {
+				value += iter.second;
+				Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
+			}
+			Logger::LogInfo(FormatStr("CFD网格编号:%d,插值权系数总和:%.6lf/n", i, value));
+		}
 	}
-	//for (int i = 0; i < 8; i++) {
-	//	double value = 0.0;
-	//	for (auto& iter : m_MOC_CFD_Map[i]) {
-	//		value += iter.second;
-	//	}
-	//	std::cout << value << std::endl;
-	//}
+	Logger::LogInfo(FormatStr("CFD总数量是:%d. 被包含在MOC中的CFD数量是 %d,占比是:百分之%.2lf ", cfdMesh.GetMeshPointNum(), iNum,100*double(iNum)/ cfdMesh.GetMeshPointNum()));
+	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
+		if (/*cfdPoint.PointID()*/j == 3){
+			double value = 0.0;
+			for (auto& iter : m_MOC_CFD_Map[j]) {
+				value += iter.second;
+				Logger::LogInfo(FormatStr("插值权系数:%.6lf", iter.second));
+			}
+			Logger::LogInfo(FormatStr("MOC网格编号:%d,插值权系数总和:%.6lf/n", j, value));
+			//std::cout << value << std::endl;
+		}
+	}
 }
 /*
 Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
