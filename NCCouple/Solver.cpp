@@ -46,10 +46,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 			for (auto& iter : m_MOC_CFD_Map[j]) {
 				value += iter.second;
 				
-				Logger::LogInfotoFile(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 				Logger::LogInfo(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 			}
-			Logger::LogInfotoFile(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
 			Logger::LogInfo(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
 			//std::cout << value << std::endl;
 		}
@@ -61,10 +59,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 			double value = 0.0;
 			for (auto& iter : m_CFD_MOC_Map[i]) {
 				value += iter.second;
-				Logger::LogInfotoFile(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 				Logger::LogInfo(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 			}
-			Logger::LogInfotoFile(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
 			Logger::LogInfo(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
 		}
 	}
@@ -139,10 +135,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			for (auto& iter : m_MOC_CFD_Map[j]) {
 				value += iter.second;
 
-				Logger::LogInfotoFile(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 				Logger::LogInfo(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 			}
-			Logger::LogInfotoFile(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
 			Logger::LogInfo(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
 			//std::cout << value << std::endl;
 		}
@@ -154,14 +148,11 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			double value = 0.0;
 			for (auto& iter : m_CFD_MOC_Map[i]) {
 				value += iter.second;
-				Logger::LogInfotoFile(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 				Logger::LogInfo(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
 			}
-			Logger::LogInfotoFile(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
 			Logger::LogInfo(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
 		}
 	}
-	Logger::LogInfotoFile(FormatStr("CFD总数量是:%d. 被包含在MOC中的CFD数量是 %d,占比是:百分之%.2lf ", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
 	Logger::LogInfo(FormatStr("CFD总数量是:%d. 被包含在MOC中的CFD数量是 %d,占比是:百分之%.2lf ", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
 
 }

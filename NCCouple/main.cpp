@@ -48,10 +48,6 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 	}
 	Logger::LogInfo(FormatStr("The Integral Value of Source %s : %.6lf", sourceMeshName.c_str(), sourceIntegralValue));
 	Logger::LogInfo(FormatStr("The Integral Value of Target %s : %.6lf", targetMeshName.c_str(), targetIntegralValue));
-
-	Logger::LogInfotoFile(FormatStr("The Integral Value of Source %s : %.6lf", sourceMeshName.c_str(), sourceIntegralValue));
-	Logger::LogInfotoFile(FormatStr("The Integral Value of Target %s : %.6lf", targetMeshName.c_str(), targetIntegralValue));
-
 	return;
 }
 
@@ -92,7 +88,6 @@ int main()
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
 	end = time(NULL);
-	Logger::LogInfotoFile(FormatStr("Time for caculatation:%d second",int(difftime(end, start))));
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
 	mocMesh.OutputStatus("pin_c1.inp");
 	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
