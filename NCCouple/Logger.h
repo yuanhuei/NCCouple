@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 
+
 template <class... Args>
 static std::string FormatStr(const std::string& fmtStr, Args... args) {
 	auto size_buf = std::snprintf(nullptr, 0, fmtStr.c_str(), args ...) + 1;
@@ -23,9 +24,10 @@ public:
 	static void LogInfo(std::string info);
 	static void LogWarn(std::string warn);
 	static void LogError(std::string error);
-
+	static void LogInfotoFile(std::string info);
 private:
 	Logger() = delete;
+	
 };
 
 #endif
