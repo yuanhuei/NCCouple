@@ -44,12 +44,12 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "linux_x64" ],
-      "remoteMachineName": "1365034505;127.0.0.1 (username=yuanhui, port=2280, authentication=Password)",
+      "remoteMachineName": "-1040121245;127.0.0.1 (username=xiangyue, port=1025, authentication=Password)",
       "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
       "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
       "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
       "remoteCopySources": true,
-      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tool/CGAL','tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
+      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
       "addressSanitizerRuntimeFlags": "detect_leaks=0"
@@ -73,25 +73,6 @@
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
       "addressSanitizerRuntimeFlags": "detect_leaks=0"
-    },
-    {
-      "name": "Linux-GCC-Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "cmakeExecutable": "cmake",
-      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "linux_x64" ],
-      "remoteMachineName": "1365034505;127.0.0.1 (username=yuanhui, port=2280, authentication=Password)",
-      "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
-      "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
-      "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
-      "remoteCopySources": true,
-      "rsyncCommandArgs": "-t --delete --delete-excluded --exclude={'tool/CGAL','tools/boost','tools/gmp.h','tools/mpf2mpfr.h','tools/mpfr.h'}",
-      "remoteCopyBuildOutput": false,
-      "remoteCopySourcesMethod": "rsync"
     }
   ]
 }

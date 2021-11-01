@@ -19,9 +19,9 @@ if(WIN32)
 	set(STATIC_LIBRARY_DIR ./tools/winlib)
 	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10")
 elseif(UNIX)
-	set(STATIC_LIBRARY_DIR /home/yuanhui/code/lib)
+	set(STATIC_LIBRARY_DIR /usr/code/lib)
 	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
-	set(INCLUDE_DIR ${INCLUDE_DIR} /home/yuanhui/code/include)
+	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
 endif()
 
 configure_file (
