@@ -84,6 +84,8 @@ int main()
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
 
+	ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY);
+
 	mocMesh.OutputStatus("pin_c1.inp");
 
 	return 0;
