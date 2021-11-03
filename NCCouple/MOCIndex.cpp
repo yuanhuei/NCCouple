@@ -19,7 +19,7 @@ void MOCIndex::BuildUpIndex()
 		Vector OPSum(0.0, 0.0, 0.0);
 		double count1 = 0.0;
 		double count2 = 0.0;
-		for (int j = 0;j < verticeNum; j++)
+		for (int j = 0; j < verticeNum; j++)
 		{
 			std::tuple<double, double, double> cor = mocPoint.VerticeCoordinate(j);
 			Vector P(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
@@ -32,7 +32,7 @@ void MOCIndex::BuildUpIndex()
 			count1 += 1.0;
 			if (radialProjection.Mag() > SMALL)
 			{
-				COSTheetaSum += radialProjection.GetNormal()& this->theetaStartNorm;
+				COSTheetaSum += radialProjection.GetNormal() & this->theetaStartNorm;
 				count2 += 1.0;
 			}
 		}
@@ -47,7 +47,7 @@ void MOCIndex::BuildUpIndex()
 		}
 		int IndexI = int((double)circularCellNum * theeta / (2.0 * PI));
 		int IndexJ = 0;
-		for (int j = 0; j < this->v_radius.size();j++)
+		for (int j = 0; j < this->v_radius.size(); j++)
 		{
 			if (v_radius[j] > radius)
 			{
@@ -57,8 +57,15 @@ void MOCIndex::BuildUpIndex()
 		}
 		int IndexK = int(height / axialCellSize);
 		this->v_MOCID[IndexI][IndexJ][IndexK] = i;
-		Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
+		//Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
 	}
+	/*
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 7; j++)
+		    std::cout << this->v_MOCID[i][j][0] << std::endl;
+    }
+	*/
 	return;
 }
 
