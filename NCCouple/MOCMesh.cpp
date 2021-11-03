@@ -58,7 +58,7 @@ double DensityConversion(std::string mediumName, std::string element, double med
 }
 
 MOCMesh::MOCMesh(std::string meshFileName) {
-	meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
+	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ifstream infile(meshFileName);
 	string line;
 	vector<string> meshFaceTypeTemperary;
@@ -82,6 +82,12 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 				{
 					getline(infile, line);
 					setMeshInformation(line);
+					break;
+				}
+				if (token == "AXIAL")
+				{
+					getline(infile, line);
+					setAxialInformation(line);
 					break;
 				}
 				if (token == "EDGE")
@@ -161,27 +167,34 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 		}
 	}
 	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
-	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces);
-	m_meshPointPtrVec.resize(MeshNum);
+	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary);
+	m_meshPointPtrVec.resize(axialNum * layerMeshNum);
 	static std::unordered_map<std::string, MaterialType> materialNameTypeMap{
 		{ "H2O", MaterialType::H2O},
 		{ "UO2", MaterialType::UO2 },
 		{ "He", MaterialType::He },
 		{ "Zr4", MaterialType::Zr4 }
 	};
-	for (int i = 0; i < MeshNum; i++)
+	for (int j = 0; j < axialNum; j++)
 	{
-		MaterialType faceType = MaterialType::UNKNOWN;
-		auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[i]);
-		if (iter != materialNameTypeMap.end())
-			faceType = iter->second;
-		m_meshPointPtrVec[i] = std::make_shared<MOCMeshPoint>(meshIDTemperary[i], fileNameTemperary[i], faceType, meshFaceTemperatureNameTemperary[i]);
-		const char* removeFile = fileNameTemperary[i].data();
-		if (remove(removeFile)) //删除生成的文件
+		for (int i = 0; i < layerMeshNum; i++)
 		{
-			cout << "删除.off文件失败" << endl;
+			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum;
+			int index = i + j * layerMeshNum;
+
+			MaterialType faceType = MaterialType::UNKNOWN;
+			auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[index]);
+			if (iter != materialNameTypeMap.end())
+				faceType = iter->second;
+			m_meshPointPtrVec[index] = std::make_shared<MOCMeshPoint>(meshIDtemp_, fileNameTemperary[index], faceType, meshFaceTemperatureNameTemperary[index]);
+			const char* removeFile = fileNameTemperary[index].data();
+			if (remove(removeFile)) //delete file
+			{
+				cout << "delete file fail" << endl;
+			}
 		}
 	}
+
 }
 
 void MOCMesh::setMeshInformation(string line)
@@ -189,12 +202,33 @@ void MOCMesh::setMeshInformation(string line)
 	stringstream stringline(line);
 	string token;
 	stringline >> token;
-	MeshNum = stod(token);  //mesh node number
+	layerMeshNum = stod(token);  //mesh node number
 	stringline >> token;
 	EdgeNum = stod(token);  //edge number
 	stringline >> token;
 	coarseMeshNum = stod(token);  //coarse mesh number
 }
+
+void MOCMesh::setAxialInformation(string line)
+{
+	stringstream stringline(line);
+	string token;
+	stringline >> token;
+	stringline >> token;    //delete 0
+	stringline >> token;
+	axialNum = stod(token);  //layer number in axial direction
+	for (int i = 0; i < axialNum; i++)
+	{
+		std::pair<int, double> temp0;
+		stringline >> token;
+		temp0.first = stod(token);  // mesh number in axial direction
+		stringline >> token;
+		temp0.second = stod(token);  // mesh height in axial direction
+		axialInformation.push_back(temp0);
+	}
+}
+
+
 //set all edge objects
 void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges)
 {
@@ -279,169 +313,111 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 //set all surface objects
 void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> meshFaceTypeTransfer, vector<string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges)
 {
-	for (int i = 0; i < MeshNum; i++)
+	for (int i = 0; i < layerMeshNum; i++)
 	{
 		Surface face0 = Surface(meshIDTransfer[i], meshIDTransfer[i], allEdges, meshFaceTypeTransfer[i], meshFaceTemperatureNameTransfer[i]);
 		allMeshFaces.push_back(face0);
 	}
 }
-//void MOCMesh::ThreeDemMeshOutput()
-//{
-//	string filename = "";
-//	for (int i = 0; i < MeshNum; i++)
-//	{
-//		stringstream ssID;
-//		string sID;
-//		ssID << allMeshFaces[i].faceID;
-//		ssID >> sID;
-//		filename = "mesh/poly" + allMeshFaces[i].faceType +"_"+ sID;
-//		filename = filename + ".txt";
-//		ofstream outFile(filename);
-//		int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
-//		outFile << pointNumPerMesh * 2 << endl;;//point numbers
-//		for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of bottom points；
-//		{
-//			outFile << allMeshFaces[i].facePointPosition[j].x_ << "\t" << allMeshFaces[i].facePointPosition[j].y_ << "\t" << allMeshFaces[i].facePointPosition[j].z_ << endl;
-//		}
-//		for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of top points；
-//		{
-//			outFile << allMeshFaces[i].facePointPosition[j].x_ << "\t" << allMeshFaces[i].facePointPosition[j].y_ << "\t" << allMeshFaces[i].facePointPosition[j].z_ + meshHighZ << endl;
-//		}
-//		int ArcNumber = 0;
-//		for (int j = 0; j < allMeshFaces[i].faceEdges.size(); j++)
-//		{
-//			if (allMeshFaces[i].faceEdges[j].edgeType == 3)
-//			{
-//				ArcNumber++;
-//			}
-//		}
-//		outFile << pointNumPerMesh - (ArcNumber / nFineMesh) * (nFineMesh - 1) + 2 << endl;;//face number
-//
-//		outFile << pointNumPerMesh << "\t";//number of bottom points
-//		for (int j = 0; j < pointNumPerMesh; j++)  //point id of bottom points;
-//		{
-//			outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
-//		}
-//		outFile << endl;
-//		outFile << pointNumPerMesh << "\t";//number of top points
-//		for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
-//		{
-//			outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
-//		}
-//		outFile << endl;
-//
-//		for (int j = 0; j < pointNumPerMesh; j++)  //side faces；
-//		{
-//			int presentEdgeTpye = allMeshFaces[i].faceEdges[j].edgeType;
-//			if (presentEdgeTpye == 1)//直线
-//			{
-//				outFile << 4 << "\t";//points number
-//				outFile << allMeshFaces[i].facePointID[j] << "\t";//anticlockwise
-//				outFile << allMeshFaces[i].facePointID[j + 1] << "\t";
-//				outFile << allMeshFaces[i].facePointID[j + 1] + pointNumPerMesh << "\t";
-//				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";
-//				outFile << endl;
-//			}
-//			else if (presentEdgeTpye == 2)//圆
-//			{
-//
-//			}
-//			else       //圆弧
-//			{
-//				outFile << nFineMesh * 2 + 2 << "\t";//points number
-//				for (int k = 0; k <= nFineMesh; k++)
-//				{
-//					outFile << allMeshFaces[i].facePointID[j + k] << "\t";//anticlockwise
-//				}
-//				for (int k = nFineMesh; k >= 0; k--)
-//				{
-//					outFile << allMeshFaces[i].facePointID[j + k] + pointNumPerMesh << "\t";//anticlockwise
-//				}
-//				outFile << endl;
-//				j = j + nFineMesh - 1;//跳过多加进来的弧边
-//			}
-//		}
-//		outFile.close();  //close iostream
-//	}
-//}
 
-void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces)
+void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer)
 {
 	string filename = "";
-	for (int i = 0; i < MeshNum; i++)
+	int H0 = 0, H1 = 0;
+	int index0 = 0;
+	for (int j = 0; j < axialNum; j++)
 	{
-		stringstream ssID;
-		string sID;
-		ssID << allMeshFaces[i].faceID;
-		ssID >> sID;
-		filename = "poly" + allMeshFaces[i].faceType + "_" + sID;
-		filename = filename + ".off";
-		fileNameTransfer.push_back(filename);
-		ofstream outFile(filename);
-		int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
-		int ArcNumber = 0;
-		for (int j = 0; j < allMeshFaces[i].faceEdges.size(); j++)
+		if (j == 0)
 		{
-			if (allMeshFaces[i].faceEdges[j].edgeType == 3)
+			H0 = 0;
+			H1 = axialInformation[j].second;
+		}
+		else
+		{
+			H0 = H0 + axialInformation[j - 1].second;
+			H1 = H1 + axialInformation[j].second;
+		}
+		for (int i = 0; i < layerMeshNum; i++)
+		{
+			stringstream ssID;
+			stringstream ssaxialID;
+			string sID;
+			string axialID;
+			ssID << allMeshFaces[i].faceID;
+			ssID >> sID;
+			ssaxialID << (j + 1);
+			ssaxialID >> axialID;
+			filename = "poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
+			index0++;
+			cout << filename << endl;
+			filename = filename + ".off";
+			fileNameTransfer.push_back(filename);
+			ofstream outFile(filename);
+			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
+			int ArcNumber = 0;
+			for (int j = 0; j < allMeshFaces[i].faceEdges.size(); j++)
 			{
-				ArcNumber++;
-			}
-		}
-		outFile << "OFF" << endl;//off
-		outFile << pointNumPerMesh * 2 << "\t" << pointNumPerMesh - (ArcNumber / nFineMesh) * (nFineMesh - 1) + 2 << "\t" << 0 << endl;;//point numbers,face number,0
-		for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of bottom points；
-		{
-			outFile << allMeshFaces[i].facePointPosition[j][0] << "\t" << allMeshFaces[i].facePointPosition[j][1] << "\t" << allMeshFaces[i].facePointPosition[j][2] << endl;
-		}
-		for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of top points；
-		{
-			outFile << allMeshFaces[i].facePointPosition[j][0] << "\t" << allMeshFaces[i].facePointPosition[j][1] << "\t" << allMeshFaces[i].facePointPosition[j][2] + meshHighZ << endl;
-		}
-		outFile << pointNumPerMesh << "\t";//number of bottom points
-		for (int j = 0; j < pointNumPerMesh; j++)  //point id of bottom points;
-		{
-			outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
-		}
-		outFile << endl;
-		outFile << pointNumPerMesh << "\t";//number of top points
-		for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
-		{
-			outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
-		}
-		outFile << endl;
-
-		for (int j = 0; j < pointNumPerMesh; j++)  //side faces；
-		{
-			int presentEdgeTpye = allMeshFaces[i].faceEdges[j].edgeType;
-			if (presentEdgeTpye == 1)//直线
-			{
-				outFile << 4 << "\t";//points number
-				outFile << allMeshFaces[i].facePointID[j] << "\t";//anticlockwise
-				outFile << allMeshFaces[i].facePointID[j + 1] << "\t";
-				outFile << allMeshFaces[i].facePointID[j + 1] + pointNumPerMesh << "\t";
-				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";
-				outFile << endl;
-			}
-			else if (presentEdgeTpye == 2)//圆
-			{
-
-			}
-			else       //圆弧
-			{
-				outFile << nFineMesh * 2 + 2 << "\t";//points number
-				for (int k = 0; k <= nFineMesh; k++)
+				if (allMeshFaces[i].faceEdges[j].edgeType == 3)
 				{
-					outFile << allMeshFaces[i].facePointID[j + k] << "\t";//anticlockwise
+					ArcNumber++;
 				}
-				for (int k = nFineMesh; k >= 0; k--)
-				{
-					outFile << allMeshFaces[i].facePointID[j + k] + pointNumPerMesh << "\t";//anticlockwise
-				}
-				outFile << endl;
-				j = j + nFineMesh - 1;//跳过多加进来的弧边
 			}
+			outFile << "OFF" << endl;//off
+			outFile << pointNumPerMesh * 2 << "\t" << pointNumPerMesh - (ArcNumber / nFineMesh) * (nFineMesh - 1) + 2 << "\t" << 0 << endl;;//point numbers,face number,0
+			for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of bottom points；
+			{
+				outFile << allMeshFaces[i].facePointPosition[j][0] << "\t" << allMeshFaces[i].facePointPosition[j][1] << "\t" << allMeshFaces[i].facePointPosition[j][2] + H0 << endl;
+			}
+			for (int j = 0; j < pointNumPerMesh; j++)  //coordinates of top points；
+			{
+				outFile << allMeshFaces[i].facePointPosition[j][0] << "\t" << allMeshFaces[i].facePointPosition[j][1] << "\t" << allMeshFaces[i].facePointPosition[j][2] + H1 << endl;
+			}
+			outFile << pointNumPerMesh << "\t";//number of bottom points
+			for (int j = 0; j < pointNumPerMesh; j++)  //point id of bottom points;
+			{
+				outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
+			}
+			outFile << endl;
+			outFile << pointNumPerMesh << "\t";//number of top points
+			for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
+			{
+				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
+			}
+			outFile << endl;
+
+			for (int j = 0; j < pointNumPerMesh; j++)  //side faces；
+			{
+				int presentEdgeTpye = allMeshFaces[i].faceEdges[j].edgeType;
+				if (presentEdgeTpye == 1)//直线
+				{
+					outFile << 4 << "\t";//points number
+					outFile << allMeshFaces[i].facePointID[j] << "\t";//anticlockwise
+					outFile << allMeshFaces[i].facePointID[j + 1] << "\t";
+					outFile << allMeshFaces[i].facePointID[j + 1] + pointNumPerMesh << "\t";
+					outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";
+					outFile << endl;
+				}
+				else if (presentEdgeTpye == 2)//圆
+				{
+
+				}
+				else       //圆弧
+				{
+					outFile << nFineMesh * 2 + 2 << "\t";//points number
+					for (int k = 0; k <= nFineMesh; k++)
+					{
+						outFile << allMeshFaces[i].facePointID[j + k] << "\t";//anticlockwise
+					}
+					for (int k = nFineMesh; k >= 0; k--)
+					{
+						outFile << allMeshFaces[i].facePointID[j + k] + pointNumPerMesh << "\t";//anticlockwise
+					}
+					outFile << endl;
+					j = j + nFineMesh - 1;//跳过多加进来的弧边
+				}
+			}
+			outFile.close();  //close iostream
 		}
-		outFile.close();  //close iostream
 	}
 }
 
