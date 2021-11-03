@@ -349,7 +349,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = "poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			cout << filename << endl;
+			//cout << filename << endl;
 			filename = filename + ".off";
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
