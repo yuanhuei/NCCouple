@@ -67,19 +67,34 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	*/
 }
 
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
+	:
+	m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh)
+{
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
 	int iNum = 0;//计数完全被包含CFD网格的数量
+	std::cout << "befor entering the loop, Mesh Point number of CFD cell = " << cfdMesh.GetMeshPointNum() << std::endl;
+
+	//the code below was written for test
+	int nCFDNum = cfdMesh.GetMeshPointNum();
+	for (int i = 0; i < nCFDNum; i++)
+	{
+		std::cout << "when entering the loop i = " << i << std::endl;
+		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		double z = std::get<2>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		std::cout << "x,y,z = " << Vector(x,y,z) << std::endl;
+	}
+	
+	
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
-		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
-
 		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
 		double z = std::get<2>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
 		int iMocIndex = mocIndex.GetMOCIDWithPoint(x, y, z);
-
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 
@@ -126,7 +141,9 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			futureVec[j].get();
 
 		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
+		{
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
+		}
 	}
 
 	/*

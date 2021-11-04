@@ -55,16 +55,17 @@ public:
 		{
 			std::cout << "v_radius[" << i << "] = " << v_radius[i] << std::endl;
 		}
-		for (int i = 0;i < this->v_MOCID.size();i++)
+		for (int k = 0; k < axialCellNum;k++)
 		{
-			for (int j = 0;j < this->v_MOCID[i].size();j++)
+			for (int i = 0;i < this->v_MOCID.size();i++)
 			{
-				for (int k = 0; k < this->v_MOCID[i][j].size();k++)
+				for (int j = 0;j < this->v_MOCID[i].size();j++)
 				{
 					std::cout << i << "\t" << j << "\t" << k << "\t" << this->v_MOCID[i][j][k] << std::endl;
 				}
 			}
 		}
+		
 		return;
 	}
 };
