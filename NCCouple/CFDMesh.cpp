@@ -5,6 +5,11 @@
 
 CFDMesh::CFDMesh(std::string fileName) {
 	std::ifstream infile(fileName);
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the cfd data file");
+		exit(EXIT_FAILURE);
+	}
 	int cellNum = 0;
 	std::string cellNumStr;
 	std::getline(infile, cellNumStr);

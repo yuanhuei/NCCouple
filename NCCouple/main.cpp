@@ -55,6 +55,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 int main()
 {
 	time_t start, end;
+
 	MOCMesh mocMesh("pin_c1.apl");
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
@@ -72,9 +73,8 @@ int main()
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	CFDMesh cfdMesh("CFDCELLSCoarse.txt");// ("CFDCELLS0.txt");
+	CFDMesh cfdMesh("CFDCELLSCoarse11.txt");// ("CFDCELLS0.txt");
 	
-
 	start = time(NULL);
 	//Solver solver(mocMesh, cfdMesh);
 	Solver solver(mocMesh, cfdMesh, mocIndex);
