@@ -67,19 +67,23 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	*/
 }
 
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
+	:
+	m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh)
+{
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
 	int iNum = 0;//计数完全被包含CFD网格的数量
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
+	//the code below was written for test
+	int nCFDNum = cfdMesh.GetMeshPointNum();
+	
+	for (int i = 0; i < nCFDNum; i++)
 	{
-		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
-
 		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
+		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
 		double z = std::get<2>(m_cfdMeshPtr->GetMeshPointPtr(i)->CentralCoordinate());
 		int iMocIndex = mocIndex.GetMOCIDWithPoint(x, y, z);
-
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 
@@ -100,6 +104,37 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			continue;
 		}
 		std::vector<std::future<void>> futureVec;
+
+		//code written by Ling Kong
+		//compute the range of structured index in the axial direction 
+		int nzMin = mocIndex.axialCellNum - 1;
+		int nzMax = 0;
+		int verticeNum = cfdPoint.VerticesNum();
+		for (int j = 0; j < verticeNum; j++)
+		{
+			std::tuple<double, double, double> cor = cfdPoint.VerticeCoordinate(j);
+			std::tuple<int,int,int> structuredIJK = mocIndex.GetIJKWithPoint(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
+			int nz = std::get<2>(structuredIJK);
+			std::cout << Vector(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor)) << std::endl;
+			nzMin = min(nz, nzMin);
+			nzMax = max(nz, nzMax);
+		}
+		//loop over only a part of MOC cells in the range previously obtained
+		for (int kk = max(0, nzMin); kk <= min(mocIndex.axialCellNum - 1, nzMax); kk++)
+		{
+			for (int ii = 0;ii < mocIndex.v_MOCID.size();ii++)
+			{
+				for (int jj = 0;jj < mocIndex.v_MOCID[i].size();jj++)
+				{
+					int IDofMOC = mocIndex.v_MOCID[ii][jj][kk];
+					/*
+					COMPUTE THE INTERSECTION BETWEEN CFD(i) and MOC cells within limited layers
+					*/
+				}
+			}
+		}
+		//end of code written by Ling Kong
+
 		for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
 			auto fun = [this, &mtx, i, j]() {
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
@@ -126,7 +161,9 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex) : m_mocMes
 			futureVec[j].get();
 
 		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
+		{
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
+		}
 	}
 
 	/*

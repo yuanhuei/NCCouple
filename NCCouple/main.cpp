@@ -7,8 +7,10 @@
 #include "Logger.h"
 #include<time.h>
 
-void InitCFDMeshValue(const Mesh& cfdMesh) {
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) {
+void InitCFDMeshValue(const Mesh& cfdMesh) 
+{
+	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
+	{
 		double x, y, z;
 		std::tie(x, y, z) = cfdMesh.GetMeshPointPtr(i)->CentralCoordinate();
 		double _x = x - 0.63;
@@ -17,7 +19,6 @@ void InitCFDMeshValue(const Mesh& cfdMesh) {
 		double value = r + z + _x / r;
 		cfdMesh.GetMeshPointPtr(i)->SetValue(value, ValueType::DENSITY);
 	}
-	
 	return;
 }
 
@@ -53,46 +54,33 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	CFDMesh cfdMesh("CFDCELLSCoarse.txt");
-	MOCMesh mocMesh("pin_c1.apl");
-
 	time_t start, end;
-	start = time(NULL);
-
+	MOCMesh mocMesh("pin_c1.apl");
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
 	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
 	mocIndex.circularCellNum = 8;
-	mocIndex.axialCellNum = 1;
-	mocIndex.axialCellSize = 0.5;
+	mocIndex.axialCellNum = 5;
+	mocIndex.axialCellSize = 1.0;
 	std::vector<Scalar> radiusList;
 	radiusList.push_back(0.1024);
 	radiusList.push_back(0.2048);
 	radiusList.push_back(0.3072);
 	radiusList.push_back(0.4096);
-	radiusList.push_back(0.418);
 	radiusList.push_back(0.475);
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
-	/*
-	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.5, 0.25) << std::endl;
-	std::cout << mocIndex.GetMOCIDWithPoint(1.0, 0.2, 0.25) << std::endl;
-	std::cout << mocIndex.GetMOCIDWithPoint(0.1, 0.2, 0.25) << std::endl;
-	std::cout << mocIndex.GetMOCIDWithPoint(0.5, 0.26, 0.25) << std::endl;
-	std::cout << mocIndex.GetMOCIDWithPoint(0.25, 0.75, 0.4) << std::endl;
-	*/
-	//Solver solver(mocMesh, cfdMesh, mocIndex);
-	Solver solver(mocMesh, cfdMesh);
-
+	CFDMesh cfdMesh("CFDCELLS0.txt");
+	//Solver solver(mocMesh, cfdMesh);
+	start = time(NULL);
+	Solver solver(mocMesh, cfdMesh, mocIndex);
+	end = time(NULL);
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
-	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
 	mocMesh.OutputStatus("pin_c1.inp");
 	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
-
 	return 0;
-
 }

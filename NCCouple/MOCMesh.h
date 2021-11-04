@@ -100,7 +100,7 @@ class MOCMesh : public Mesh
 public:
 	MOCMesh() = delete;
 	MOCMesh(std::string meshFileName);
-	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces);   //output 3D mesh
+	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
@@ -108,6 +108,7 @@ public:
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
+	void MOCMesh::setAxialInformation(std::string line); //set mesh information
 	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges);//set edge objects
 	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
 
@@ -116,10 +117,11 @@ private:
 
 	//std::vector<Surface>allMeshFaces;   //all face objects
 	//std::vector<Edge>allEdges;    //all edge objects
-	int MeshNum;          //fine mesh number
+	int layerMeshNum;          //fine mesh number
 	int EdgeNum;            //edge number
 	int coarseMeshNum;     //coarse mesh number
-	double meshHighZ;   //mesh length in z direction
+	int axialNum;
+	std::vector<std::pair<int, double>> axialInformation;
 };
 //int CalMeshIndex(double x, double y);
 //int CalMeshIndexbyCFD(double x, double y);
