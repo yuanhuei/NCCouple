@@ -33,7 +33,7 @@ CFDMesh::CFDMesh(std::string fileName) {
 		std::string faceNumStr;
 		std::getline(infile, faceNumStr);
 		faceNum = std::stoi(faceNumStr);
-		for (int j = 0; j < verticesNum; j++) {
+		for (int j = 0; j < faceNum; j++) {
 			std::string faceStr;
 			std::getline(infile, faceStr);
 			offFileLineVec.push_back(faceStr);
