@@ -116,12 +116,11 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
 			std::tuple<double, double, double> cor = cfdPoint.VerticeCoordinate(j);
 			std::tuple<int,int,int> structuredIJK = mocIndex.GetIJKWithPoint(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
 			int nz = std::get<2>(structuredIJK);
-			std::cout << Vector(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor)) << std::endl;
 			nzMin = min(nz, nzMin);
 			nzMax = max(nz, nzMax);
 		}
 		//loop over only a part of MOC cells in the range previously obtained
-		std:; vector<int> vecIndex;//保存计算出来的所有index
+		std::vector<int> vecIndex;//保存计算出来的所有index
 		for (int kk = max(0, nzMin); kk <= min(mocIndex.axialCellNum - 1, nzMax); kk++)
 		{
 			for (int ii = 0;ii < mocIndex.v_MOCID.size();ii++)
@@ -129,15 +128,20 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
 				for (int jj = 0;jj < mocIndex.v_MOCID[i].size();jj++)
 				{
 					int IDofMOC = mocIndex.v_MOCID[ii][jj][kk];
-					vecIndex.push_back(IDofMOC);
+					//vecIndex.push_back(IDofMOC);
+					int j = IDofMOC;
 				}
 			}
 		}
+		/*
+		std::cout << "2" << std::endl;
 		int maxIndex = *max_element(vecIndex.begin(), vecIndex.end());//index中的最大值
 		int minIndex = *min_element(vecIndex.begin(), vecIndex.end());//index中的最小值
+		std::cout << "maxIndex, minIndex = " << maxIndex << " " << minIndex << std::endl;
 		//end of code written by Ling Kong
-
-		for (int j = minIndex; j <maxIndex+1; j++) {
+		std::cout << "3" << std::endl;
+		for (int j = minIndex; j <maxIndex+1; j++) 
+		{
 			auto fun = [this, &mtx, i, j]() {
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
@@ -159,6 +163,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
 			fun();
 			//futureVec.push_back(std::async(std::launch::async, fun));
 		}
+		*/
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
 

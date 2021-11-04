@@ -73,7 +73,7 @@ int main()
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	CFDMesh cfdMesh("CFDCELLSCoarse11.txt");// ("CFDCELLS0.txt");
+	CFDMesh cfdMesh("CFDCELLS0.txt");
 	
 	start = time(NULL);
 	//Solver solver(mocMesh, cfdMesh);
