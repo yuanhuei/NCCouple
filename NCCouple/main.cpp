@@ -9,7 +9,6 @@
 
 void InitCFDMeshValue(const Mesh& cfdMesh) 
 {
-	std::cout << "total CFD mesh number = " << cfdMesh.GetMeshPointNum() << std::endl;
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
 	{
 		double x, y, z;
@@ -19,9 +18,6 @@ void InitCFDMeshValue(const Mesh& cfdMesh)
 		double r = sqrt(_x * _x + _y * _y);
 		double value = r + z + _x / r;
 		cfdMesh.GetMeshPointPtr(i)->SetValue(value, ValueType::DENSITY);
-		std::cout << "i = " << i << std::endl;
-		std::cout << "(x,y,z) = " << Vector(x,y,z) << std::endl;
-		std::cout << "value = " << value << std::endl;
 	}
 	return;
 }
@@ -58,12 +54,8 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-
-	MOCMesh mocMesh("pin_c1.apl");
-
 	time_t start, end;
-	start = time(NULL);
-
+	MOCMesh mocMesh("pin_c1.apl");
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
@@ -81,18 +73,14 @@ int main()
 	mocIndex.BuildUpIndex();
 	CFDMesh cfdMesh("CFDCELLS0.txt");
 	//Solver solver(mocMesh, cfdMesh);
+	start = time(NULL);
 	Solver solver(mocMesh, cfdMesh, mocIndex);
-	std::cout << "solver completed" << std::endl;
-	InitCFDMeshValue(cfdMesh);
-	std::cout << "initialization completed" << std::endl;
-	solver.CFDtoMOCinterception(ValueType::DENSITY);
-	std::cout << "interplation completed" << std::endl;
 	end = time(NULL);
+	InitCFDMeshValue(cfdMesh);
+	solver.CFDtoMOCinterception(ValueType::DENSITY);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
 	mocMesh.OutputStatus("pin_c1.inp");
 	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
-
 	return 0;
-
 }
