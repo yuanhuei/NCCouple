@@ -71,11 +71,15 @@ int main()
 	radiusList.push_back(0.475);
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
-	CFDMesh cfdMesh("CFDCELLS0.txt");
-	//Solver solver(mocMesh, cfdMesh);
+
+	CFDMesh cfdMesh("CFDCELLSCoarse.txt");// ("CFDCELLS0.txt");
+	
+
 	start = time(NULL);
+	//Solver solver(mocMesh, cfdMesh);
 	Solver solver(mocMesh, cfdMesh, mocIndex);
 	end = time(NULL);
+
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));

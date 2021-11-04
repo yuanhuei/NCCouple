@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <future>
 #include <mutex>
+#include<algorithm>
 
 
 #define INTERSECT_JUDGE_LIMIT 1e-10
@@ -120,6 +121,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
 			nzMax = max(nz, nzMax);
 		}
 		//loop over only a part of MOC cells in the range previously obtained
+		std:; vector<int> vecIndex;//保存计算出来的所有index
 		for (int kk = max(0, nzMin); kk <= min(mocIndex.axialCellNum - 1, nzMax); kk++)
 		{
 			for (int ii = 0;ii < mocIndex.v_MOCID.size();ii++)
@@ -127,15 +129,15 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,MOCIndex& mocIndex)
 				for (int jj = 0;jj < mocIndex.v_MOCID[i].size();jj++)
 				{
 					int IDofMOC = mocIndex.v_MOCID[ii][jj][kk];
-					/*
-					COMPUTE THE INTERSECTION BETWEEN CFD(i) and MOC cells within limited layers
-					*/
+					vecIndex.push_back(IDofMOC);
 				}
 			}
 		}
+		int maxIndex = *max_element(vecIndex.begin(), vecIndex.end());//index中的最大值
+		int minIndex = *min_element(vecIndex.begin(), vecIndex.end());//index中的最小值
 		//end of code written by Ling Kong
 
-		for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
+		for (int j = minIndex; j <maxIndex+1; j++) {
 			auto fun = [this, &mtx, i, j]() {
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
