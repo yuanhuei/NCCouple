@@ -2,6 +2,7 @@
 #define MESHPOINT_HEADER
 
 #include "CAGLWraper.h"
+#include "MHT_polyhedron/PolyhedronSet.h"
 #include <tuple>
 
 enum class ValueType
@@ -56,6 +57,9 @@ protected:
 
 private:
 	void Init();
+
+//public:
+//	PolyhedronSet m_polySet;
 
 private:
 	int m_pointID = 0;
