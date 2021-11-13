@@ -136,7 +136,7 @@ void PolyhedronSet::CalculateRadius()
 	return;
 }
 
-void PolyhedronSet::Display()
+void PolyhedronSet::Display() const
 {
 	std::cout << "this is a MOC polyhedron, axis center and norm are" << std::endl;
 	std::cout << this->axisCenter << std::endl;
@@ -186,7 +186,6 @@ PolyhedronSet PolyhedronSet::ClipByPlane(Vector pointOnPlane, Vector planeNorm)
 		//if cut occurs, operations on vertices need to be re-proceeded
 		CreateOldVerticeMap(pointOnPlane, clipNorm, targetMOCPoly, v_inside, v_newPointID);
 	}
-
 	int numOldPoints = (int)targetMOCPoly.v_point.size();
 
 	vector<int> v_oldFaceID;
@@ -448,14 +447,15 @@ void PolyhedronSet::CalculateVolume()
 	return;
 }
 
-bool PolyhedronSet::IsContaining(Vector& point)
+bool PolyhedronSet::IsContaining(Vector& point) const
 {
 	bool contain = true;
 	for (int i = 0; i < this->v_faceCenter.size(); i++)
 	{
 		if (0 == this->v_curvedFace[i].first)
 		{
-			Vector pointToFace = this->v_faceCenter[i] - point;
+			Vector faceCenter = this->v_faceCenter[i];
+			Vector pointToFace = faceCenter - point;
 			if ((pointToFace & this->v_faceArea[i]) < 0)
 			{
 				return false;
@@ -463,7 +463,8 @@ bool PolyhedronSet::IsContaining(Vector& point)
 		}
 		else
 		{
-			Scalar temp = (this->v_faceCenter[i] - axisCenter)&this->v_faceArea[i];
+			Vector faceCenter = this->v_faceCenter[i];
+			Scalar temp = (faceCenter - axisCenter)&this->v_faceArea[i];
 			Vector OP = point - axisCenter;
 			Scalar distanceToAxis = (OP - (OP&axisNorm)*axisNorm).Mag();
 			if (temp > 0 && distanceToAxis > this->v_curvedFace[i].second)
@@ -479,7 +480,10 @@ bool PolyhedronSet::IsContaining(Vector& point)
 	return contain;
 }
 
-Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron(MHT::Polyhedron& poly)
+Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron
+(
+	const MHT::Polyhedron& poly
+) const
 {
 	Scalar volume = 0.0;
 	if (0 == this->v_subPolyhedron.size())
@@ -496,7 +500,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron(MHT::Polyhedron& poly)
 	return volume;
 }
 
-Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(PolyhedronSet& another)
+Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& another) const
 {
 	Scalar totalVolume = 0.0;
 	if (false == this->clipped)
@@ -544,7 +548,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(PolyhedronSet& another
 	return totalVolume;
 }
 
-void PolyhedronSet::WriteTecplotFile(std::string filename)
+void PolyhedronSet::WriteTecplotFile(std::string filename) const
 {
 	ofstream outFile(filename.c_str());
 	outFile << "TITLE =\"" << "polyhedron" << "\"" << endl;

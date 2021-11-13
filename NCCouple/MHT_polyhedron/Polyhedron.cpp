@@ -5,7 +5,7 @@
 namespace MHT
 {
 	Polyhedron::Polyhedron()
-		:volume(0.0)
+		:volume(0.0),geometryCalculated(false)
 	{
 		v_point.clear();
 		v_facePointID.clear();
@@ -29,6 +29,7 @@ namespace MHT
 	(
 		ifstream& infile
 	)
+		:volume(0.0), geometryCalculated(false)
 	{
 		this->ReadGeometry(infile);
 		return;
@@ -73,6 +74,7 @@ namespace MHT
 		this->v_faceCenter.clear();
 		this->v_faceArea.clear();
 		this->volume = 0.0;
+		this->geometryCalculated = false;
 		return;
 	}
 
@@ -110,10 +112,11 @@ namespace MHT
 		}
 		this->CalculateFaceGeometry();
 		GetCenterAndVolume(this->v_faceCenter, this->v_faceArea, this->center, this->volume);
+		this->geometryCalculated = true;
 		return;
 	}
 
-	void Polyhedron::Display()
+	void Polyhedron::Display() const
 	{
 		cout << "This polyhedron is composed of points:" << endl;
 		for (int i = 0; i < (int)v_point.size(); i++)
@@ -133,7 +136,7 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::WriteDataFile(ofstream& outfile)
+	void Polyhedron::WriteDataFile(ofstream& outfile) const
 	{
 		outfile << this->v_point.size() << std::endl;
 		for (int i = 0; i < this->v_point.size(); i++)
@@ -156,7 +159,7 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::WriteTecplotFile(const string& filename)
+	void Polyhedron::WriteTecplotFile(const string& filename) const
 	{
 		int nCount(0);
 		int faceNum = (int)this->v_facePointID.size();
@@ -284,12 +287,13 @@ namespace MHT
 		return cutDone;
 	}
 
-	bool Polyhedron::IsContaining(Vector& point)
+	bool Polyhedron::IsContaining(Vector& point) const
 	{
 		bool contain = true;
 		for (int i = 0; i < this->v_faceCenter.size(); i++)
 		{
-			Vector pointToFace = this->v_faceCenter[i] - point;
+			Vector faceCenter = this->v_faceCenter[i];
+			Vector pointToFace = faceCenter - point;
 			if ((pointToFace & this->v_faceArea[i]) < 0)
 			{
 				contain = false;
@@ -299,7 +303,7 @@ namespace MHT
 		return contain;
 	}
 
-	bool Polyhedron::IsExisting()
+	bool Polyhedron::IsExisting() const
 	{
 		if (this->v_point.size() > 0)
 		{
@@ -311,7 +315,12 @@ namespace MHT
 		}
 	}
 
-	Polyhedron Polyhedron::ClipByPlane(Vector pointOnPlane, Vector planeNorm, vector<int>& newFacelist)
+	Polyhedron Polyhedron::ClipByPlane
+	(
+		Vector pointOnPlane, 
+		Vector planeNorm, 
+		vector<int>& newFacelist
+	)
 	{
 		Vector clipNorm = planeNorm.GetNormal();
 		newFacelist.clear();
@@ -491,10 +500,15 @@ namespace MHT
 
 	}
 
-	Polyhedron operator && (Polyhedron& left, Polyhedron& right)
+	Polyhedron operator && (const Polyhedron& left, const Polyhedron& right)
 	{
-		right.CalculateFaceGeometry();
 		Polyhedron result = left;
+		if (false == right.geometryCalculated)
+		{
+			std::cout << "Fatal error: in Polyhedron operator &&, the geometry of the rhs is not calculated" << std::endl;
+			exit(1);
+			return result;
+		}
 		vector<int> cutfaceID;
 		for (int i = 0; i < (int)right.v_facePointID.size(); i++)
 		{

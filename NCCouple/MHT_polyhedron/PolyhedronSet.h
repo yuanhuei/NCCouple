@@ -25,7 +25,7 @@ public:
 
 	void CalculateRadius();
 
-	void Display();
+	void Display() const;
 
 	PolyhedronSet ClipByPlane(Vector pointOnPlane, Vector planeNorm);
 
@@ -33,13 +33,13 @@ public:
 
 	void CalculateVolume();
 
-	bool IsContaining(Vector&);
+	bool IsContaining(Vector&) const;
 
-	Scalar IntersectionVolumeWithPolyhedron(MHT::Polyhedron&);
+	Scalar IntersectionVolumeWithPolyhedron(const MHT::Polyhedron&) const;
 
-	Scalar IntersectionVolumeWithPolyhedronSet(PolyhedronSet&);
+	Scalar IntersectionVolumeWithPolyhedronSet(const PolyhedronSet&) const;
 
-	void WriteTecplotFile(std::string);
+	void WriteTecplotFile(std::string) const;
 
 };
 #endif
