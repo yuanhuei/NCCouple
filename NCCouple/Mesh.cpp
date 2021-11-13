@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include <fstream>
 
-void MeshPoint::Init() {
+void CGALMeshPoint::Init() {
 	CGAL::Polygon_mesh_processing::triangulate_faces(m_poly);
 
 	//m_poly = Nef_polyhedron(poly);
@@ -16,8 +16,12 @@ void MeshPoint::Init() {
 	}
 }
 
-double MeshPoint::IntersectedVolume(const MeshPoint& other) const{
-	Polyhedron poly1(m_poly), poly2(other.m_poly);
+double CGALMeshPoint::IntersectedVolume(const MeshPoint& other) const{
+	const CGALMeshPoint* p_other = dynamic_cast<const CGALMeshPoint*>(&other);
+	if (!p_other)
+		throw std::runtime_error("the type of input MeshPoint is not same with current MeshPoint!");
+
+	Polyhedron poly1(m_poly), poly2(p_other->m_poly);
 	CGAL::Surface_mesh<Point> mesh1, mesh2, interMesh;
 	CGAL::Polygon_mesh_processing::triangulate_faces(poly1);
 	CGAL::copy_face_graph(poly1, mesh1);
@@ -33,4 +37,12 @@ double MeshPoint::IntersectedVolume(const MeshPoint& other) const{
 	}
 		
 	return 0.0;
+}
+
+double LingMeshPoint::IntersectedVolume(const MeshPoint& other) const {
+	const LingMeshPoint* p_other = dynamic_cast<const LingMeshPoint*>(&other);
+	if (!p_other)
+		throw std::runtime_error("the type of input MeshPoint is not same with current MeshPoint!");
+
+	return m_poly.IntersectionVolumeWithPolyhedronSet(p_other->m_poly);
 }

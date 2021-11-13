@@ -3,7 +3,7 @@
 #include <fstream>
 #include <future>
 
-CFDMesh::CFDMesh(std::string fileName) {
+CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
