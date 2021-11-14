@@ -86,7 +86,7 @@ namespace MHT
 		//calculate face centers and norms
 		Vector centerTemp(0.0, 0.0, 0.0);
 		Vector areaTemp(0.0, 0.0, 0.0);
-		vector<Vector> verticeList;
+		std::vector<Vector> verticeList;
 		for (int faceID = 0; faceID < faceNum; faceID++)
 		{
 			verticeList.clear();
@@ -134,6 +134,34 @@ namespace MHT
 			cout << endl;
 		}
 		return;
+	}
+
+	Scalar Polyhedron::GetVolume() const
+	{
+		if (false == this->geometryCalculated)
+		{
+			std::cout << "can not get the volume of this polyhedron, the geomety is not yet calculated" << std::endl;
+			exit(1);
+			return 0.0;
+		}
+		else
+		{
+			return this->volume;
+		}
+	}
+
+	Vector Polyhedron::GetCenter() const
+	{
+		if (false == this->geometryCalculated)
+		{
+			std::cout << "can not get the center of this polyhedron, the geomety is not yet calculated" << std::endl;
+			exit(1);
+			return Vector(0.0, 0.0, 0.0);
+		}
+		else
+		{
+			return this->center;
+		}
 	}
 
 	void Polyhedron::WriteDataFile(ofstream& outfile) const
@@ -199,7 +227,7 @@ namespace MHT
 
 	void Polyhedron::CutFaceIntoTriangle(int nface)
 	{
-		vector<int> mirrorFace = this->v_facePointID[nface];
+		std::vector<int> mirrorFace = this->v_facePointID[nface];
 		int numVertices = (int)mirrorFace.size();
 		if (3 == numVertices)
 		{
@@ -217,7 +245,7 @@ namespace MHT
 		//new triangular faces created
 		for (int i = 1; i < numVertices; i++)
 		{
-			vector<int> newFace;
+			std::vector<int> newFace;
 			newFace.push_back(mirrorFace[i]);
 			newFace.push_back(mirrorFace[(i + 1) % numVertices]);
 			newFace.push_back(newPointID);
@@ -232,7 +260,13 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::CreateOldVerticeMap(Vector pointOnPlane, Vector norm, Polyhedron& target, vector<bool>& inside, vector<int>& map)
+	void Polyhedron::CreateOldVerticeMap
+	(
+		Vector pointOnPlane, Vector norm, 
+		Polyhedron& target, 
+		std::vector<bool>& inside,
+		std::vector<int>& map
+	)
 	{
 		target.Clear();
 		inside.resize(this->v_point.size());
@@ -255,13 +289,13 @@ namespace MHT
 		return;
 	}
 
-	bool Polyhedron::CutWhenNeeded(vector<bool>& inside)
+	bool Polyhedron::CutWhenNeeded(std::vector<bool>& inside)
 	{
 		bool cutDone = false;
-		vector<int> faceToBeCut;
+		std::vector<int> faceToBeCut;
 		for (int faceID = 0; faceID < (int)this->v_facePointID.size(); faceID++)
 		{
-			vector<int>& thisFace = this->v_facePointID[faceID];
+			std::vector<int>& thisFace = this->v_facePointID[faceID];
 			int numVertices = (int)thisFace.size();
 			int numIntersections = 0;
 			for (int j = 0; j < (int)thisFace.size(); j++)
@@ -319,14 +353,14 @@ namespace MHT
 	(
 		Vector pointOnPlane, 
 		Vector planeNorm, 
-		vector<int>& newFacelist
+		std::vector<int>& newFacelist
 	)
 	{
 		Vector clipNorm = planeNorm.GetNormal();
 		newFacelist.clear();
 		//create temperal data needed in the algorithm
-		vector<bool> v_inside;
-		vector<int> v_newPointID;
+		std::vector<bool> v_inside;
+		std::vector<int> v_newPointID;
 		//create a new polygon without any data
 		Polyhedron targetPoly;
 
@@ -341,19 +375,19 @@ namespace MHT
 
 		int numOldPoints = (int)targetPoly.v_point.size();
 
-		vector<int> v_oldFaceID;
-		vector<bool> v_faceCut;
+		std::vector<int> v_oldFaceID;
+		std::vector<bool> v_faceCut;
 
 		//visit all faces to see whether they need to be created in the new polyhedron
 		for (int i = 0; i < (int)this->v_facePointID.size(); i++)
 		{
-			vector<int>& thisFace = this->v_facePointID[i];
+			std::vector<int>& thisFace = this->v_facePointID[i];
 			for (int j = 0; j < (int)this->v_facePointID[i].size(); j++)
 			{
 				int pointID = thisFace[j];
 				if (true == v_inside[pointID])
 				{
-					vector<int> newface;
+					std::vector<int> newface;
 					targetPoly.v_facePointID.push_back(newface);
 					v_oldFaceID.push_back(i);
 					v_faceCut.push_back(false);
@@ -370,7 +404,7 @@ namespace MHT
 		for (int i = 0; i < (int)v_oldFaceID.size(); i++)
 		{
 			int refFaceID = v_oldFaceID[i];
-			vector<int>& refFace = this->v_facePointID[refFaceID];
+			std::vector<int>& refFace = this->v_facePointID[refFaceID];
 			int numSides = (int)refFace.size();
 			for (int j = 0; j < numSides; j++)
 			{
@@ -413,14 +447,14 @@ namespace MHT
 		}
 
 		//create the last polygon face
-		vector<pair<int, int> > v_sideArror;
+		std::vector<std::pair<int, int> > v_sideArror;
 		for (int i = 0; i < (int)targetPoly.v_facePointID.size(); i++)
 		{
 			if (false == v_faceCut[i])
 			{
 				continue;
 			}
-			vector<int>& thisFace = targetPoly.v_facePointID[i];
+			std::vector<int>& thisFace = targetPoly.v_facePointID[i];
 			int numVertices = (int)thisFace.size();
 			//start from an old point
 			int jstart = 0;
@@ -470,7 +504,7 @@ namespace MHT
 			}
 		}
 
-		vector<vector<pair<int, int> > > v_groupedArror;
+		std::vector<std::vector<pair<int, int> > > v_groupedArror;
 
 		v_groupedArror.resize(1);
 		v_groupedArror[0].resize(1);
@@ -479,7 +513,7 @@ namespace MHT
 		{
 			if (v_sideArror[i].first != v_sideArror[i - 1].second)
 			{
-				vector<pair<int, int> > newgroup;
+				std::vector<pair<int, int> > newgroup;
 				v_groupedArror.push_back(newgroup);
 			}
 			v_groupedArror[v_groupedArror.size() - 1].push_back(v_sideArror[i]);
@@ -487,7 +521,7 @@ namespace MHT
 
 		for (int i = 0; i < (int)v_groupedArror.size(); i++)
 		{
-			vector<int> newface;
+			std::vector<int> newface;
 			for (int j = (int)v_groupedArror[i].size() - 1; j >= 0; j--)
 			{
 				newface.push_back(v_groupedArror[i][j].first);
@@ -509,7 +543,7 @@ namespace MHT
 			exit(1);
 			return result;
 		}
-		vector<int> cutfaceID;
+		std::vector<int> cutfaceID;
 		for (int i = 0; i < (int)right.v_facePointID.size(); i++)
 		{
 			result = result.ClipByPlane(right.v_faceCenter[i], right.v_faceArea[i], cutfaceID);
@@ -517,7 +551,12 @@ namespace MHT
 		return result;
 	}
 
-	Polygon Polyhedron::SearchCutPosition(Vector normal, Scalar volumeFraction, Scalar tolerance)
+	Polygon Polyhedron::SearchCutPosition
+	(
+		Vector normal,
+		Scalar volumeFraction,
+		Scalar tolerance
+	)
 	{
 		Vector norm = normal.GetNormal();
 		Scalar volumeDesired = volumeFraction * this->volume;
@@ -545,7 +584,7 @@ namespace MHT
 		Scalar alphaRight = totalLength;
 		Scalar alphaMiddle = volumeFraction * totalLength;
 		Polyhedron cutResult;
-		vector<int> v_cutFaceID;
+		std::vector<int> v_cutFaceID;
 		for (int i = 0; i < 100; i++)
 		{
 			cout << "i = " << i << endl;
@@ -557,7 +596,7 @@ namespace MHT
 			for (int i = 0; i < (int)v_cutFaceID.size(); i++)
 			{
 				int faceID = (int)v_cutFaceID[i];
-				vector<Vector> verticeList;
+				std::vector<Vector> verticeList;
 				for (int i = 0; i < (int)cutResult.v_facePointID[faceID].size(); i++)
 				{
 					int pointID = cutResult.v_facePointID[faceID][i];
@@ -617,7 +656,12 @@ namespace MHT
 		return cutFace;
 	}
 
-	Polygon Polyhedron::Reconstruction(Vector normal, Scalar volumeFraction, Scalar tolerance)
+	Polygon Polyhedron::Reconstruction
+	(
+		Vector normal,
+		Scalar volumeFraction,
+		Scalar tolerance
+	)
 	{
 		Polyhedron standardPoly = (*this);
 		Scalar alpha = pow(this->volume, 1.0 / 3.0);
