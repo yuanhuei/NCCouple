@@ -94,7 +94,14 @@ PolyhedronSet::PolyhedronSet
 		this->v_curvedFace[i].first = v_curvedFaceMark[i];
 	}
 	this->axisCenter = axisPoint;
-	this->axisNorm = axisNorm.GetNormal();
+	if (axisNorm.Mag() > 10.0 * SMALL)
+	{
+		this->axisNorm = axisNorm.GetNormal();
+	}
+	else
+	{
+		this->axisNorm = Vector(0.0, 0.0, 1.0);
+	}
 	this->CalculateRadius();
 	this->MHT::Polyhedron::CalculateVolume();
 }

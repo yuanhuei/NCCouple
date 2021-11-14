@@ -90,6 +90,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 
 		double cfdPointVolume = cfdPoint.Volume();
 		double mocPointVolume = mocPoint.Volume();
+		//ATTENTION: the cfd and moc volumes are both 0 in debug (CFDID = 0)
 		double intersectedVolume = 0.0;
 		if (mocPoint.GetMaterialType() == MaterialType::H2O)
 			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
