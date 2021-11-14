@@ -90,7 +90,6 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 
 		double cfdPointVolume = cfdPoint.Volume();
 		double mocPointVolume = mocPoint.Volume();
-		//ATTENTION: the cfd and moc volumes are both 0 in debug (CFDID = 0)
 		double intersectedVolume = 0.0;
 		if (mocPoint.GetMaterialType() == MaterialType::H2O)
 			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
@@ -186,7 +185,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 			Logger::LogInfo(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
 		}
 	}
-	*/	Logger::LogInfo(FormatStr("CFD总数量是:%d. 完全被包含在MOC中的CFD数量是 %d,占比是:百分之%.2lf ", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
+	*/
+	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
 
 }
 /*
