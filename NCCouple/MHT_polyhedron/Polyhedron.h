@@ -41,8 +41,10 @@ namespace MHT
 		vector<vector<int> > v_facePointID;
 		vector<Vector> v_faceArea;
 		vector<Vector> v_faceCenter;
+		bool geometryCalculated;
 		Scalar volume;
 		Vector center;
+	public:
 
 		Polyhedron();
 
@@ -50,41 +52,40 @@ namespace MHT
 
 		Polyhedron(ifstream& infile);
 
-		void ReadGeometry(ifstream& infile);
-
-		void Display();
-
-		void CalculateFaceGeometry();
+		void Display() const;
 
 		void CalculateVolume();
 
 		void Clear();
 
-		void WriteDataFile(ofstream&);
+		void WriteDataFile(ofstream&) const;
 
-		void WriteTecplotFile(const string&);
-
-		void CutFaceIntoTriangle(int);
+		void WriteTecplotFile(const string&) const;
 
 		bool CutWhenNeeded(vector<bool>&);
 
-		bool IsContaining(Vector&);
-
-		bool IsExisting();
-
 		void CreateOldVerticeMap(Vector, Vector, Polyhedron&, vector<bool>&, vector<int>&);
 
-		Polyhedron ClipByPlane(Vector, Vector, vector<int>&);
+		bool IsContaining(Vector&) const;
 
-		pair<Scalar, Scalar> CutByPlane(Vector, Vector);
+		bool IsExisting() const;
+
+		Polyhedron ClipByPlane(Vector, Vector, vector<int>&);
 
 		Polygon SearchCutPosition(Vector norm, Scalar volume, Scalar tolerance);
 
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
 
+	private:
+		void ReadGeometry(ifstream& infile);
+
+		void CalculateFaceGeometry();
+
+		void CutFaceIntoTriangle(int);
+
 	};
 
-	Polyhedron operator && (Polyhedron& left, Polyhedron& right);
+	Polyhedron operator && (const Polyhedron& left, const Polyhedron& right);
 }
 
 #endif
