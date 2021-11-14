@@ -395,7 +395,8 @@ void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 	this->v_subPolyhedron.clear();
 	this->Polyhedron::CalculateVolume();
 	//calculating the bounds of clipping normals
-	Vector temp = this->center - this->axisCenter;
+	Vector globalCenter = this->GetCenter();
+	Vector temp = globalCenter - this->axisCenter;
 	Vector nCenter = (temp - (temp&axisNorm)*axisNorm).GetNormal();
 	Scalar valueMax = 0.0;
 	Scalar valueMin = 0.0;
@@ -495,7 +496,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron
 	{
 		MHT::Polyhedron temp = poly&&this->v_subPolyhedron[i];
 		temp.CalculateVolume();
-		volume += temp.volume;
+		volume += temp.GetVolume();
 	}
 	return volume;
 }
@@ -509,7 +510,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 		{
 			MHT::Polyhedron result = (*this) && another;
 			result.CalculateVolume();
-			totalVolume = result.volume;
+			totalVolume = result.GetVolume();
 		}
 		else
 		{
@@ -517,7 +518,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 			{
 				MHT::Polyhedron result = (*this) && another.v_subPolyhedron[i];
 				result.CalculateVolume();
-				totalVolume += result.volume;
+				totalVolume += result.GetVolume();
 			}
 		}
 	}
@@ -529,7 +530,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 			{
 				MHT::Polyhedron result = this->v_subPolyhedron[i] && another;
 				result.CalculateVolume();
-				totalVolume += result.volume;
+				totalVolume += result.GetVolume();
 			}
 		}
 		else
@@ -540,7 +541,7 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 				{
 					MHT::Polyhedron result = this->v_subPolyhedron[i] && this->v_subPolyhedron[j];
 					result.CalculateVolume();
-					totalVolume += result.volume;
+					totalVolume += result.GetVolume();
 				}
 			}
 		}

@@ -24,25 +24,19 @@ namespace MHT
 		Vector center;
 	public:
 		Polygon() {}
-		void Display()
-		{
-			for (int i = 0; i < (int)v_point.size(); i++)
-			{
-				cout << v_point[i] << endl;
-			}
-		}
 	};
 
 
 	class Polyhedron
 	{
 	public:
-		vector <Vector> v_point;
-		vector<vector<int> > v_facePointID;
-		vector<Vector> v_faceArea;
-		vector<Vector> v_faceCenter;
+		std::vector<Vector> v_point;
+		std::vector<std::vector<int> > v_facePointID;
+		std::vector<Vector> v_faceArea;
+		std::vector<Vector> v_faceCenter;
 		bool geometryCalculated;
 		Scalar volume;
+	private:
 		Vector center;
 	public:
 
@@ -54,6 +48,10 @@ namespace MHT
 
 		void Display() const;
 
+		Scalar GetVolume() const;
+
+		Vector GetCenter() const;
+
 		void CalculateVolume();
 
 		void Clear();
@@ -62,21 +60,22 @@ namespace MHT
 
 		void WriteTecplotFile(const string&) const;
 
-		bool CutWhenNeeded(vector<bool>&);
+		bool CutWhenNeeded(std::vector<bool>&);
 
-		void CreateOldVerticeMap(Vector, Vector, Polyhedron&, vector<bool>&, vector<int>&);
+		void CreateOldVerticeMap(Vector, Vector, Polyhedron&, std::vector<bool>&, std::vector<int>&);
 
 		bool IsContaining(Vector&) const;
 
 		bool IsExisting() const;
 
-		Polyhedron ClipByPlane(Vector, Vector, vector<int>&);
+		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 
 		Polygon SearchCutPosition(Vector norm, Scalar volume, Scalar tolerance);
 
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
 
 	private:
+
 		void ReadGeometry(ifstream& infile);
 
 		void CalculateFaceGeometry();
