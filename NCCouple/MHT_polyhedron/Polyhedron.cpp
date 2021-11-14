@@ -32,6 +32,17 @@ namespace MHT
 		:volume(0.0), geometryCalculated(false)
 	{
 		this->ReadGeometry(infile);
+		this->CalculateVolume();
+		return;
+	}
+
+	Polyhedron::Polyhedron
+	(
+		std::istream& is
+	)
+	{
+		this->ReadGeometry(is);
+		this->CalculateVolume();
 		return;
 	}
 
@@ -63,6 +74,42 @@ namespace MHT
 			}
 			this->v_faceArea[i] = Vector(0.0, 0.0, 0.0);
 			this->v_faceCenter[i] = Vector(0.0, 0.0, 0.0);
+		}
+		return;
+	}
+
+	void Polyhedron::ReadGeometry(std::istream& is)
+	{
+		std::string oneline;
+		std::getline(is, oneline);
+		std::getline(is, oneline);
+		std::stringstream ss(oneline);
+		int nodeNum = 0;
+		int faceNum = 0;
+		ss >> nodeNum >> faceNum;
+		this->v_point.resize(nodeNum);
+		this->v_facePointID.resize(faceNum);
+		for (int nodeID = 0; nodeID < nodeNum; nodeID++)
+		{
+			std::getline(is, oneline);
+			std::stringstream nodeData(oneline);
+			Vector node;
+			nodeData >> node.x_ >> node.y_ >> node.z_;
+			this->v_point[nodeID] = node;
+		}
+		for (int faceID = 0; faceID < faceNum; faceID++)
+		{
+			std::getline(is, oneline);
+			std::stringstream faceData(oneline);
+			int nodeNumInFace = 0;
+			faceData >> nodeNumInFace;
+			this->v_facePointID[faceID].resize(nodeNumInFace);
+			for (int nodeCount = 0;nodeCount < nodeNumInFace; nodeCount++)
+			{
+				int nodeID;
+				faceData >> nodeID;
+				this->v_facePointID[faceID][nodeCount] = nodeID;
+			}
 		}
 		return;
 	}
@@ -108,6 +155,7 @@ namespace MHT
 		if (0 == this->v_point.size() || 0 == this->v_facePointID.size())
 		{
 			this->volume = 0.0;
+			this->geometryCalculated = true;
 			return;
 		}
 		this->CalculateFaceGeometry();
@@ -529,7 +577,6 @@ namespace MHT
 			targetPoly.v_facePointID.push_back(newface);
 			newFacelist.push_back((int)targetPoly.v_facePointID.size() - 1);
 		}
-
 		return targetPoly;
 
 	}
@@ -548,6 +595,7 @@ namespace MHT
 		{
 			result = result.ClipByPlane(right.v_faceCenter[i], right.v_faceArea[i], cutfaceID);
 		}
+		result.CalculateVolume();
 		return result;
 	}
 

@@ -55,8 +55,9 @@ PolyhedronSet::PolyhedronSet
 	//normal direction of the tube axis
 	Vector axisNorm
 )
-	: MHT::Polyhedron()
+	: MHT::Polyhedron(OFFstream)
 {
+	/*
 	std::string oneline;
 	std::getline(OFFstream, oneline);
 	std::getline(OFFstream, oneline);
@@ -88,6 +89,8 @@ PolyhedronSet::PolyhedronSet
 			this->v_facePointID[faceID][nodeCount] = nodeID;
 		}
 	}
+	*/
+	int faceNum = this->v_facePointID.size();
 	this->v_curvedFace.resize(faceNum);
 	for (int i = 0; i < faceNum; i++)
 	{
@@ -103,7 +106,7 @@ PolyhedronSet::PolyhedronSet
 		this->axisNorm = Vector(0.0, 0.0, 1.0);
 	}
 	this->CalculateRadius();
-	this->MHT::Polyhedron::CalculateVolume();
+	//this->MHT::Polyhedron::CalculateVolume();
 }
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
@@ -400,7 +403,10 @@ Tensor RotateTensor(Vector& axis, Scalar theeta)
 void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 {
 	this->v_subPolyhedron.clear();
-	this->Polyhedron::CalculateVolume();
+	if (false == this->geometryCalculated)
+	{
+		std::cout << "we cannot clip the polyhedron into sub polyhedrons, the geometry is not calculated" << std::endl;
+	}
 	//calculating the bounds of clipping normals
 	Vector globalCenter = this->GetCenter();
 	Vector temp = globalCenter - this->axisCenter;
@@ -435,9 +441,11 @@ void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 	{
 		clipNorm = RMatrix*clipNorm;
 		MHT::Polyhedron sub = tempMOCPolygon.ClipByPlane(axisCenter, clipNorm);
+		sub.MHT::Polyhedron::CalculateVolume();
 		this->v_subPolyhedron.push_back(sub);
 		tempMOCPolygon = tempMOCPolygon.ClipByPlane(axisCenter, -clipNorm);
 	}
+	tempMOCPolygon.MHT::Polyhedron::CalculateVolume();
 	this->v_subPolyhedron.push_back((MHT::Polyhedron)tempMOCPolygon);
 	this->CalculateVolume();
 	this->clipped = true;
@@ -446,11 +454,13 @@ void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 
 void PolyhedronSet::CalculateVolume()
 {
-	this->volume = 0.0;
-	for (int i = 0; i < this->v_subPolyhedron.size(); i++)
+	if (this->clipped)
 	{
-		v_subPolyhedron[i].CalculateVolume();
-		this->volume += v_subPolyhedron[i].volume;
+		this->volume = 0.0;
+		for (int i = 0; i < this->v_subPolyhedron.size(); i++)
+		{
+			this->volume += v_subPolyhedron[i].GetVolume();
+		}
 	}
 	return;
 }
@@ -502,7 +512,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron
 	for (int i = 0; i < this->v_subPolyhedron.size(); i++)
 	{
 		MHT::Polyhedron temp = poly&&this->v_subPolyhedron[i];
-		temp.CalculateVolume();
 		volume += temp.GetVolume();
 	}
 	return volume;
@@ -516,7 +525,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 		if (false == another.clipped)
 		{
 			MHT::Polyhedron result = (*this) && another;
-			result.CalculateVolume();
 			totalVolume = result.GetVolume();
 		}
 		else
@@ -524,7 +532,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 			for (int i = 0;i < another.v_subPolyhedron.size();i++)
 			{
 				MHT::Polyhedron result = (*this) && another.v_subPolyhedron[i];
-				result.CalculateVolume();
 				totalVolume += result.GetVolume();
 			}
 		}
@@ -536,7 +543,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 			for (int i = 0; i < this->v_subPolyhedron.size(); i++)
 			{
 				MHT::Polyhedron result = this->v_subPolyhedron[i] && another;
-				result.CalculateVolume();
 				totalVolume += result.GetVolume();
 			}
 		}
@@ -547,7 +553,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 				for (int j = 0; j < another.v_subPolyhedron.size();j++)
 				{
 					MHT::Polyhedron result = this->v_subPolyhedron[i] && this->v_subPolyhedron[j];
-					result.CalculateVolume();
 					totalVolume += result.GetVolume();
 				}
 			}

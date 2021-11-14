@@ -46,6 +46,8 @@ namespace MHT
 
 		Polyhedron(ifstream& infile);
 
+		Polyhedron(std::istream& is);
+
 		void Display() const;
 
 		Scalar GetVolume() const;
@@ -77,6 +79,8 @@ namespace MHT
 	private:
 
 		void ReadGeometry(ifstream& infile);
+
+		void ReadGeometry(std::istream& is);
 
 		void CalculateFaceGeometry();
 
