@@ -55,35 +55,35 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	std::ifstream testOFFFile("poly.off");
-	std::istream& is = testOFFFile;
-	std::vector<int> v_curvedList;
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(1);
-	v_curvedList.push_back(0);
-	Vector center = Vector(0.63, 0.63, 0.0);
-	Vector norm = Vector(0.0, 0.0, 1.0);
-	PolyhedronSet testPolyhedronSet(is, v_curvedList, center, norm);
-	testOFFFile.close();
-	std::cout << "Before clipping, the volume is " << testPolyhedronSet.volume << std::endl;
-	testPolyhedronSet.ClipIntoSubPolygons(10.02);
-	std::cout << "After clipping, the volume is " << testPolyhedronSet.volume << std::endl;
-	std::ifstream anotherTestOFFFile("anotherPoly.off");
-	std::istream& anotherIss = anotherTestOFFFile;
-	PolyhedronSet anotherPolyhedron(anotherIss, v_curvedList, center, norm);
-	anotherTestOFFFile.close();
-	Scalar volume = testPolyhedronSet.IntersectionVolumeWithPolyhedronSet(anotherPolyhedron);
-	std::cout << "volume = " << volume << std::endl;
-	Scalar volume1 = anotherPolyhedron.IntersectionVolumeWithPolyhedronSet(testPolyhedronSet);
-	std::cout << "volume1 = " << volume1 << std::endl;
-	
-	return 1;
+	//std::ifstream testOFFFile("poly.off");
+	//std::istream& is = testOFFFile;
+	//std::vector<int> v_curvedList;
+	//v_curvedList.push_back(0);
+	//v_curvedList.push_back(0);
+	//v_curvedList.push_back(0);
+	//v_curvedList.push_back(0);
+	//v_curvedList.push_back(1);
+	//v_curvedList.push_back(0);
+	//Vector center = Vector(0.63, 0.63, 0.0);
+	//Vector norm = Vector(0.0, 0.0, 1.0);
+	//PolyhedronSet testPolyhedronSet(is, v_curvedList, center, norm);
+	//testOFFFile.close();
+	//std::cout << "Before clipping, the volume is " << testPolyhedronSet.volume << std::endl;
+	//testPolyhedronSet.ClipIntoSubPolygons(10.02);
+	//std::cout << "After clipping, the volume is " << testPolyhedronSet.volume << std::endl;
+	//std::ifstream anotherTestOFFFile("anotherPoly.off");
+	//std::istream& anotherIss = anotherTestOFFFile;
+	//PolyhedronSet anotherPolyhedron(anotherIss, v_curvedList, center, norm);
+	//anotherTestOFFFile.close();
+	//Scalar volume = testPolyhedronSet.IntersectionVolumeWithPolyhedronSet(anotherPolyhedron);
+	//std::cout << "volume = " << volume << std::endl;
+	//Scalar volume1 = anotherPolyhedron.IntersectionVolumeWithPolyhedronSet(testPolyhedronSet);
+	//std::cout << "volume1 = " << volume1 << std::endl;
+
+	//return 1;
 
 	time_t start, end;
-	MOCMesh mocMesh("pin_c1.apl");
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::LING_KERNEL);
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
@@ -100,7 +100,7 @@ int main()
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	CFDMesh cfdMesh("CFDCELLS0.txt");
+	CFDMesh cfdMesh("CFDCELLSCoarse.txt", MeshKernelType::LING_KERNEL);
 	
 	start = time(NULL);
 	//Solver solver(mocMesh, cfdMesh);

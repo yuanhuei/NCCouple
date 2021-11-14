@@ -185,15 +185,24 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 			auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[index]);
 			if (iter != materialNameTypeMap.end())
 				faceType = iter->second;
-			if(kernelType == MeshKernelType::CGAL_KERNEL)
+			if (kernelType == MeshKernelType::CGAL_KERNEL)
 				m_meshPointPtrVec[index] = std::make_shared<CGALMocMeshPoint>(
 					meshIDtemp_, fileNameTemperary[index], faceType, meshFaceTemperatureNameTemperary[index]);
 			else {
+				Vector point, norm;
+				for (auto& edge : allMeshFaces[i].faceEdges) {
+					if (edge.edgeType == 3) {
+						point = edge.arcCenter;
+						norm = edge.arcAxisDir;
+						break;
+					}
+				}
+				std::ifstream ifs(fileNameTemperary[index]);
 				m_meshPointPtrVec[index] = std::make_shared<LingMocMeshPoint>(
-					meshIDtemp_, fileNameTemperary[index], allEdges[i].edgeType, allMeshFaces[i].faceEdges[j], allEdges[i].arcAxisDir,
+					meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 					faceType, meshFaceTemperatureNameTemperary[index]);
 			}
-				
+
 
 			const char* removeFile = fileNameTemperary[index].data();
 			if (remove(removeFile)) //delete file
@@ -264,6 +273,8 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 		std::array<double, 3> beginPoint{ beginPoint_x, beginPoint_y, 0.0 };
 		std::array<double, 3> endPoint{ endPoint_x, endPoint_y, 0.0 };
 		Edge edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
+		edge0.arcCenter = Vector(0.0, 0.0, 0.0);
+		edge0.arcAxisDir = Vector(0.0, 0.0, 0.0);
 		allEdges.push_back(edge0);  //conserve edge object
 	}
 
@@ -312,10 +323,8 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 				AditionArcEdgeID++;//为了保存多出来的弧边的ID
 				edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary + EdgeNum + AditionArcEdgeID, edgeTypeTemperary);  //edge object
 			}
-			std::array<double, 3> arcCenter_{ Center_point_X, Center_point_Y, 0.0 };
-			std::array<double, 3> arcAxisDir_{ 0.0, 0.0, 1.0 };
-			edge0.arcCenter.push_back(arcCenter_);
-			edge0.arcAxisDir.push_back(arcAxisDir_);
+			edge0.arcCenter = Vector(Center_point_X, Center_point_Y, 0.0);
+			edge0.arcAxisDir = Vector(0.0, 0.0, 1.0);
 			allEdges.push_back(edge0);  //conserve edge object
 			Angle = Angle + fine_Delta_angle;
 		}
@@ -361,7 +370,6 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			cout << filename << endl;
 			filename = filename + ".off";
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
@@ -388,12 +396,19 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			for (int j = 0; j < pointNumPerMesh; j++)  //point id of bottom points;
 			{
 				outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
+				allMeshFaces[i].curveInfo.push_back(0);
+				allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+				allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
+
 			}
 			outFile << endl;
 			outFile << pointNumPerMesh << "\t";//number of top points
 			for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
 			{
 				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
+				allMeshFaces[i].curveInfo.push_back(0);
+				allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+				allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			}
 			outFile << endl;
 
@@ -408,6 +423,9 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					outFile << allMeshFaces[i].facePointID[j + 1] + pointNumPerMesh << "\t";
 					outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";
 					outFile << endl;
+					allMeshFaces[i].curveInfo.push_back(0);
+					allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+					allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 				}
 				else if (presentEdgeTpye == 2)//圆
 				{
@@ -426,6 +444,9 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					}
 					outFile << endl;
 					j = j + nFineMesh - 1;//跳过多加进来的弧边
+					allMeshFaces[i].curveInfo.push_back(1);
+					allMeshFaces[i].curveFaceCenter.push_back(allMeshFaces[i].faceEdges[j].arcCenter);
+					allMeshFaces[i].curveFaceAxisDir.push_back(allMeshFaces[i].faceEdges[j].arcAxisDir);
 				}
 			}
 			outFile.close();  //close iostream

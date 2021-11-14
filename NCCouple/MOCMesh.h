@@ -18,7 +18,7 @@ class MOCMeshPoint : virtual public MeshPoint
 {
 public:
 	MOCMeshPoint() = delete;
-	MOCMeshPoint(MaterialType materialType, std::string temperatureName):
+	MOCMeshPoint(MaterialType materialType, std::string temperatureName) :
 		m_materialType(materialType), m_temperatureName(temperatureName) {}
 
 public:
@@ -72,19 +72,19 @@ class CGALMocMeshPoint : public MOCMeshPoint, public CGALMeshPoint
 {
 public:
 	CGALMocMeshPoint(int pointID, std::string polyFileName, MaterialType materialType, std::string temperatureName) :
-		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), CGALMeshPoint(polyFileName){}
+		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), CGALMeshPoint(polyFileName) {}
 };
 
 class LingMocMeshPoint : public MOCMeshPoint, public LingMeshPoint
 {
 public:
 	LingMocMeshPoint(
-		int pointID, 
-		std::istream& isf, 
-		std::vector<int>& curveInfoVec, 
-		Vector axisPoint, 
-		Vector axisNorm, 
-		MaterialType materialType, 
+		int pointID,
+		std::istream& isf,
+		std::vector<int>& curveInfoVec,
+		Vector axisPoint,
+		Vector axisNorm,
+		MaterialType materialType,
 		std::string temperatureName) :
 		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), LingMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
@@ -96,8 +96,8 @@ public:
 	std::vector <int> sideMeshID;
 	int edgeID;
 	int edgeType;
-	std::vector <std::array<double, 3>> arcCenter;
-	std::vector <std::array<double, 3>> arcAxisDir;
+	Vector arcCenter;
+	Vector arcAxisDir;
 public:
 	Edge();
 	Edge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
@@ -109,6 +109,9 @@ public:
 	std::vector <std::array<double, 3>> facePointPosition;
 	std::vector <int> facePointID;
 	std::vector<Edge>faceEdges;
+	std::vector <int> curveInfo;
+	std::vector<Vector> curveFaceCenter;
+	std::vector<Vector> curveFaceAxisDir;
 	int faceID;
 	std::string faceType;
 	std::string face_temperatureName;

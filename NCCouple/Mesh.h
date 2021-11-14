@@ -95,12 +95,11 @@ class LingMeshPoint : virtual public MeshPoint
 {
 public:
 	double Volume() const override {
-		return m_poly.CalculateVolume();
+		return m_poly.GetVolume();
 	}
 	std::tuple<double, double, double> CentralCoordinate() const override {
-		return std::make_tuple(m_poly.center.x_,
-			m_poly.center.y_,
-			m_poly.center.z_);
+		Vector center = m_poly.GetCenter();
+		return std::make_tuple(center.x_, center.y_, center.z_);
 	}
 	double IntersectedVolume(const MeshPoint& other) const override;
 	int VerticesNum() const override {
@@ -114,7 +113,9 @@ public:
 protected:
 	LingMeshPoint() = delete;
 	LingMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :
-		m_poly(isf, curveInfoVec, axisPoint, axisNorm) {}
+		m_poly(isf, curveInfoVec, axisPoint, axisNorm) {
+		m_poly.CalculateVolume();
+	}
 	virtual ~LingMeshPoint() {}
 
 private:

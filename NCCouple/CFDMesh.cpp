@@ -44,7 +44,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			offFileLineVec.push_back(faceStr);
 		}
 
-		auto constructMeshFun = [this, i, offFileLineVec, &mtx, &currentConstructMeshNum, 
+		auto constructMeshFun = [this, i, offFileLineVec, &mtx, &currentConstructMeshNum, kernelType,
 			verticesNum, faceNum, cellNum]() {
 			std::string polyDesc = FormatStr("%d %d 0", verticesNum, faceNum);
 			std::stringstream ss;
@@ -53,7 +53,15 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			for (auto& lineStr : offFileLineVec)
 				ss << lineStr << std::endl;
 
-			m_meshPointPtrVec[i] = std::make_shared<CFDMeshPoint>(i, ss);
+			if (kernelType == MeshKernelType::CGAL_KERNEL)
+				m_meshPointPtrVec[i] = std::make_shared<CGALCFDMeshPoint>(i, ss);
+			else {
+				std::vector<int> curveInfo(faceNum, 0.0);
+				Vector point, norm;
+				m_meshPointPtrVec[i] = std::make_shared<LingCFDMeshPoint>(i, ss,
+					curveInfo, point, norm);
+			}
+				
 			std::lock_guard<std::mutex> lg(mtx);
 			currentConstructMeshNum++;
 			if(currentConstructMeshNum % (cellNum / 10) == 0)

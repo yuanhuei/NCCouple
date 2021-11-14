@@ -6,7 +6,7 @@
 class CFDMeshPoint : virtual public MeshPoint
 {
 public:
-	CFDMeshPoint() = default;
+	CFDMeshPoint() {};
 
 public:
 	void SetValue(double value, ValueType vt) override {
@@ -51,8 +51,8 @@ private:
 class CGALCFDMeshPoint : public CFDMeshPoint, public CGALMeshPoint
 {
 public:
-	CGALCFDMeshPoint(int pointID, std::string polyFileName) :
-		MeshPoint(pointID), CFDMeshPoint(), CGALMeshPoint(polyFileName) {}
+	CGALCFDMeshPoint(int pointID, std::istream& isf) :
+		MeshPoint(pointID), CFDMeshPoint(), CGALMeshPoint(isf) {}
 };
 
 class LingCFDMeshPoint : public CFDMeshPoint, public LingMeshPoint
