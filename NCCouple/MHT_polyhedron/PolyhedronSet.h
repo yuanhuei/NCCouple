@@ -16,9 +16,7 @@ public:
 	std::vector<MHT::Polyhedron> v_subPolyhedron;
 public:
 	PolyhedronSet();
-	//in this constructor, the polyhedron not be clipped
-	PolyhedronSet(std::istream&);
-	//in this constructor, the polyhedron will be clipped automatically
+
 	PolyhedronSet(std::istream&,std::vector<int>&, Vector, Vector);
 
 	PolyhedronSet(string);

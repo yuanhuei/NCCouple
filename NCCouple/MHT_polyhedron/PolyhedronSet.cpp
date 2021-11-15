@@ -44,19 +44,6 @@ PolyhedronSet::PolyhedronSet(std::string filename)
 	return;
 }
 
-//in this constructor, the polyhedron will not be clipped
-PolyhedronSet::PolyhedronSet
-(
-	//OFF stream describing the entire polyhedron
-	std::istream& OFFstream
-)
-	: MHT::Polyhedron(OFFstream)
-{
-	int faceNum = this->v_facePointID.size();
-	this->v_curvedFace.resize(faceNum);
-}
-
-//in this constructor, the polyhedron will be clipped automatically
 PolyhedronSet::PolyhedronSet
 (
 	//OFF stream describing the entire polyhedron
@@ -86,7 +73,30 @@ PolyhedronSet::PolyhedronSet
 		this->axisNorm = Vector(0.0, 0.0, 1.0);
 	}
 	this->CalculateRadius();
-	this->ClipIntoSubPolygons(maxDegree);
+	//see whether or not the polyhedron has curved faces
+	bool havingCurvedFace = false;
+	for (int i = 0;i < this->v_curvedFace.size();i++)
+	{
+		if (1 == this->v_curvedFace[i].first)
+		{
+			havingCurvedFace = true;
+			break;
+		}
+	}
+	//if having curved faces, the polyhedron should be clipped into sub-polyhedrons
+	if (havingCurvedFace)
+	{
+		this->ClipIntoSubPolygons(maxDegree);
+	}
+	int curvedCount = 0;
+	for (int i = 0;i < this->v_curvedFace.size();i++)
+	{
+		curvedCount += this->v_curvedFace[i].first;
+	}
+	std::cout << "this cell has " << curvedCount << " curved faces" << std::endl;
+	std::cout << "this cell has " << v_subPolyhedron.size() << " subPolyhedrons" << std::endl;
+	this->WriteTecplotFile("clippedMOC.plt");
+	system("pause");
 }
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
@@ -538,47 +548,60 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 			}
 		}
 	}
+	if (totalVolume > SMALL)
+	{
+		another.WriteTecplotFile("thatCell.plt");
+		system("pause");
+	}
 	return totalVolume;
 }
 
 void PolyhedronSet::WriteTecplotFile(std::string filename) const
 {
-	ofstream outFile(filename.c_str());
-	outFile << "TITLE =\"" << "polyhedron" << "\"" << endl;
-	outFile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
-	for (int polyID = 0; polyID < this->v_subPolyhedron.size(); polyID++)
+	if (false == this->clipped)
 	{
-		int nCount(0);
-		int faceNum = (int)this->v_subPolyhedron[polyID].v_facePointID.size();
-		for (int i = 0; i < faceNum; i++)
+		this->MHT::Polyhedron::WriteTecplotFile(filename);
+		return;
+	}
+	else
+	{
+		ofstream outFile(filename.c_str());
+		outFile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+		outFile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+		for (int polyID = 0; polyID < this->v_subPolyhedron.size(); polyID++)
 		{
-			nCount += (int)this->v_subPolyhedron[polyID].v_facePointID[i].size();
-		}
-		outFile << "ZONE T = " << "\"" << "polyhedron" << "\",";
-		outFile << " DATAPACKING = POINT, N = " << v_subPolyhedron[polyID].v_point.size();
-		outFile << ", E = " << nCount << ", ZONETYPE = FELINESEG" << std::endl;
-
-		for (unsigned int i = 0; i < v_subPolyhedron[polyID].v_point.size(); i++)
-		{
-			Vector vertice = v_subPolyhedron[polyID].v_point[i];
-			outFile << setprecision(8) << setiosflags(ios::scientific) << vertice.x_ << " " << vertice.y_ << " " << vertice.z_ << endl;
-		}
-
-		for (int i = 0; i < faceNum; i++)
-		{
-			for (int n = 0; n < (int)this->v_subPolyhedron[polyID].v_facePointID[i].size(); n++)
+			int nCount(0);
+			int faceNum = (int)this->v_subPolyhedron[polyID].v_facePointID.size();
+			for (int i = 0; i < faceNum; i++)
 			{
-				if (n == (int)this->v_subPolyhedron[polyID].v_facePointID[i].size() - 1)
+				nCount += (int)this->v_subPolyhedron[polyID].v_facePointID[i].size();
+			}
+			outFile << "ZONE T = " << "\"" << "polyhedron" << "\",";
+			outFile << " DATAPACKING = POINT, N = " << v_subPolyhedron[polyID].v_point.size();
+			outFile << ", E = " << nCount << ", ZONETYPE = FELINESEG" << std::endl;
+
+			for (unsigned int i = 0; i < v_subPolyhedron[polyID].v_point.size(); i++)
+			{
+				Vector vertice = v_subPolyhedron[polyID].v_point[i];
+				outFile << setprecision(8) << setiosflags(ios::scientific) << vertice.x_ << " " << vertice.y_ << " " << vertice.z_ << endl;
+			}
+
+			for (int i = 0; i < faceNum; i++)
+			{
+				for (int n = 0; n < (int)this->v_subPolyhedron[polyID].v_facePointID[i].size(); n++)
 				{
-					outFile << v_subPolyhedron[polyID].v_facePointID[i][n] + 1 << "\t" << v_subPolyhedron[polyID].v_facePointID[i][0] + 1 << std::endl;
-				}
-				else
-				{
-					outFile << v_subPolyhedron[polyID].v_facePointID[i][n] + 1 << "\t" << v_subPolyhedron[polyID].v_facePointID[i][n + 1] + 1 << std::endl;
+					if (n == (int)this->v_subPolyhedron[polyID].v_facePointID[i].size() - 1)
+					{
+						outFile << v_subPolyhedron[polyID].v_facePointID[i][n] + 1 << "\t" << v_subPolyhedron[polyID].v_facePointID[i][0] + 1 << std::endl;
+					}
+					else
+					{
+						outFile << v_subPolyhedron[polyID].v_facePointID[i][n] + 1 << "\t" << v_subPolyhedron[polyID].v_facePointID[i][n + 1] + 1 << std::endl;
+					}
 				}
 			}
 		}
+		outFile.close();
+		return;
 	}
-	outFile.close();
-	return;
 }
