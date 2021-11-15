@@ -55,16 +55,16 @@ public:
 		MeshPoint(pointID), CFDMeshPoint(), CGALMeshPoint(isf) {}
 };
 
-class LingCFDMeshPoint : public CFDMeshPoint, public LingMeshPoint
+class MHTCFDMeshPoint : public CFDMeshPoint, public MHTMeshPoint
 {
 public:
-	LingCFDMeshPoint(
+	MHTCFDMeshPoint(
 		int pointID,
 		std::istream& isf,
 		std::vector<int>& curveInfoVec,
 		Vector axisPoint,
 		Vector axisNorm) :
-		MeshPoint(pointID), CFDMeshPoint(), LingMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
+		MeshPoint(pointID), CFDMeshPoint(), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
 class CFDMesh : public Mesh

@@ -88,15 +88,6 @@ PolyhedronSet::PolyhedronSet
 	{
 		this->ClipIntoSubPolygons(maxDegree);
 	}
-	int curvedCount = 0;
-	for (int i = 0;i < this->v_curvedFace.size();i++)
-	{
-		curvedCount += this->v_curvedFace[i].first;
-	}
-	std::cout << "this cell has " << curvedCount << " curved faces" << std::endl;
-	std::cout << "this cell has " << v_subPolyhedron.size() << " subPolyhedrons" << std::endl;
-	this->WriteTecplotFile("clippedMOC.plt");
-	system("pause");
 }
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
@@ -408,6 +399,12 @@ void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 	for (int i = 0; i < this->v_point.size(); i++)
 	{
 		Vector temp = this->v_point[i] - this->axisCenter;
+		Vector radialVector = temp - (temp & axisNorm) * axisNorm;
+		//a special case when the point is located on the axis, and it should be skipped
+		if (radialVector.Mag() < 10.0 * SMALL)
+		{
+			continue;
+		}
 		Vector nCandidate = (temp - (temp&axisNorm)*axisNorm).GetNormal();
 		Scalar valueToCompare = (nCenter^nCandidate)&axisNorm;
 		if (valueToCompare > valueMax)
@@ -547,11 +544,6 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 				}
 			}
 		}
-	}
-	if (totalVolume > SMALL)
-	{
-		another.WriteTecplotFile("thatCell.plt");
-		system("pause");
 	}
 	return totalVolume;
 }

@@ -39,8 +39,8 @@ double CGALMeshPoint::IntersectedVolume(const MeshPoint& other) const{
 	return 0.0;
 }
 
-double LingMeshPoint::IntersectedVolume(const MeshPoint& other) const {
-	const LingMeshPoint* p_other = dynamic_cast<const LingMeshPoint*>(&other);
+double MHTMeshPoint::IntersectedVolume(const MeshPoint& other) const {
+	const MHTMeshPoint* p_other = dynamic_cast<const MHTMeshPoint*>(&other);
 	if (!p_other)
 		throw std::runtime_error("the type of input MeshPoint is not same with current MeshPoint!");
 

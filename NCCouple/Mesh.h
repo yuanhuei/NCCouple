@@ -15,7 +15,7 @@ enum class ValueType
 enum class MeshKernelType
 {
 	CGAL_KERNEL,
-	LING_KERNEL
+	MHT_KERNEL
 };
 
 class MeshPoint
@@ -91,7 +91,7 @@ private:
 	std::vector<std::tuple<double, double, double>> m_verticesVec;
 };
 
-class LingMeshPoint : virtual public MeshPoint
+class MHTMeshPoint : virtual public MeshPoint
 {
 public:
 	double Volume() const override {
@@ -114,12 +114,12 @@ public:
 	}
 
 protected:
-	LingMeshPoint() = delete;
-	LingMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :
+	MHTMeshPoint() = delete;
+	MHTMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :
 		m_poly(isf, curveInfoVec, axisPoint, axisNorm) {
 		m_poly.CalculateVolume();
 	}
-	virtual ~LingMeshPoint() {}
+	virtual ~MHTMeshPoint() {}
 
 private:
 	PolyhedronSet m_poly;

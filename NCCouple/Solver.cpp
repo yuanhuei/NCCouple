@@ -18,10 +18,10 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
 				/*
-				const LingMeshPoint* p_lingMP = dynamic_cast<const LingMeshPoint*>(&mocPoint);
-				if (p_lingMP)
+				const MHTMeshPoint* p_MHTMP = dynamic_cast<const MHTMeshPoint*>(&mocPoint);
+				if (p_MHTMP)
 				{
-					p_lingMP->WriteToTecplotFile("myFileName.plt");
+					p_MHTMP->WriteToTecplotFile("myFileName.plt");
 					system("myFileName.plt");
 				}
 				*/

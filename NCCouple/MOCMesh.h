@@ -75,10 +75,10 @@ public:
 		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), CGALMeshPoint(polyFileName) {}
 };
 
-class LingMocMeshPoint : public MOCMeshPoint, public LingMeshPoint
+class MHTMocMeshPoint : public MOCMeshPoint, public MHTMeshPoint
 {
 public:
-	LingMocMeshPoint(
+	MHTMocMeshPoint(
 		int pointID,
 		std::istream& isf,
 		std::vector<int>& curveInfoVec,
@@ -86,7 +86,7 @@ public:
 		Vector axisNorm,
 		MaterialType materialType,
 		std::string temperatureName) :
-		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), LingMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
+		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
 class Edge

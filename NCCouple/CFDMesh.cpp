@@ -58,7 +58,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			else {
 				std::vector<int> curveInfo(faceNum, 0.0);
 				Vector point, norm;
-				m_meshPointPtrVec[i] = std::make_shared<LingCFDMeshPoint>(i, ss,
+				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss,
 					curveInfo, point, norm);
 			}
 				

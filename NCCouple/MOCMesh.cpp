@@ -198,7 +198,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 					}
 				}
 				std::ifstream ifs(fileNameTemperary[index]);
-				m_meshPointPtrVec[index] = std::make_shared<LingMocMeshPoint>(
+				m_meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
 					meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 					faceType, meshFaceTemperatureNameTemperary[index]);
 			}
