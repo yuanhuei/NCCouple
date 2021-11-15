@@ -18,6 +18,10 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
 
+				//const LingMeshPoint* p_lingMP = dynamic_cast<const LingMeshPoint*>(&mocPoint);
+				//if (p_lingMP)
+				//	p_lingMP->WriteToTecplotFile("myFileName");
+
 				double cfdPointVolume = cfdPoint.Volume();
 				double mocPointVolume = mocPoint.Volume();
 				double intersectedVolume = 0.0;

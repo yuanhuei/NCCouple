@@ -109,6 +109,9 @@ public:
 		Vector vertice = m_poly.v_point.at(verticeID);
 		return std::make_tuple(vertice.x_, vertice.y_, vertice.z_);
 	}
+	void WriteToTecplotFile(std::string fileName) const {
+		m_poly.WriteTecplotFile(fileName);
+	}
 
 protected:
 	LingMeshPoint() = delete;
