@@ -396,20 +396,19 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			for (int j = 0; j < pointNumPerMesh; j++)  //point id of bottom points;
 			{
 				outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
-				allMeshFaces[i].curveInfo.push_back(0);
-				allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
-				allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
-
 			}
+			allMeshFaces[i].curveInfo.push_back(0);
+			allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+			allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			outFile << endl;
 			outFile << pointNumPerMesh << "\t";//number of top points
 			for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
 			{
 				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
-				allMeshFaces[i].curveInfo.push_back(0);
-				allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
-				allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			}
+			allMeshFaces[i].curveInfo.push_back(0);
+			allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+			allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			outFile << endl;
 
 			for (int j = 0; j < pointNumPerMesh; j++)  //side faces；
