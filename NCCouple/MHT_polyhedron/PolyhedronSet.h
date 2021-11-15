@@ -4,7 +4,7 @@
 #define _PolyhedronSet_
 
 #include "Polyhedron.h"
-#define maxDegree 20.01
+#define maxDegree 10.01
 
 class PolyhedronSet :public MHT::Polyhedron
 {
@@ -16,7 +16,9 @@ public:
 	std::vector<MHT::Polyhedron> v_subPolyhedron;
 public:
 	PolyhedronSet();
-
+	//in this constructor, the polyhedron not be clipped
+	PolyhedronSet(std::istream&);
+	//in this constructor, the polyhedron will be clipped automatically
 	PolyhedronSet(std::istream&,std::vector<int>&, Vector, Vector);
 
 	PolyhedronSet(string);

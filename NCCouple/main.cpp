@@ -55,7 +55,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	/*
+	
 	std::ifstream testOFFFile("poly.off");
 	std::istream& is = testOFFFile;
 	std::vector<int> v_curvedList;
@@ -69,20 +69,20 @@ int main()
 	Vector norm = Vector(0.0, 0.0, 1.0);
 	PolyhedronSet testPolyhedronSet(is, v_curvedList, center, norm);
 	testOFFFile.close();
-	std::cout << "Before clipping, the volume is " << testPolyhedronSet.volume << std::endl;
-	testPolyhedronSet.ClipIntoSubPolygons(10.02);
+	testPolyhedronSet.WriteTecplotFile("polyset.plt");
+	system("polyset.plt");
 	std::cout << "After clipping, the volume is " << testPolyhedronSet.volume << std::endl;
 	std::ifstream anotherTestOFFFile("anotherPoly.off");
 	std::istream& anotherIss = anotherTestOFFFile;
-	PolyhedronSet anotherPolyhedron(anotherIss, v_curvedList, center, norm);
+	PolyhedronSet anotherPolyhedron(anotherIss);
 	anotherTestOFFFile.close();
 	Scalar volume = testPolyhedronSet.IntersectionVolumeWithPolyhedronSet(anotherPolyhedron);
 	std::cout << "volume = " << volume << std::endl;
 	Scalar volume1 = anotherPolyhedron.IntersectionVolumeWithPolyhedronSet(testPolyhedronSet);
 	std::cout << "volume1 = " << volume1 << std::endl;
 
-	*/
-	//return 1;
+	return 1;
+	/*
 	time_t start, end;
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::LING_KERNEL);
 	MOCIndex mocIndex(mocMesh);
@@ -115,4 +115,5 @@ int main()
 	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
 	return 0;
+	*/
 }

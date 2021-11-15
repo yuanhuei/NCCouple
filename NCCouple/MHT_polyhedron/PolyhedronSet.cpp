@@ -44,6 +44,19 @@ PolyhedronSet::PolyhedronSet(std::string filename)
 	return;
 }
 
+//in this constructor, the polyhedron will not be clipped
+PolyhedronSet::PolyhedronSet
+(
+	//OFF stream describing the entire polyhedron
+	std::istream& OFFstream
+)
+	: MHT::Polyhedron(OFFstream)
+{
+	int faceNum = this->v_facePointID.size();
+	this->v_curvedFace.resize(faceNum);
+}
+
+//in this constructor, the polyhedron will be clipped automatically
 PolyhedronSet::PolyhedronSet
 (
 	//OFF stream describing the entire polyhedron
@@ -57,39 +70,6 @@ PolyhedronSet::PolyhedronSet
 )
 	: MHT::Polyhedron(OFFstream)
 {
-	/*
-	std::string oneline;
-	std::getline(OFFstream, oneline);
-	std::getline(OFFstream, oneline);
-	std::stringstream ss(oneline);
-	int nodeNum = 0;
-	int faceNum = 0;
-	ss >> nodeNum >> faceNum;
-	this->v_point.resize(nodeNum);
-	this->v_facePointID.resize(faceNum);
-	for (int nodeID = 0; nodeID < nodeNum; nodeID++)
-	{
-		std::getline(OFFstream, oneline);
-		std::stringstream nodeData(oneline);
-		Vector node;
-		nodeData >> node.x_ >> node.y_ >> node.z_;
-		this->v_point[nodeID] = node;
-	}
-	for (int faceID = 0; faceID < faceNum; faceID++)
-	{
-		std::getline(OFFstream, oneline);
-		std::stringstream faceData(oneline);
-		int nodeNumInFace = 0;
-		faceData >> nodeNumInFace;
-		this->v_facePointID[faceID].resize(nodeNumInFace);
-		for (int nodeCount = 0;nodeCount < nodeNumInFace; nodeCount++)
-		{
-			int nodeID;
-			faceData >> nodeID;
-			this->v_facePointID[faceID][nodeCount] = nodeID;
-		}
-	}
-	*/
 	int faceNum = this->v_facePointID.size();
 	this->v_curvedFace.resize(faceNum);
 	for (int i = 0; i < faceNum; i++)
@@ -106,7 +86,7 @@ PolyhedronSet::PolyhedronSet
 		this->axisNorm = Vector(0.0, 0.0, 1.0);
 	}
 	this->CalculateRadius();
-	//this->MHT::Polyhedron::CalculateVolume();
+	this->ClipIntoSubPolygons(maxDegree);
 }
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
