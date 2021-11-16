@@ -4,7 +4,7 @@
 #include "Mesh.h"
 #include <algorithm>
 #include <array>
-#define nFineMesh 4
+//#define nFineMesh 4
 
 enum class MaterialType {
 	H2O,
@@ -14,12 +14,12 @@ enum class MaterialType {
 	UNKNOWN
 };
 
-class MOCMeshPoint : public MeshPoint
+class MOCMeshPoint : virtual public MeshPoint
 {
 public:
 	MOCMeshPoint() = delete;
-	MOCMeshPoint(int pointID, std::string polyFileName, MaterialType materialType, std::string temperatureName)
-		:MeshPoint(pointID, polyFileName), m_materialType(materialType), m_temperatureName(temperatureName) {}
+	MOCMeshPoint(MaterialType materialType, std::string temperatureName) :
+		m_materialType(materialType), m_temperatureName(temperatureName) {}
 
 public:
 	void SetValue(double value, ValueType vt) override {
@@ -68,6 +68,27 @@ private:
 	double m_temperature = 0.0;
 };
 
+class CGALMocMeshPoint : public MOCMeshPoint, public CGALMeshPoint
+{
+public:
+	CGALMocMeshPoint(int pointID, std::string polyFileName, MaterialType materialType, std::string temperatureName) :
+		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), CGALMeshPoint(polyFileName) {}
+};
+
+class MHTMocMeshPoint : public MOCMeshPoint, public MHTMeshPoint
+{
+public:
+	MHTMocMeshPoint(
+		int pointID,
+		std::istream& isf,
+		std::vector<int>& curveInfoVec,
+		Vector axisPoint,
+		Vector axisNorm,
+		MaterialType materialType,
+		std::string temperatureName) :
+		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
+};
+
 class Edge
 {
 public:
@@ -75,6 +96,8 @@ public:
 	std::vector <int> sideMeshID;
 	int edgeID;
 	int edgeType;
+	Vector arcCenter;
+	Vector arcAxisDir;
 public:
 	Edge();
 	Edge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
@@ -83,9 +106,12 @@ public:
 class Surface
 {
 public:
-	std::vector <std::array<double, 3>> facePointPosition; 
+	std::vector <std::array<double, 3>> facePointPosition;
 	std::vector <int> facePointID;
 	std::vector<Edge>faceEdges;
+	std::vector <int> curveInfo;
+	std::vector<Vector> curveFaceCenter;
+	std::vector<Vector> curveFaceAxisDir;
 	int faceID;
 	std::string faceType;
 	std::string face_temperatureName;
@@ -99,17 +125,17 @@ class MOCMesh : public Mesh
 {
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName);
-	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer);   //output 3D mesh
+	MOCMesh(std::string meshFileName, MeshKernelType kernelType);
+	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
-	//void reOrganaziIndex();
+	void reOrganaziIndex();
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void MOCMesh::setAxialInformation(std::string line); //set mesh information
-	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges);//set edge objects
+	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
 	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
 
 private:
@@ -123,6 +149,6 @@ private:
 	int axialNum;
 	std::vector<std::pair<int, double>> axialInformation;
 };
-//int CalMeshIndex(double x, double y);
-//int CalMeshIndexbyCFD(double x, double y);
+int CalMeshIndex(double x, double y);
+int CalMeshIndexbyCFD(double x, double y);
 #endif

@@ -2,6 +2,7 @@
 #define MESHPOINT_HEADER
 
 #include "CAGLWraper.h"
+#include "MHT_polyhedron/PolyhedronSet.h"
 #include <tuple>
 
 enum class ValueType
@@ -11,30 +12,25 @@ enum class ValueType
 	DENSITY
 };
 
+enum class MeshKernelType
+{
+	CGAL_KERNEL,
+	MHT_KERNEL
+};
+
 class MeshPoint
-{	
+{
 public:
-	double Volume() const {
-		return m_volume;
-	}
 	int PointID() const {
 		return m_pointID;
 	}
-	std::tuple<double, double, double> CentralCoordinate() const {
-		return std::make_tuple(CGAL::to_double(m_centerPoint.x()),
-			CGAL::to_double(m_centerPoint.y()),
-			CGAL::to_double(m_centerPoint.z()));
-	}
-	double IntersectedVolume(const MeshPoint& other) const;
-	int VerticesNum() const {
-		return m_verticesVec.size();
-	}
-	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const {
-		return m_verticesVec.at(verticeID);
-	}
-	void WriteToOFF(std::ostream& out) const {
-		CGAL::write_off(out, m_poly);
-	}
+
+public:
+	virtual double Volume() const = 0;
+	virtual std::tuple<double, double, double> CentralCoordinate() const = 0;
+	virtual double IntersectedVolume(const MeshPoint& other) const = 0;
+	virtual int VerticesNum() const = 0;
+	virtual std::tuple<double, double, double> VerticeCoordinate(int verticeID) const = 0;
 
 public:
 	virtual void SetValue(double value, ValueType vt) = 0;
@@ -42,27 +38,91 @@ public:
 
 protected:
 	MeshPoint() = delete;
-	MeshPoint(int pointID, std::string polyFileName) : m_pointID(pointID) {
+	MeshPoint(int pointID) : m_pointID(pointID) {}
+	virtual ~MeshPoint() {}
+
+private:
+	int m_pointID = 0;
+};
+
+class CGALMeshPoint :virtual public MeshPoint
+{	
+public:
+	double Volume() const override {
+		return m_volume;
+	}
+	std::tuple<double, double, double> CentralCoordinate() const override {
+		return std::make_tuple(CGAL::to_double(m_centerPoint.x()),
+			CGAL::to_double(m_centerPoint.y()),
+			CGAL::to_double(m_centerPoint.z()));
+	}
+	double IntersectedVolume(const MeshPoint& other) const override;
+	int VerticesNum() const override {
+		return m_verticesVec.size();
+	}
+	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const override {
+		return m_verticesVec.at(verticeID);
+	}
+	void WriteToOFF(std::ostream& out) const {
+		CGAL::write_off(out, m_poly);
+	}
+
+protected:
+	CGALMeshPoint() = delete;
+	CGALMeshPoint(std::string polyFileName) {
 		std::ifstream ifs(polyFileName);
 		ifs >> m_poly;
 		ifs.close();
 		Init();
 	}
-	MeshPoint(int pointID, std::istream& isf) : m_pointID(pointID) {
+	CGALMeshPoint(std::istream& isf) {
 		isf >> m_poly;
 		Init();
 	}
-	virtual ~MeshPoint() {}
+	virtual ~CGALMeshPoint() {}
 
 private:
 	void Init();
 
 private:
-	int m_pointID = 0;
 	Polyhedron m_poly;
 	double m_volume = 0.0;
 	Kernel::Point_3 m_centerPoint;
 	std::vector<std::tuple<double, double, double>> m_verticesVec;
+};
+
+class MHTMeshPoint : virtual public MeshPoint
+{
+public:
+	double Volume() const override {
+		return m_poly.GetVolume();
+	}
+	std::tuple<double, double, double> CentralCoordinate() const override {
+		Vector center = m_poly.GetCenter();
+		return std::make_tuple(center.x_, center.y_, center.z_);
+	}
+	double IntersectedVolume(const MeshPoint& other) const override;
+	int VerticesNum() const override {
+		return m_poly.v_point.size();
+	}
+	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const override {
+		Vector vertice = m_poly.v_point.at(verticeID);
+		return std::make_tuple(vertice.x_, vertice.y_, vertice.z_);
+	}
+	void WriteToTecplotFile(std::string fileName) const {
+		m_poly.WriteTecplotFile(fileName);
+	}
+
+protected:
+	MHTMeshPoint() = delete;
+	MHTMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :
+		m_poly(isf, curveInfoVec, axisPoint, axisNorm) {
+		m_poly.CalculateVolume();
+	}
+	virtual ~MHTMeshPoint() {}
+
+private:
+	PolyhedronSet m_poly;
 };
 
 class Mesh

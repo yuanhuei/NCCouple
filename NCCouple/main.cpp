@@ -5,6 +5,7 @@
 #include "CFDMesh.h"
 #include "Solver.h"
 #include "Logger.h"
+#include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
 
 void InitCFDMeshValue(const Mesh& cfdMesh) 
@@ -55,8 +56,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 int main()
 {
 	time_t start, end;
-
-	MOCMesh mocMesh("pin_c1.apl");
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
@@ -73,7 +73,7 @@ int main()
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	CFDMesh cfdMesh("CFDCELLSCoarse.txt");// ("CFDCELLS0.txt");
+	CFDMesh cfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
 	
 	start = time(NULL);
 	//Solver solver(mocMesh, cfdMesh);
