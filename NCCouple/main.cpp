@@ -8,6 +8,10 @@
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
 
+#include <stdio.h>
+#include <string.h>
+#include <mpi.h>
+
 void InitCFDMeshValue(const Mesh& cfdMesh) 
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
@@ -53,10 +57,10 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 	return;
 }
 
-int main()
+void  caculate(std::string strInputMOCfile, std::string strInputCFDfile, std::string strOutputFile)
 {
 	time_t start, end;
-	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh(strInputMOCfile, MeshKernelType::MHT_KERNEL);//"pin_c1.apl"
 	MOCIndex mocIndex(mocMesh);
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
@@ -73,7 +77,7 @@ int main()
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	CFDMesh cfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
+	CFDMesh cfdMesh(strInputCFDfile, MeshKernelType::MHT_KERNEL);//"CFDCELLS0.txt"
 	
 	start = time(NULL);
 	//Solver solver(mocMesh, cfdMesh);
@@ -83,8 +87,40 @@ int main()
 	InitCFDMeshValue(cfdMesh);
 	solver.CFDtoMOCinterception(ValueType::DENSITY);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
-	mocMesh.OutputStatus("pin_c1.inp");
+	mocMesh.OutputStatus(strOutputFile);// "pin_c1.inp"
 	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
-	return 0;
 }
+
+
+int main(int argc, char* argv[])
+{
+	int numprocs, myid, source;
+	MPI_Status status;
+	char message[100];
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+	if (myid != 0) {  //非0号进程发送消息
+		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
+		strInputMOCfile = "pin_c1.apl";
+		strInputCFDfile = "CFDCELLS0.txt";
+		strOutputFile = "pin_c1.inp_"+std::to_string(myid);
+		caculate(strInputMOCfile,strInputCFDfile,strOutputFile);
+
+		std::string strMessage = "Process "+std::to_string(myid) + " caculation finished";
+		strcpy(message, strMessage.data());// "caclulation finished!");
+		MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
+			MPI_COMM_WORLD);
+	}
+	else {   // myid == 0，即0号进程接收消息
+		for (source = 1; source < numprocs; source++) {
+			MPI_Recv(message, 100, MPI_CHAR, source, 99,
+				MPI_COMM_WORLD, &status);
+			//printf("接收到第%d号进程发送的消息：%s\n", source, message);
+			Logger::LogInfo(FormatStr("0号进程接收到第%d号进程发送的消息：%s\n", source, message));
+		}
+	}
+	MPI_Finalize();
+	return 0;
+} /* end main */
