@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 			MPI_Recv(message, 100, MPI_CHAR, source, 99,
 				MPI_COMM_WORLD, &status);
 			//printf("接收到第%d号进程发送的消息：%s\n", source, message);
-			Logger::LogInfo(FormatStr("0号进程接收到第%d号进程发送的消息：%s\n", source, message));
+			Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
 		}
 	}
 	MPI_Finalize();
