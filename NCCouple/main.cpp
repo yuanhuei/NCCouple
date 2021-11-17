@@ -12,6 +12,12 @@
 #include <string.h>
 #include <mpi.h>
 
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 int g_iProcessID=0;
 void InitCFDMeshValue(const Mesh& cfdMesh) 
 {
@@ -60,6 +66,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 void  caculate(std::string strInputMOCfile, std::string strInputCFDfile, std::string strOutputFile)
 {
+	g_iProcessID = (int)getpid();//获取进程ID，在输出临时文件时加到文件名里面，不然多进程跑起来会出错
 	time_t start, end;
 	MOCMesh mocMesh(strInputMOCfile, MeshKernelType::MHT_KERNEL);//"pin_c1.apl"
 	MOCIndex mocIndex(mocMesh);
@@ -96,13 +103,15 @@ void  caculate(std::string strInputMOCfile, std::string strInputCFDfile, std::st
 
 int main(int argc, char* argv[])
 {
+	caculate("pin_c1.apl", "CFDCELLS0.txt", "pin_c1.inp");
+	return 0;
 	int numprocs, myid, source;
 	MPI_Status status;
 	char message[100];
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-	g_iProcessID = myid;
+	
 	if (myid != 0) {  //非0号进程发送消息
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
 		strInputMOCfile = "pin_c1.apl";

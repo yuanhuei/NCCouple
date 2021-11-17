@@ -95,6 +95,9 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 
+		if (iMocIndex == 104)
+			std::cout << "there is cfd in moc 104 " << std::endl;
+
 		double cfdPointVolume = cfdPoint.Volume();
 		double mocPointVolume = mocPoint.Volume();
 		double intersectedVolume = 0.0;
@@ -133,6 +136,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 				for (int jj = 0;jj < mocIndex.v_MOCID[ii].size();jj++)
 				{
 					int j = mocIndex.v_MOCID[ii][jj][kk];
+
 					auto fun = [this, &mtx, CFDID, j]()
 					{
 						const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
@@ -165,9 +169,36 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", CFDID * 100.0 / cfdMesh.GetMeshPointNum()));
 		}
 	}
+	//计算被插值权系数总和的最大最小值
+	double value_min = 1, value_max = 0;
+	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
+		double value = 0.0;
+		for (auto& iter : m_MOC_CFD_Map[j]) {
+			value += iter.second;
+		}
+		if(value!=0)
+			value_min = min(value_min, value);
+		value_max = max(value_max, value);
+		if (value == 0)
+			Logger::LogInfo(FormatStr("是0的ID %d", j));
+	}
+	Logger::LogInfo(FormatStr("被插值MOC网格插值权系数总和最小值是:%.6lf,最大值是:%6lf\n", value_min, value_max));
 
-	/*
+	value_min = 1;
+	value_max = 0;
+	for (int j = 0; j < cfdMesh.GetMeshPointNum(); j++) {
+		double value = 0.0;
+		for (auto& iter : m_CFD_MOC_Map[j]) {
+			value += iter.second;
+		}
+		if(value!=0)
+			value_min = min(value_min, value);
+		value_max = max(value_max, value);
+	}
+	Logger::LogInfo(FormatStr("被插值CFD网格插值权系数总和最小值是:%.6lf,最大值是:%6lf\n", value_min, value_max));
+
 	//指定被插值MOC编号，输出MOC网格权系数,
+	/*
 	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
 		if (m_mocMeshPtr->GetMeshPointPtr(j)->PointID() == 3) {
 			double value = 0.0;
@@ -193,6 +224,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 		}
 	}
 	*/
+	
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
 
 }
