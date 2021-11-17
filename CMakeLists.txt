@@ -7,7 +7,7 @@ project (${PROJECT_NAME})
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-#add_definitions(_D_MPICH_SKIP_MPICXX)
+
 
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
@@ -22,6 +22,7 @@ if(WIN32)
 	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10" "msmpi")
 	set(INCLUDE_DIR ${INCLUDE_DIR} ./tools/mpich)
 elseif(UNIX)
+	#设置MPI的编译器,不用MPI的话需要去掉
 	set (CMAKE_CXX_COMPILER "/opt/hpc/software/mpi/hpcx/v2.4.1/gcc-7.3.1/bin/mpic++")
 	set(STATIC_LIBRARY_DIR /usr/code/lib)
 	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
