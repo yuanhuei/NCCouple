@@ -12,6 +12,7 @@
 #include <string.h>
 #include <mpi.h>
 
+int g_iProcessID=0;
 void InitCFDMeshValue(const Mesh& cfdMesh) 
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+	g_iProcessID = myid;
 	if (myid != 0) {  //非0号进程发送消息
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
 		strInputMOCfile = "pin_c1.apl";

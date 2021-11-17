@@ -37,7 +37,7 @@ public:
 	virtual double GetValue(ValueType vt) const = 0;
 
 protected:
-	MeshPoint() = delete;
+	MeshPoint();
 	MeshPoint(int pointID) : m_pointID(pointID) {}
 	virtual ~MeshPoint() {}
 

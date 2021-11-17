@@ -370,7 +370,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			filename = filename + ".off";
+			filename = filename + "_" + std::to_string(g_iProcessID) +".off";
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
