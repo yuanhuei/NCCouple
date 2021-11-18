@@ -4,7 +4,7 @@
 //#include "CAGLWraper.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include <tuple>
-
+#include <memory>
 enum class ValueType
 {
 	TEMPERAURE,

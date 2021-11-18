@@ -26,8 +26,8 @@ elseif(UNIX)
 endif()
 
 configure_file (
-  "./NCCouple/CFDCELLSCoarse.txt"
-  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLSCoarse.txt" 
+  "./NCCouple/CFDCELLS0.txt"
+  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLS0.txt" 
   COPYONLY
 )
 configure_file (

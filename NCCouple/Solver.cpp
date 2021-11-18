@@ -37,8 +37,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 					m_MOC_CFD_Map[j][i] = intersectedVolume / mocPointVolume;
 				}
 			};
-			fun();
-			//futureVec.push_back(std::async(std::launch::async, fun));
+			//fun();
+			futureVec.push_back(std::async(std::launch::async, fun));
 		}
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
@@ -152,8 +152,8 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, MaterialT
 						}
 					};
 					if (j == iMocIndex) continue;
-					fun();
-					//futureVec.push_back(std::async(std::launch::async, fun));
+					//fun();
+					futureVec.push_back(std::async(std::launch::async | std::launch::deferred,fun));//std::launch::async, 
 				}
 			}
 		}

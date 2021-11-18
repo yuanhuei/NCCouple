@@ -66,8 +66,8 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			if(currentConstructMeshNum % (cellNum / 10) == 0)
 				Logger::LogInfo(FormatStr("%.2lf%% completed", currentConstructMeshNum * 100.0 / cellNum));
 		};
-		constructMeshFun();
-		//futureVec.push_back(std::async(std::launch::async, constructMeshFun));
+		//constructMeshFun();
+		futureVec.push_back(std::async(std::launch::async | std::launch::deferred, constructMeshFun));
 	}
 	infile.close();
 
