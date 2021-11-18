@@ -75,7 +75,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 	*/
 }
 
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, MaterialType mType )
 	:
 	m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh)
 {
@@ -153,6 +153,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 					};
 					if (j == iMocIndex) continue;
 					fun();
+					//futureVec.push_back(std::async(std::launch::async, fun));
 				}
 			}
 		}
@@ -165,6 +166,33 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex)
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", CFDID * 100.0 / cfdMesh.GetMeshPointNum()));
 		}
 	}
+	//计算被插值权系数总和的最大最小值
+	double value_min = 1, value_max = 0;
+	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
+		double value = 0.0;
+		for (auto& iter : m_MOC_CFD_Map[j]) {
+			value += iter.second;
+		}
+		if (value != 0)
+			value_min = min(value_min, value);
+		value_max = max(value_max, value);
+		if (value == 0)
+			Logger::LogInfo(FormatStr("是0的ID %d", j));
+	}
+	Logger::LogInfo(FormatStr("被插值MOC网格插值权系数总和最小值是:%.6lf,最大值是:%6lf\n", value_min, value_max));
+
+	value_min = 1;
+	value_max = 0;
+	for (int j = 0; j < cfdMesh.GetMeshPointNum(); j++) {
+		double value = 0.0;
+		for (auto& iter : m_CFD_MOC_Map[j]) {
+			value += iter.second;
+		}
+		if (value != 0)
+			value_min = min(value_min, value);
+		value_max = max(value_max, value);
+	}
+	Logger::LogInfo(FormatStr("被插值CFD网格插值权系数总和最小值是:%.6lf,最大值是:%6lf\n", value_min, value_max));
 
 	/*
 	//指定被插值MOC编号，输出MOC网格权系数,

@@ -11,7 +11,7 @@ public:
 	Solver() = delete;
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
 	//Added by LingKong, 20211028
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex);
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex,MaterialType mType = MaterialType::H2O);
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {

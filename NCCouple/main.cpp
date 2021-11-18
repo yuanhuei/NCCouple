@@ -7,6 +7,12 @@
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+int g_iProcessID = 0;
 
 void InitCFDMeshValue(const Mesh& cfdMesh) 
 {
@@ -55,6 +61,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
+	g_iProcessID = (int)getpid();//获取进程ID，在输出临时文件时加到文件名里面，不然多进程跑起来会出错
 	time_t start, end;
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	MOCIndex mocIndex(mocMesh);

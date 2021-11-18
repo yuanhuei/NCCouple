@@ -53,9 +53,8 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			for (auto& lineStr : offFileLineVec)
 				ss << lineStr << std::endl;
 
-			if (kernelType == MeshKernelType::CGAL_KERNEL)
-				m_meshPointPtrVec[i] = std::make_shared<CGALCFDMeshPoint>(i, ss);
-			else {
+			if (kernelType == MeshKernelType::MHT_KERNEL)
+			{
 				std::vector<int> curveInfo(faceNum, 0.0);
 				Vector point, norm;
 				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss,

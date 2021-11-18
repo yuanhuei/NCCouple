@@ -18,10 +18,10 @@ set(INCLUDE_DIR
 
 if(WIN32)
 	set(STATIC_LIBRARY_DIR ./tools/winlib)
-	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10")
+	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
 	set(STATIC_LIBRARY_DIR /usr/code/lib)
-	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
+	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
 endif()
 

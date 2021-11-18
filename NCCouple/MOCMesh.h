@@ -6,6 +6,7 @@
 #include <array>
 //#define nFineMesh 4
 
+extern int g_iProcessID;
 enum class MaterialType {
 	H2O,
 	UO2,
@@ -68,12 +69,6 @@ private:
 	double m_temperature = 0.0;
 };
 
-class CGALMocMeshPoint : public MOCMeshPoint, public CGALMeshPoint
-{
-public:
-	CGALMocMeshPoint(int pointID, std::string polyFileName, MaterialType materialType, std::string temperatureName) :
-		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), CGALMeshPoint(polyFileName) {}
-};
 
 class MHTMocMeshPoint : public MOCMeshPoint, public MHTMeshPoint
 {
@@ -134,7 +129,7 @@ public:
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
-	void MOCMesh::setAxialInformation(std::string line); //set mesh information
+	void setAxialInformation(std::string line); //set mesh information
 	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
 	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
 

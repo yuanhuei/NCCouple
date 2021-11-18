@@ -1,7 +1,7 @@
 #ifndef MESHPOINT_HEADER
 #define MESHPOINT_HEADER
 
-#include "CAGLWraper.h"
+//#include "CAGLWraper.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include <tuple>
 
@@ -37,58 +37,12 @@ public:
 	virtual double GetValue(ValueType vt) const = 0;
 
 protected:
-	MeshPoint() = delete;
+	MeshPoint();
 	MeshPoint(int pointID) : m_pointID(pointID) {}
 	virtual ~MeshPoint() {}
 
 private:
 	int m_pointID = 0;
-};
-
-class CGALMeshPoint :virtual public MeshPoint
-{	
-public:
-	double Volume() const override {
-		return m_volume;
-	}
-	std::tuple<double, double, double> CentralCoordinate() const override {
-		return std::make_tuple(CGAL::to_double(m_centerPoint.x()),
-			CGAL::to_double(m_centerPoint.y()),
-			CGAL::to_double(m_centerPoint.z()));
-	}
-	double IntersectedVolume(const MeshPoint& other) const override;
-	int VerticesNum() const override {
-		return m_verticesVec.size();
-	}
-	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const override {
-		return m_verticesVec.at(verticeID);
-	}
-	void WriteToOFF(std::ostream& out) const {
-		CGAL::write_off(out, m_poly);
-	}
-
-protected:
-	CGALMeshPoint() = delete;
-	CGALMeshPoint(std::string polyFileName) {
-		std::ifstream ifs(polyFileName);
-		ifs >> m_poly;
-		ifs.close();
-		Init();
-	}
-	CGALMeshPoint(std::istream& isf) {
-		isf >> m_poly;
-		Init();
-	}
-	virtual ~CGALMeshPoint() {}
-
-private:
-	void Init();
-
-private:
-	Polyhedron m_poly;
-	double m_volume = 0.0;
-	Kernel::Point_3 m_centerPoint;
-	std::vector<std::tuple<double, double, double>> m_verticesVec;
 };
 
 class MHTMeshPoint : virtual public MeshPoint
