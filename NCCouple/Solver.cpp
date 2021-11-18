@@ -38,7 +38,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 				}
 			};
 			//fun();
-			futureVec.push_back(std::async(std::launch::async, fun));
+			futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 		}
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
@@ -153,7 +153,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, MaterialT
 					};
 					if (j == iMocIndex) continue;
 					//fun();
-					futureVec.push_back(std::async(std::launch::async | std::launch::deferred,fun));//std::launch::async, 
+					futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 				}
 			}
 		}
