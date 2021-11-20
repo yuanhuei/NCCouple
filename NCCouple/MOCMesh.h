@@ -126,6 +126,7 @@ public:
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
+	void WriteTecplotFile(MaterialType, std::string);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information

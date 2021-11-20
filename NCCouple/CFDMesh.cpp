@@ -7,7 +7,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
-		Logger::LogError("cannot find the cfd data file");
+		Logger::LogError("cannot find the cfd data file:" + fileName);
 		exit(EXIT_FAILURE);
 	}
 	int cellNum = 0;

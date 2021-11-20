@@ -79,19 +79,32 @@ int main()
 	radiusList.push_back(0.475);
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
+	//examples for writing tecplot files of each materials
+	mocMesh.WriteTecplotFile(MaterialType::H2O, "H2OMOCFile.plt");
+	mocMesh.WriteTecplotFile(MaterialType::Zr4, "Zr4MOCFile.plt");
+	mocMesh.WriteTecplotFile(MaterialType::UO2, "U2OMOCFile.plt");
 
-	CFDMesh cfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
-	
 	start = time(NULL);
-	//Solver solver(mocMesh, cfdMesh);
-	Solver solver(mocMesh, cfdMesh, mocIndex);
+	//read cfd mesh and create solver
+	CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, MaterialType::H2O);
+	H2OMapper.CheckMappingWeights();
+	//read cfd mesh and create solver
+	CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
+	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, MaterialType::Zr4);
+	Zr4Mapper.CheckMappingWeights();
+	//read cfd mesh and create solver
+	CFDMesh U2OcfdMesh("CFDCELLS2.txt", MeshKernelType::MHT_KERNEL);
+	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, MaterialType::UO2);
+	U2OMapper.CheckMappingWeights();
+
 	end = time(NULL);
 
-	InitCFDMeshValue(cfdMesh);
-	solver.CFDtoMOCinterception(ValueType::DENSITY);
+	InitCFDMeshValue(H2OcfdMesh);
+	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
 	mocMesh.OutputStatus("pin_c1.inp");
-	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
-	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
 	return 0;
 }

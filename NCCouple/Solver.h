@@ -10,8 +10,8 @@ class Solver {
 public:
 	Solver() = delete;
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
-	//Added by LingKong, 20211028
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex,MaterialType mType = MaterialType::H2O);
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, MaterialType mType);
+	void CheckMappingWeights();
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {
@@ -35,6 +35,8 @@ private:
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;
 	CFDMesh* m_cfdMeshPtr = nullptr;
+	//a solver is created for the mapping of a specific type;
+	MaterialType materialType;
 	std::vector<std::unordered_map<int, double>> m_CFD_MOC_Map;
 	std::vector<std::unordered_map<int, double>> m_MOC_CFD_Map;
 };

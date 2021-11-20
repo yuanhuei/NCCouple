@@ -67,6 +67,14 @@ public:
 		m_poly.WriteTecplotFile(fileName);
 	}
 
+	void WriteTecplotHeader(std::ofstream& ofile) const {
+		m_poly.WriteTecplotHeader(ofile);
+	}
+
+	void WriteTecplotZones(std::ofstream& ofile) const {
+		m_poly.WriteTecplotZones(ofile);
+	}
+
 protected:
 	MHTMeshPoint() = delete;
 	MHTMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :

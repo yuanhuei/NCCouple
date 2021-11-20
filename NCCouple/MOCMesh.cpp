@@ -686,6 +686,7 @@ int CalMeshIndexbyCFD(double x, double y)
 	//Logger::LogInfo(FormatStr("dDistance is : %f,angelNum: %d", dDistance, int(dAngletoX / dAngel)));
 	return iMeshIndex;
 }
+
 void MOCMesh::reOrganaziIndex()
 {
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec_copy(m_meshPointPtrVec);
@@ -700,7 +701,27 @@ void MOCMesh::reOrganaziIndex()
 
 		m_meshPointPtrVec[index] = m_meshPointPtrVec_copy[i];
 	}
+	return;
+}
 
+void MOCMesh::WriteTecplotFile
+(
+	MaterialType mType,
+	std::string fileName
+)
+{
+	std::ofstream ofile(fileName);
+	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
+		if (mType != mocPoint.GetMaterialType()) continue;
+		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+	ofile.close();
+	return;
 }
 
 
