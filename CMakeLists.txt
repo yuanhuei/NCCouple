@@ -18,16 +18,16 @@ set(INCLUDE_DIR
 
 if(WIN32)
 	set(STATIC_LIBRARY_DIR ./tools/winlib)
-	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10")
+	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
 	set(STATIC_LIBRARY_DIR /usr/code/lib)
-	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
+	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
 endif()
 
 configure_file (
-  "./NCCouple/CFDCELLSCoarse.txt"
-  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLSCoarse.txt" 
+  "./NCCouple/CFDCELLS0.txt"
+  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLS0.txt" 
   COPYONLY
 )
 configure_file (
@@ -42,16 +42,9 @@ if (${CMAKE_VERSION} VERSION_LESS 3.8)
 	link_directories(${STATIC_LIBRARY_DIR})
 	link_libraries(${STATIC_LIBRARY_NAME})
 	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
-	add_executable (MYTEST "./test/main.cpp")
 else()
 	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
-	add_executable (MYTEST "./test/main.cpp")
-
 	target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
 	target_link_directories(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_DIR})
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_NAME})
-
-	target_include_directories(MYTEST PUBLIC ${INCLUDE_DIR})
-	target_link_directories(MYTEST PUBLIC ${STATIC_LIBRARY_DIR})
-	target_link_libraries(MYTEST PUBLIC ${STATIC_LIBRARY_NAME})
 endif()

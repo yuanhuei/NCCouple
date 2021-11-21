@@ -48,12 +48,6 @@ private:
 	double m_density = 0.0;
 };
 
-class CGALCFDMeshPoint : public CFDMeshPoint, public CGALMeshPoint
-{
-public:
-	CGALCFDMeshPoint(int pointID, std::istream& isf) :
-		MeshPoint(pointID), CFDMeshPoint(), CGALMeshPoint(isf) {}
-};
 
 class MHTCFDMeshPoint : public CFDMeshPoint, public MHTMeshPoint
 {

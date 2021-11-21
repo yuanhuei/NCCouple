@@ -41,5 +41,10 @@ public:
 
 	void WriteTecplotFile(std::string) const;
 
+	void WriteTecplotFile(ofstream&) const;
+
+	void WriteTecplotHeader(ofstream&) const;
+
+	void WriteTecplotZones(ofstream&) const;
 };
 #endif

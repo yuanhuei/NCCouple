@@ -7,7 +7,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
-		Logger::LogError("cannot find the cfd data file");
+		Logger::LogError("cannot find the cfd data file:" + fileName);
 		exit(EXIT_FAILURE);
 	}
 	int cellNum = 0;
@@ -53,9 +53,8 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			for (auto& lineStr : offFileLineVec)
 				ss << lineStr << std::endl;
 
-			if (kernelType == MeshKernelType::CGAL_KERNEL)
-				m_meshPointPtrVec[i] = std::make_shared<CGALCFDMeshPoint>(i, ss);
-			else {
+			if (kernelType == MeshKernelType::MHT_KERNEL)
+			{
 				std::vector<int> curveInfo(faceNum, 0.0);
 				Vector point, norm;
 				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss,
@@ -67,8 +66,8 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 			if(currentConstructMeshNum % (cellNum / 10) == 0)
 				Logger::LogInfo(FormatStr("%.2lf%% completed", currentConstructMeshNum * 100.0 / cellNum));
 		};
-		constructMeshFun();
-		//futureVec.push_back(std::async(std::launch::async, constructMeshFun));
+		//constructMeshFun();
+		futureVec.push_back(std::async(std::launch::async | std::launch::deferred, constructMeshFun));
 	}
 	infile.close();
 
