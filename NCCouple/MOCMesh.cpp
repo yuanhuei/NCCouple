@@ -61,6 +61,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ifstream infile(meshFileName);
 	string line;
+	vector<string> meshMaterialNameTemperary;
 	vector<string> meshFaceTypeTemperary;
 	vector<string> meshFaceTemperatureNameTemperary;
 	vector<string> fileNameTemperary;
@@ -137,7 +138,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 								stringlineMaterialType >> token;
 								break;
 							}
-							meshFaceTypeTemperary.push_back(tokenMaterialType);
+							meshMaterialNameTemperary.push_back(tokenMaterialType);
 						}
 					}
 				}
@@ -165,6 +166,16 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 			break;
 		}
 	}
+
+	for (int j = 0; j < axialNum; j++)
+	{
+		for (int i = 0; i < layerMeshNum; i++)
+		{
+			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
+			meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+		}
+	}
+
 	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
 	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
 	m_meshPointPtrVec.resize(axialNum * layerMeshNum);
