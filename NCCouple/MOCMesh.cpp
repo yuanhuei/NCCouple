@@ -60,6 +60,11 @@ double DensityConversion(std::string mediumName, std::string element, double med
 MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ifstream infile(meshFileName);
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the moc data file:" + meshFileName);
+		exit(EXIT_FAILURE);
+	}
 	string line;
 	vector<string> meshMaterialNameTemperary;
 	vector<string> meshFaceTypeTemperary;
