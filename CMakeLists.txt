@@ -17,24 +17,15 @@ set(INCLUDE_DIR
 	./tools)
 
 if(WIN32)
-	set(STATIC_LIBRARY_DIR ./tools/winlib)
+	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
-	set(STATIC_LIBRARY_DIR /usr/code/lib)
+	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME "pthread")
-	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
+	set(INCLUDE_DIR ${INCLUDE_DIR})
 endif()
 
-configure_file (
-  "./NCCouple/CFDCELLS0.txt"
-  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLS0.txt" 
-  COPYONLY
-)
-configure_file (
-  "./NCCouple/pin_c1.apl"
-  "${CMAKE_CURRENT_BINARY_DIR}/pin_c1.apl" 
-  COPYONLY
-)
+
 
 if (${CMAKE_VERSION} VERSION_LESS 3.8)
 	message("Include directories: ${INCLUDE_DIR}")
