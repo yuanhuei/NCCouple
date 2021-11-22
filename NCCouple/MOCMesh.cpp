@@ -62,6 +62,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	ifstream infile(meshFileName);
 	string line;
 	vector<string> meshMaterialNameTemperary;
+	vector<string> meshTemperatureNameTemperary;
 	vector<string> meshFaceTypeTemperary;
 	vector<string> meshFaceTemperatureNameTemperary;
 	vector<string> fileNameTemperary;
@@ -158,7 +159,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 								stringlineTemperatureName >> token;
 								break;
 							}
-							meshFaceTemperatureNameTemperary.push_back(tokenTemperatureName);
+							meshTemperatureNameTemperary.push_back(tokenTemperatureName);
 						}
 					}
 				}
@@ -173,6 +174,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 		{
 			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
 			meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+			meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
 		}
 	}
 
@@ -196,8 +198,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 			auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[index]);
 			if (iter != materialNameTypeMap.end())
 				faceType = iter->second;
-			if (kernelType == MeshKernelType::MHT_KERNEL){
-
+			if (kernelType == MeshKernelType::MHT_KERNEL) {
 				Vector point, norm;
 				for (auto& edge : allMeshFaces[i].faceEdges) {
 					if (edge.edgeType == 3) {
@@ -379,9 +380,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			//filename = filename + ".off";
-			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错
-			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
+			filename = filename + ".off";
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
@@ -697,7 +696,6 @@ int CalMeshIndexbyCFD(double x, double y)
 	//Logger::LogInfo(FormatStr("dDistance is : %f,angelNum: %d", dDistance, int(dAngletoX / dAngel)));
 	return iMeshIndex;
 }
-
 void MOCMesh::reOrganaziIndex()
 {
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec_copy(m_meshPointPtrVec);
@@ -712,27 +710,7 @@ void MOCMesh::reOrganaziIndex()
 
 		m_meshPointPtrVec[index] = m_meshPointPtrVec_copy[i];
 	}
-	return;
-}
 
-void MOCMesh::WriteTecplotFile
-(
-	MaterialType mType,
-	std::string fileName
-)
-{
-	std::ofstream ofile(fileName);
-	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
-	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
-	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
-	{
-		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
-		if (mType != mocPoint.GetMaterialType()) continue;
-		mhtPolyhedron.WriteTecplotZones(ofile);
-	}
-	ofile.close();
-	return;
 }
 
 
