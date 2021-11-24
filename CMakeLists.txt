@@ -25,7 +25,7 @@ elseif(UNIX)
 	#设置MPI的编译器,不用MPI的话需要去掉
 	set (CMAKE_CXX_COMPILER "/opt/hpc/software/mpi/hpcx/v2.4.1/gcc-7.3.1/bin/mpic++")
 	set(STATIC_LIBRARY_DIR /usr/code/lib)
-	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
+	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
 endif()
 
