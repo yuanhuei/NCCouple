@@ -1,4 +1,4 @@
-﻿#include "Solver.h"
+#include "Solver.h"
 #include "Logger.h"
 #include <future>
 #include <mutex>
@@ -28,7 +28,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 				double cfdPointVolume = cfdPoint.Volume();
 				double mocPointVolume = mocPoint.Volume();
 				double intersectedVolume = 0.0;
-				if (mocPoint.GetMaterialType() == MaterialType::H2O)
+				if (mocPoint.GetMaterialName().find("H2O") != std::string::npos)
 					intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 
 				if (intersectedVolume > INTERSECT_JUDGE_LIMIT) {
@@ -80,12 +80,12 @@ Solver::Solver
 	MOCMesh& mocMesh, 
 	CFDMesh& cfdMesh, 
 	MOCIndex& mocIndex, 
-	MaterialType mType
+	std::string mName
 )
 	:
 	m_mocMeshPtr(&mocMesh),
 	m_cfdMeshPtr(&cfdMesh),
-	materialType(mType)
+	materialName(mName)
 {
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
@@ -105,7 +105,7 @@ Solver::Solver
 		double cfdPointVolume = cfdPoint.Volume();
 		double mocPointVolume = mocPoint.Volume();
 		double intersectedVolume = 0.0;
-		if (mocPoint.GetMaterialType() == materialType)
+		if (mocPoint.GetMaterialName() == materialName)
 			intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 
 		if (intersectedVolume > INTERSECT_JUDGE_LIMIT) {
@@ -141,7 +141,7 @@ Solver::Solver
 				{
 					int MOCID = mocIndex.v_MOCID[ii][jj][kk];
 					const MOCMeshPoint& localMOCPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(MOCID));
-					if (materialType != localMOCPoint.GetMaterialType()) continue;
+					if (materialName != localMOCPoint.GetMaterialName()) continue;
 					auto fun = [this, &mtx, CFDID, MOCID]()
 					{
 						const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
@@ -183,7 +183,7 @@ void Solver::CheckMappingWeights()
 	for (int j = 0; j < m_mocMeshPtr->GetMeshPointNum(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
-		if (this->materialType != mocPoint.GetMaterialType()) continue;
+		if (this->materialName != mocPoint.GetMaterialName()) continue;
 		totalMOCVolume += mocPoint.Volume();
 	}
 	double totalCFDVolume = 0.0;
@@ -202,7 +202,7 @@ void Solver::CheckMappingWeights()
 	for (int j = 0; j < m_mocMeshPtr->GetMeshPointNum(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
-		if (mocPoint.GetMaterialType() != materialType) continue;
+		if (mocPoint.GetMaterialName() != materialName) continue;
 		double sumSumWeight = 0.0;
 		for (auto& iter : m_MOC_CFD_Map[j])
 		{

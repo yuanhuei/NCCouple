@@ -66,9 +66,9 @@ int main()
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	//examples for writing tecplot files of each materials
 	//Note: these file can be open by Tecplot
-	mocMesh.WriteTecplotFile(MaterialType::H2O, "H2OMOCFile.plt");
-	mocMesh.WriteTecplotFile(MaterialType::Zr4, "Zr4MOCFile.plt");
-	mocMesh.WriteTecplotFile(MaterialType::UO2, "U2OMOCFile.plt");
+	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
+	mocMesh.WriteTecplotFile("Zr4", "Zr4MOCFile.plt");
+	mocMesh.WriteTecplotFile("UO2", "U2OMOCFile.plt");
 
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
@@ -92,15 +92,15 @@ int main()
 	start = time(NULL);
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, MaterialType::H2O);
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex,"H2O");
 	H2OMapper.CheckMappingWeights();
 	//read cfd mesh and create solver
 	CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
-	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, MaterialType::Zr4);
+	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
 	Zr4Mapper.CheckMappingWeights();
 	//read cfd mesh and create solver
 	CFDMesh U2OcfdMesh("CFDCELLS2.txt", MeshKernelType::MHT_KERNEL);
-	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, MaterialType::UO2);
+	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
 	U2OMapper.CheckMappingWeights();
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
