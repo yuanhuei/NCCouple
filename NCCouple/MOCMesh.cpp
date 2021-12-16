@@ -329,7 +329,11 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			filename = filename + ".off";
+
+			//filename = filename + ".off";		
+			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
+			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
+			
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
