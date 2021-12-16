@@ -61,56 +61,55 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 
 int main()
 {
-	//get processor ID
-	g_iProcessID = (int)getpid();
-	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
-	//examples for writing tecplot files of each materials
-	//Note: these file can be open by Tecplot
-	mocMesh.WriteTecplotFile(MaterialType::H2O, "H2OMOCFile.plt");
-	mocMesh.WriteTecplotFile(MaterialType::Zr4, "Zr4MOCFile.plt");
-	mocMesh.WriteTecplotFile(MaterialType::UO2, "U2OMOCFile.plt");
+	//g_iProcessID = (int)getpid();//获取进程ID，在输出临时文件时加到文件名里面，不然多进程跑起来会出错
+	//time_t start, end;
+	//MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	//MOCIndex mocIndex(mocMesh);
+	//mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
+	//mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
+	//mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	//mocIndex.circularCellNum = 8;
+	//mocIndex.axialCellNum = 5;
+	//mocIndex.axialCellSize = 1.0;
+	//std::vector<Scalar> radiusList;
+	//radiusList.push_back(0.1024);
+	//radiusList.push_back(0.2048);
+	//radiusList.push_back(0.3072);
+	//radiusList.push_back(0.4096);
+	//radiusList.push_back(0.475);
+	//mocIndex.SetRadial(radiusList);
+	//mocIndex.BuildUpIndex();
+	////examples for writing tecplot files of each materials
+	//mocMesh.WriteTecplotFile(MaterialType::H2O, "H2OMOCFile.plt");
+	//mocMesh.WriteTecplotFile(MaterialType::Zr4, "Zr4MOCFile.plt");
+	//mocMesh.WriteTecplotFile(MaterialType::UO2, "U2OMOCFile.plt");
 
-	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	//the following information should be given for a specified tube
-	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
-	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
-	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
-	mocIndex.circularCellNum = 8;
-	mocIndex.axialCellNum = 5;
-	mocIndex.axialCellSize = 1.0;
-	std::vector<Scalar> radiusList;
-	radiusList.push_back(0.1024);
-	radiusList.push_back(0.2048);
-	radiusList.push_back(0.3072);
-	radiusList.push_back(0.4096);
-	radiusList.push_back(0.475);
-	mocIndex.SetRadial(radiusList);
-	mocIndex.BuildUpIndex();
-	//mapper solvers are created for each zone (H2O, Zr4 and U2O) 
-	time_t start, end;
-	start = time(NULL);
-	//read cfd mesh and create solver
-	CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, MaterialType::H2O);
-	H2OMapper.CheckMappingWeights();
-	//read cfd mesh and create solver
-	CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
-	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, MaterialType::Zr4);
-	Zr4Mapper.CheckMappingWeights();
-	//read cfd mesh and create solver
-	CFDMesh U2OcfdMesh("CFDCELLS2.txt", MeshKernelType::MHT_KERNEL);
-	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, MaterialType::UO2);
-	U2OMapper.CheckMappingWeights();
-	end = time(NULL);
-	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
-	//initialization of a scalar field on CFD mesh at H2O region
-	InitCFDMeshValue(H2OcfdMesh);
-	//Mapping of the scalar field from CFD to MOC
-	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
-	//writting input file
-	mocMesh.OutputStatus("pin_c1.inp");
-	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
-	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	//start = time(NULL);
+	////read cfd mesh and create solver
+	//CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
+	//Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, MaterialType::H2O);
+	//H2OMapper.CheckMappingWeights();
+	////read cfd mesh and create solver
+	//CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
+	//Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, MaterialType::Zr4);
+	//Zr4Mapper.CheckMappingWeights();
+	////read cfd mesh and create solver
+	//CFDMesh U2OcfdMesh("CFDCELLS2.txt", MeshKernelType::MHT_KERNEL);
+	//Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, MaterialType::UO2);
+	//U2OMapper.CheckMappingWeights();
+
+	//end = time(NULL);
+
+	//InitCFDMeshValue(H2OcfdMesh);
+	//H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
+	//Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
+	//mocMesh.OutputStatus("pin_c1.inp");
+	//ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	//ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+
+
+	MOCMesh mocMesh("pin_c1-1.apl", MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1-1.inp");
+	mocMesh.OutputStatus("pin_c1-2.inp");
 	return 0;
 }

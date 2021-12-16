@@ -4,23 +4,26 @@
 #include "Mesh.h"
 #include <algorithm>
 #include <array>
+#include <unordered_map>
+#include <functional>
+
 //#define nFineMesh 4
 
 extern int g_iProcessID;
-enum class MaterialType {
-	H2O,
-	UO2,
-	He,
-	Zr4,
-	UNKNOWN
-};
+//enum class MaterialType {
+//	H2O,
+//	UO2,
+//	He,
+//	Zr4,
+//	UNKNOWN
+//};
 
 class MOCMeshPoint : virtual public MeshPoint
 {
 public:
 	MOCMeshPoint() = delete;
-	MOCMeshPoint(MaterialType materialType, std::string temperatureName) :
-		m_materialType(materialType), m_temperatureName(temperatureName) {}
+	MOCMeshPoint(std::string materialName, std::string temperatureName) :
+		m_materialName(materialName), m_temperatureName(temperatureName) {}
 
 public:
 	void SetValue(double value, ValueType vt) override {
@@ -55,17 +58,17 @@ public:
 		return 0.0;
 	}
 
-	MaterialType GetMaterialType() const {
-		return m_materialType;
+	std::string GetMaterialName() const {
+		return m_materialName;
 	}
 	std::string GetTemperatureName() const {
 		return m_temperatureName;
 	}
 
 private:
-	MaterialType m_materialType = MaterialType::H2O;
+	std::string m_materialName;
 	std::string m_temperatureName;
-	double m_density = 0.0;
+	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
 };
 
@@ -79,9 +82,9 @@ public:
 		std::vector<int>& curveInfoVec,
 		Vector axisPoint,
 		Vector axisNorm,
-		MaterialType materialType,
+		std::string materialName,
 		std::string temperatureName) :
-		MeshPoint(pointID), MOCMeshPoint(materialType, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
+		MeshPoint(pointID), MOCMeshPoint(materialName, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
 class Edge
@@ -119,6 +122,13 @@ public:
 class MOCMesh : public Mesh
 {
 public:
+	struct Medium {
+		std::string mediumName;
+		std::vector<int> eleFlagVec;
+		std::vector<std::function<double(double)>> eleDensCalcFunVec;
+	};
+
+public:
 	MOCMesh() = delete;
 	MOCMesh(std::string meshFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
@@ -126,7 +136,8 @@ public:
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
-	void WriteTecplotFile(MaterialType, std::string);
+	void WriteTecplotFile(std::string, std::string);
+	void InitMOCValue(std::string inputFileName);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
@@ -136,14 +147,15 @@ private:
 
 private:
 	std::vector<std::vector<int>> m_coarseMeshInfo;
-
-	//std::vector<Surface>allMeshFaces;   //all face objects
-	//std::vector<Edge>allEdges;    //all edge objects
 	int layerMeshNum;          //fine mesh number
 	int EdgeNum;            //edge number
 	int coarseMeshNum;     //coarse mesh number
 	int axialNum;
 	std::vector<std::pair<int, double>> axialInformation;
+
+private:
+	std::unordered_map<std::string, Medium> m_mediumMap;
+	std::stringstream m_preContext, m_sufContext;
 };
 int CalMeshIndex(double x, double y);
 int CalMeshIndexbyCFD(double x, double y);
