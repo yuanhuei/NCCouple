@@ -14,6 +14,11 @@ using namespace std;
 MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ifstream infile(meshFileName);
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the moc data file:" + meshFileName);
+		exit(EXIT_FAILURE);
+	}
 	string line;
 	vector<string> meshMaterialNameTemperary;
 	vector<string> meshTemperatureNameTemperary;
@@ -324,7 +329,11 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssaxialID >> axialID;
 			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			filename = filename + ".off";
+
+			//filename = filename + ".off";		
+			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
+			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
+			
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
@@ -706,6 +715,26 @@ void MOCMesh::InitMOCValue(std::string inputFileName) {
 		}
 	}
 
+	return;
+}
+
+void MOCMesh::WriteTecplotFile
+(
+	std::string  mType,
+	std::string fileName
+)
+{
+	std::ofstream ofile(fileName);
+	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
+		if (mType != mocPoint.GetMaterialName()) continue;
+		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+	ofile.close();
 	return;
 }
 
