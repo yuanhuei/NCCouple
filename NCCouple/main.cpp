@@ -127,6 +127,7 @@ void ReadCFDMesh()
 	RegionConnection Bridges;
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+
 	Field<Scalar> T(pmesh, 300.0, "T");
 	T.WriteTecplotField("T.plt");
 	return;
@@ -135,6 +136,8 @@ void ReadCFDMesh()
 int main()
 {
 	//MOCCFDMapping();
-	ReadCFDMesh();
+	//ReadCFDMesh();
+	CFDMesh cfdMesh("CFD9Tubes.msh", MeshKernelType::MHT_KERNEL);
+	cfdMesh.WriteTecplotFile("cfdtemp.plt");
 	return 0;
 }
