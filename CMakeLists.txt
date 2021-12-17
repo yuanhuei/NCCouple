@@ -11,7 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
-set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3})
+aux_source_directory(./NCCouple/MHT_mesh SOURCE_FILE4)
+aux_source_directory(./NCCouple/MHT_field SOURCE_FILE5)
+set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3} ${SOURCE_FILE4} ${SOURCE_FILE5})
 set(INCLUDE_DIR 
 	./NCCoouple 
 	./tools)
@@ -24,8 +26,6 @@ elseif(UNIX)
 	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR})
 endif()
-
-
 
 if (${CMAKE_VERSION} VERSION_LESS 3.8)
 	message("Include directories: ${INCLUDE_DIR}")

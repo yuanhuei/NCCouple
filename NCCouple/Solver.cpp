@@ -268,7 +268,7 @@ void Solver::CheckMappingWeights()
 	return;
 }
 
-void Solver::Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt) {
+void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt) {
 	std::vector<std::unordered_map<int, double>>* interMap = nullptr;
 	if (dynamic_cast<const CFDMesh*>(sourceMesh) && dynamic_cast<MOCMesh*>(targetMesh))
 		interMap = &m_MOC_CFD_Map;

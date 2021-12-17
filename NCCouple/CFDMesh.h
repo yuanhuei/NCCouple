@@ -61,7 +61,7 @@ public:
 		MeshPoint(pointID), CFDMeshPoint(), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
-class CFDMesh : public Mesh
+class CFDMesh : public GeneralMesh
 {
 public:
 	CFDMesh() = delete;

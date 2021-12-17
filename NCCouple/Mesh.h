@@ -87,7 +87,7 @@ private:
 	PolyhedronSet m_poly;
 };
 
-class Mesh
+class GeneralMesh
 {
 public:
 	virtual void OutputStatus(std::string outputFileName) const {
@@ -113,8 +113,8 @@ public:
 	}
 
 protected:
-	Mesh() = default;
-	virtual ~Mesh() {}
+	GeneralMesh() = default;
+	virtual ~GeneralMesh() {}
 
 protected:
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec;

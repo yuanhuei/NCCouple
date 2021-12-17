@@ -30,7 +30,7 @@ public:
 	}
 
 private:
-	void Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt);
+	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;

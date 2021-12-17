@@ -14,7 +14,7 @@
 #endif
 int g_iProcessID = 0;
 
-void InitCFDMeshValue(const Mesh& cfdMesh) 
+void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
 	{
@@ -29,7 +29,7 @@ void InitCFDMeshValue(const Mesh& cfdMesh)
 	return;
 }
 
-void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, ValueType vt) {
+void ConservationValidation(const GeneralMesh& sourceMesh, const GeneralMesh& targetMesh, ValueType vt) {
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
 
@@ -59,7 +59,7 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 	return;
 }
 
-int main()
+void MOCCFDMapping()
 {
 	//get processor ID
 	g_iProcessID = (int)getpid();
@@ -92,7 +92,7 @@ int main()
 	start = time(NULL);
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex,"H2O");
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 	//read cfd mesh and create solver
 	CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
@@ -112,5 +112,29 @@ int main()
 	mocMesh.OutputStatus("pin_c1.inp");
 	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	return;
+}
+
+#include "./MHT_mesh/UnGridFactory.h"
+#include "./MHT_mesh/RegionConnection.h"
+#include "./MHT_mesh/Mesh.h"
+#include "./MHT_field/Field.h"
+
+void ReadCFDMesh()
+{
+	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+	Field<Scalar> T(pmesh, 300.0, "T");
+	T.WriteTecplotField("T.plt");
+	return;
+}
+
+int main()
+{
+	//MOCCFDMapping();
+	ReadCFDMesh();
 	return 0;
 }

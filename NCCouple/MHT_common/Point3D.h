@@ -60,7 +60,7 @@ public:
 	Point3D() :x_(0.0), y_(0.0), z_(0.0){}
 	Point3D(Type X, Type Y, Type Z) :x_(X), y_(Y), z_(Z){}
 
-	Scalar Mag();
+	Scalar Mag() const;
 	Point3D& Normalize();
 	Point3D GetNormal();
 	void Projection(Point3D<Type>& facenorm);
@@ -115,10 +115,10 @@ public:
 public:
 
 	//"+"overload
-	Point3D<Type> operator + (const Point3D<Type>& rhs);
+	Point3D<Type> operator + (const Point3D<Type>& rhs) const;
 
 	//"-"overload
-	Point3D<Type> operator - (const Point3D<Type>& rhs);
+	Point3D<Type> operator - (const Point3D<Type>& rhs) const;
 
 	//"-"negtive sign overload
 	Point3D<Type> operator - ();

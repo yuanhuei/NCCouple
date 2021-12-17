@@ -119,7 +119,7 @@ public:
 	void faceEdgeOrder(int nodeID);
 };
 
-class MOCMesh : public Mesh
+class MOCMesh : public GeneralMesh
 {
 public:
 	struct Medium {
