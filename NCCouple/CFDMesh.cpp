@@ -2,7 +2,7 @@
 #include "Logger.h"
 #include <fstream>
 #include <future>
-
+/*
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
@@ -74,13 +74,13 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	for (size_t i = 0; i < futureVec.size(); i++)
 		futureVec[i].get();
 }
-
+*/
 #include "./MHT_mesh/UnGridFactory.h"
 #include "./MHT_mesh/RegionConnection.h"
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
 
-CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,std::string outPlt) {
+CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
@@ -188,10 +188,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,std::string out
 		futureVec[i].get();
 }
 
-void CFDMesh::WriteTecplotFile
-(
-	std::string fileName
-)
+void CFDMesh::WriteTecplotFile(std::string fileName)
 {
 	std::ofstream ofile(fileName);
 	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;

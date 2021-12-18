@@ -66,7 +66,6 @@ class CFDMesh : public GeneralMesh
 public:
 	CFDMesh() = delete;
 	CFDMesh(std::string fileName, MeshKernelType kernelType);
-	CFDMesh(std::string fileName, MeshKernelType kernelType, std::string outPlt);
 	void WriteTecplotFile(std::string);
 	void WriteTecplotFile(std::string,std::vector<int>&);
 };
