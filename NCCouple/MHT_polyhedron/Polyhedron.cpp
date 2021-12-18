@@ -726,4 +726,39 @@ namespace MHT
 		}
 		return resultPolygon;
 	}
+
+
+	void Polyhedron::WriteTecplotZones(std::ofstream& outFile) const
+	{
+		int nCount(0);
+		int faceNum = (int)this->v_facePointID.size();
+		for (int i = 0; i < faceNum; i++)
+		{
+			nCount += (int)this->v_facePointID[i].size();
+		}
+
+		outFile << "ZONE T = " << "\"" << "polyhedron" << "\"," << " DATAPACKING = POINT, N = " << v_point.size() << ", E = "
+			<< nCount << ", ZONETYPE = FELINESEG" << std::endl;
+
+		for (unsigned int i = 0; i < v_point.size(); i++)
+		{
+			outFile << setprecision(8) << setiosflags(ios::scientific) << v_point[i].x_ << " " << v_point[i].y_ << " " << v_point[i].z_ << endl;
+		}
+
+		for (int i = 0; i < faceNum; i++)
+		{
+			for (int n = 0; n < (int)this->v_facePointID[i].size(); n++)
+			{
+				if (n == (int)this->v_facePointID[i].size() - 1)
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][0] + 1 << std::endl;
+				}
+				else
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][n + 1] + 1 << std::endl;
+				}
+			}
+		}
+		return;
+	}
 }

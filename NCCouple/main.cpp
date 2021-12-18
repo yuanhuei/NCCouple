@@ -137,7 +137,11 @@ int main()
 {
 	//MOCCFDMapping();
 	//ReadCFDMesh();
-	CFDMesh cfdMesh("CFD9Tubes.msh", MeshKernelType::MHT_KERNEL);
-	cfdMesh.WriteTecplotFile("cfdtemp.plt");
+	CFDMesh cfdMesh("CFD9Tubes.msh", MeshKernelType::MHT_KERNEL,"plt");
+	//CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
+	std::vector<int> vMeshID;
+	for (int i = 0; i < 1000; i++)
+		vMeshID.push_back(i);
+	cfdMesh.WriteTecplotFile("cfdtemp1.plt",vMeshID);
 	return 0;
 }

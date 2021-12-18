@@ -76,6 +76,8 @@ namespace MHT
 
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
 
+		void WriteTecplotZones(std::ofstream&) const;
+
 	private:
 
 		void ReadGeometry(ifstream& infile);

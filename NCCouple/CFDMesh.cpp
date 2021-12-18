@@ -2,7 +2,7 @@
 #include "Logger.h"
 #include <fstream>
 #include <future>
-/*
+
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
@@ -74,13 +74,13 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	for (size_t i = 0; i < futureVec.size(); i++)
 		futureVec[i].get();
 }
-*/
+
 #include "./MHT_mesh/UnGridFactory.h"
 #include "./MHT_mesh/RegionConnection.h"
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
 
-CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
+CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,std::string outPlt) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
@@ -142,9 +142,9 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 		}
 		//生成面形成的点id行 如： 4	3	2	1	0	
 		for (int j = 0; j < faceNum; j++) {
-			std::string faceStr;
 			int iFaceID = pmesh->v_elem[i].v_faceID[j];
 			int iNodeCount = pmesh->v_face[iFaceID].v_nodeID.size();
+			std::string faceStr = std::to_string(iNodeCount) + " ";
 			for (int k = 0; k < iNodeCount; k++)
 			{
 				int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[k]);
@@ -199,6 +199,22 @@ void CFDMesh::WriteTecplotFile
 	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
 	{
 		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
+		//const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_meshPointPtrVec[i]);
+		//if (mType != cfdPoint.GetMaterialName()) continue;
+		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+	ofile.close();
+	return;
+}
+
+void CFDMesh::WriteTecplotFile(std::string fileName, std::vector<int>& vMeshID)
+{
+	std::ofstream ofile(fileName);
+	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < vMeshID.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[vMeshID[i]]);
 		//const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_meshPointPtrVec[i]);
 		//if (mType != cfdPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
