@@ -2,6 +2,10 @@
 #include "Logger.h"
 #include <fstream>
 #include <future>
+#include "./MHT_mesh/UnGridFactory.h"
+#include "./MHT_mesh/RegionConnection.h"
+#include "./MHT_mesh/Mesh.h"
+#include "./MHT_field/Field.h"
 /*
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
@@ -74,25 +78,27 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	for (size_t i = 0; i < futureVec.size(); i++)
 		futureVec[i].get();
 }
-*/
-#include "./MHT_mesh/UnGridFactory.h"
-#include "./MHT_mesh/RegionConnection.h"
-#include "./MHT_mesh/Mesh.h"
-#include "./MHT_field/Field.h"
 
-CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
+*/
+
+CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone)
+{
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the cfd data file:" + fileName);
 		exit(EXIT_FAILURE);
 	}
-
+	if (iMeshRegionZone < 0)
+	{
+		Logger::LogError("wrong iRegionID input");
+		exit(EXIT_FAILURE);
+	}
 	UnGridFactory meshFactoryCon(fileName, UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
 	RegionConnection Bridges;
 	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[iMeshRegionZone]);
 
 
 

@@ -12,8 +12,17 @@
 #else
 #include <unistd.h>
 #endif
+#include "./MHT_mesh/UnGridFactory.h"
+#include "./MHT_mesh/RegionConnection.h"
+#include "./MHT_mesh/Mesh.h"
+#include "./MHT_field/Field.h"
 int g_iProcessID = 0;
-
+enum class Material
+{
+	H2O,
+	Zr4,
+	UO2
+};
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
@@ -91,15 +100,15 @@ void MOCCFDMapping()
 	time_t start, end;
 	start = time(NULL);
 	//read cfd mesh and create solver
-	CFDMesh H2OcfdMesh("CFDCELLS0.txt", MeshKernelType::MHT_KERNEL);
+	CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 	//read cfd mesh and create solver
-	CFDMesh Zr4cfdMesh("CFDCELLS1.txt", MeshKernelType::MHT_KERNEL);
+	CFDMesh Zr4cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::Zr4));
 	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
 	Zr4Mapper.CheckMappingWeights();
 	//read cfd mesh and create solver
-	CFDMesh U2OcfdMesh("CFDCELLS2.txt", MeshKernelType::MHT_KERNEL);
+	CFDMesh U2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::UO2));
 	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
 	U2OMapper.CheckMappingWeights();
 	end = time(NULL);
@@ -115,10 +124,7 @@ void MOCCFDMapping()
 	return;
 }
 
-#include "./MHT_mesh/UnGridFactory.h"
-#include "./MHT_mesh/RegionConnection.h"
-#include "./MHT_mesh/Mesh.h"
-#include "./MHT_field/Field.h"
+
 
 void ReadCFDMesh()
 {
@@ -135,12 +141,14 @@ void ReadCFDMesh()
 
 int main()
 {
-	//MOCCFDMapping();
+	MOCCFDMapping();
 	//ReadCFDMesh();
-	CFDMesh cfdMesh("CFD9Tubes.msh", MeshKernelType::MHT_KERNEL);
+	
+	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	std::vector<int> vMeshID;
 	for (int i = 0; i < 1000; i++)
 		vMeshID.push_back(i);
-	cfdMesh.WriteTecplotFile("cfdtemp.plt",vMeshID);
+	cfdMesh.WriteTecplotFile("cfdtemp.plt");// , vMeshID);
+	
 	return 0;
 }
