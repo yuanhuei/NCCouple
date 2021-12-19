@@ -6,7 +6,7 @@
 #include "./MHT_mesh/RegionConnection.h"
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
-/*
+
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 	std::ifstream infile(fileName);
 	if (!infile.is_open())
@@ -79,7 +79,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 		futureVec[i].get();
 }
 
-*/
+
 
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone)
 {
@@ -128,6 +128,8 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		4	5	6	7	4
 		4	0	1	5	4
 	*/
+	std::ofstream of("outcfdtemp_cfd");
+	of << cellNum << std::endl;
 	for (int i = 0; i < cellNum; i++)
 	{
 		int verticesNum = pmesh->v_elem[i].v_nodeID.size();
@@ -135,13 +137,16 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		std::vector<std::string> offFileLineVec;
 		std::map<int, int> nodeID_id_map;//nodeID到重新排序的的映射 每个cell中的节点重新设置一个从0开始的ID
 		//生成点坐标行 如：0.0296111	0.0292265	0
+		of << verticesNum << std::endl;
 		for (int j = 0; j < verticesNum; j++) {
 			std::string verticesCordinateStr;
 			int iNodeID	=pmesh->v_elem[i].v_nodeID[j];
 			nodeID_id_map.insert(std::pair<int,int>(iNodeID, j));
 			verticesCordinateStr = std::to_string(pmesh->v_node[iNodeID].x_) + " " + std::to_string(pmesh->v_node[iNodeID].y_) + " " + std::to_string(pmesh->v_node[iNodeID].z_);
 			offFileLineVec.push_back(verticesCordinateStr);
+			of << verticesCordinateStr << std::endl;
 		}
+		of << faceNum << std::endl;
 		//生成面形成的点id行 如： 4	3	2	1	0	
 		for (int j = 0; j < faceNum; j++) {
 			int iFaceID = pmesh->v_elem[i].v_faceID[j];
@@ -165,6 +170,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 				}
 			}
 			offFileLineVec.push_back(faceStr);
+			of << faceStr << std::endl;
 		}
 
 
@@ -197,6 +203,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		//futureVec.push_back(std::async(std::launch::async | std::launch::deferred, constructMeshFun));
 	}
 	infile.close();
+	of.close();
 
 	for (size_t i = 0; i < futureVec.size(); i++)
 		futureVec[i].get();

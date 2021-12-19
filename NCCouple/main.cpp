@@ -101,6 +101,7 @@ void MOCCFDMapping()
 	start = time(NULL);
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 	/*
@@ -145,7 +146,8 @@ int main()
 {
 	MOCCFDMapping();
 	//ReadCFDMesh();
-
+	//CFDMesh H2OcfdMesh("CFDCELLS0", MeshKernelType::MHT_KERNEL);
+	//CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	/*
 	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	std::vector<int> vMeshID;
