@@ -158,7 +158,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[k]);
 					faceStr += std::to_string(id) + " ";
 				}
-				else//face属于element,nodeid的索引排序和右手法则相反
+				else//face不属于element,nodeid的索引排序和右手法则相反
 				{
 					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[iNodeCount-k-1]);
 					faceStr += std::to_string(id) + " ";

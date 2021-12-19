@@ -130,7 +130,7 @@ void MOCCFDMapping()
 
 void ReadCFDMesh()
 {
-	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
 	RegionConnection Bridges;
 	FluentPtrCon->Decompose(Bridges);
@@ -145,6 +145,7 @@ int main()
 {
 	MOCCFDMapping();
 	//ReadCFDMesh();
+
 	/*
 	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	std::vector<int> vMeshID;
@@ -152,5 +153,6 @@ int main()
 		vMeshID.push_back(i);
 	cfdMesh.WriteTecplotFile("cfdtemp.plt");// , vMeshID);
 	*/
+
 	return 0;
 }
