@@ -103,6 +103,7 @@ void MOCCFDMapping()
 	CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
+	/*
 	//read cfd mesh and create solver
 	CFDMesh Zr4cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::Zr4));
 	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
@@ -111,6 +112,7 @@ void MOCCFDMapping()
 	CFDMesh U2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::UO2));
 	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
 	U2OMapper.CheckMappingWeights();
+	*/
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
 	//initialization of a scalar field on CFD mesh at H2O region
@@ -143,12 +145,12 @@ int main()
 {
 	MOCCFDMapping();
 	//ReadCFDMesh();
-	
+	/*
 	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	std::vector<int> vMeshID;
 	for (int i = 0; i < 1000; i++)
 		vMeshID.push_back(i);
 	cfdMesh.WriteTecplotFile("cfdtemp.plt");// , vMeshID);
-	
+	*/
 	return 0;
 }

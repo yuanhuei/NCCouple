@@ -100,14 +100,10 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[iMeshRegionZone]);
 
-
-
 	int cellNum = pmesh->n_elemNum;
 	std::string cellNumStr;
 	std::getline(infile, cellNumStr);
-	
 	m_meshPointPtrVec.resize(cellNum);
-
 	Logger::LogInfo("reading CFD cells...");
 	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
 
@@ -149,12 +145,24 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		//生成面形成的点id行 如： 4	3	2	1	0	
 		for (int j = 0; j < faceNum; j++) {
 			int iFaceID = pmesh->v_elem[i].v_faceID[j];
+			bool bFaceOwner_Element = false;//face是否属于该element,初始化为false
+			if (pmesh->v_face[iFaceID].n_owner == i)//face属于该element,设置为true,
+				bFaceOwner_Element = true;
+
 			int iNodeCount = pmesh->v_face[iFaceID].v_nodeID.size();
 			std::string faceStr = std::to_string(iNodeCount) + " ";
 			for (int k = 0; k < iNodeCount; k++)
 			{
-				int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[k]);
-				faceStr += std::to_string(id)+" ";
+				if (bFaceOwner_Element)//face属于element,nodeid的索引排序符合右手法则
+				{
+					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[k]);
+					faceStr += std::to_string(id) + " ";
+				}
+				else//face属于element,nodeid的索引排序和右手法则相反
+				{
+					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[iNodeCount-k-1]);
+					faceStr += std::to_string(id) + " ";
+				}
 			}
 			offFileLineVec.push_back(faceStr);
 		}
