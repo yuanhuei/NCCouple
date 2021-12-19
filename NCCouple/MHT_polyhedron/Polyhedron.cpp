@@ -1,5 +1,6 @@
 #include "Polyhedron.h"
 #include "../MHT_common/GeometryTools.h"
+#include "../MHT_common/SystemControl.h"
 #include <algorithm>
 
 namespace MHT
@@ -180,6 +181,80 @@ namespace MHT
 				cout << v_facePointID[i][j] << " ";
 			}
 			cout << endl;
+		}
+		return;
+	}
+
+	void Polyhedron::Check() const
+	{
+		//if the polyhedron is not existint, it is meaningless to check
+		if (false == this->IsExisting())
+		{
+			return;
+		}
+		std::stringstream errorMsg;
+		//error 1: there is no face
+		if (0 == this->v_faceArea.size())
+		{
+			FatalError("Polyhedron Check(): no face is found");
+			return;
+		}
+		bool pass = true;
+		Vector totalArea(0.0, 0.0, 0.0);
+		Scalar denominator = 0.0;
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			totalArea += this->v_faceArea[faceID];
+			denominator += this->v_faceArea[faceID].Mag();
+		}
+		//error 2: there are faces, but no face has area
+		if (denominator < SMALL)
+		{
+			errorMsg << "Polyhedron Check(): no face has any area" << std::endl;
+			this->Display();
+			pass = false;
+		}
+		else
+		{
+			Scalar faceAreaError = totalArea.Mag() / denominator;
+			//error 3: face areas are not conservative
+			if (faceAreaError > SMALL)
+			{
+				errorMsg << "Polyhedron Check(): the face areas are not conservative in this polyhedron:" << std::endl;
+				for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+				{
+					errorMsg << "face #" << faceID << ": " << this->v_faceArea[faceID] << std::endl;
+				}
+				errorMsg << "total area:" << totalArea << std::endl;
+				pass = false;
+			}
+		}
+		//error 4: wrong face direction
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			Vector faceArea = this->v_faceArea[faceID];
+			Vector faceCenter = this->v_faceCenter[faceID];
+			Vector OP = faceCenter - this->center;
+			Scalar OPdotSf = OP & faceArea;
+			if (OPdotSf < 0)
+			{
+				errorMsg << "Polyhedron Check(): direction of face #" << faceID << " is incorrect" << std::endl;
+				pass = false;
+			}
+			else
+			{
+				std::cout << "pass" << std::endl;
+			}
+		}
+		//error 5: negative volume
+		if (volume < 0)
+		{
+			errorMsg << "Polyhedron Check(): the volume is negative: " << this->volume << std::endl;
+		}
+		if (!pass)
+		{
+			this->Display();
+			FatalError(errorMsg.str());
 		}
 		return;
 	}

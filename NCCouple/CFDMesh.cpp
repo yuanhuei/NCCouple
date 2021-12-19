@@ -79,8 +79,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
 		futureVec[i].get();
 }
 
-
-
 CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone)
 {
 	std::ifstream infile(fileName);
@@ -110,7 +108,7 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 	std::mutex mtx;
 	int currentConstructMeshNum = 0;
 	std::vector<std::future<void>> futureVec;
-	/*按照如下格式输入到字符流，根据字符流生成meshpoint的数据结构
+	/*Write OFF streamstream for meshpoint
 	    OFF
 		8 6 0
 		0	0	0.05
@@ -135,8 +133,9 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		int verticesNum = pmesh->v_elem[i].v_nodeID.size();
 		int faceNum = pmesh->v_elem[i].v_faceID.size();
 		std::vector<std::string> offFileLineVec;
-		std::map<int, int> nodeID_id_map;//nodeID到重新排序的的映射 每个cell中的节点重新设置一个从0开始的ID
-		//生成点坐标行 如：0.0296111	0.0292265	0
+		//mapping nodeIDs for each polyhedron
+		std::map<int, int> nodeID_id_map;
+		//write node coordinates in form like 0.0296111	0.0292265	0
 		of << verticesNum << std::endl;
 		for (int j = 0; j < verticesNum; j++) {
 			std::string verticesCordinateStr;
@@ -147,23 +146,26 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 			of << verticesCordinateStr << std::endl;
 		}
 		of << faceNum << std::endl;
-		//生成面形成的点id行 如： 4	3	2	1	0	
-		for (int j = 0; j < faceNum; j++) {
+		//create faceID list in form like  4	3	2	1	0	
+		for (int j = 0; j < faceNum; j++) 
+		{
 			int iFaceID = pmesh->v_elem[i].v_faceID[j];
-			bool bFaceOwner_Element = false;//face是否属于该element,初始化为false
-			if (pmesh->v_face[iFaceID].n_owner == i)//face属于该element,设置为true,
-				bFaceOwner_Element = true;
-
+			//whether or not the element is the owner, initializad false
+			bool bFaceOwner_Element = false;
+			//the polyhedron saved is the owner
+			if (pmesh->v_face[iFaceID].n_owner == i) bFaceOwner_Element = true;
 			int iNodeCount = pmesh->v_face[iFaceID].v_nodeID.size();
 			std::string faceStr = std::to_string(iNodeCount) + " ";
 			for (int k = 0; k < iNodeCount; k++)
 			{
-				if (bFaceOwner_Element)//face属于element,nodeid的索引排序符合右手法则
+				//the polyhedron saved is the owner, the original node ID list is used
+				if (bFaceOwner_Element)
 				{
 					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[k]);
 					faceStr += std::to_string(id) + " ";
 				}
-				else//face不属于element,nodeid的索引排序和右手法则相反
+				//the polyhedron saved is the owner, the opposite list sequence is used
+				else
 				{
 					int id = nodeID_id_map.at(pmesh->v_face[iFaceID].v_nodeID[iNodeCount-k-1]);
 					faceStr += std::to_string(id) + " ";
@@ -173,7 +175,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 			of << faceStr << std::endl;
 		}
 
-
 		auto constructMeshFun = [this, i, offFileLineVec, &mtx, &currentConstructMeshNum, kernelType,
 			verticesNum, faceNum, cellNum]() {
 			std::string polyDesc = FormatStr("%d %d 0", verticesNum, faceNum);
@@ -182,16 +183,11 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 			ss << polyDesc << std::endl;
 			for (auto& lineStr : offFileLineVec)
 				ss << lineStr << std::endl;
-			//std::ofstream of("outcfdtemp");
-			//of << ss.rdbuf();
-			//of.close();
-			
 			if (kernelType == MeshKernelType::MHT_KERNEL)
 			{
 				std::vector<int> curveInfo(faceNum, 0.0);
 				Vector point, norm;
-				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss,
-					curveInfo, point, norm);
+				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss, curveInfo, point, norm);
 			}
 
 			std::lock_guard<std::mutex> lg(mtx);
@@ -200,13 +196,13 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 				Logger::LogInfo(FormatStr("%.2lf%% completed", currentConstructMeshNum * 100.0 / cellNum));
 		};
 		constructMeshFun();
-		//futureVec.push_back(std::async(std::launch::async | std::launch::deferred, constructMeshFun));
 	}
 	infile.close();
 	of.close();
-
 	for (size_t i = 0; i < futureVec.size(); i++)
+	{
 		futureVec[i].get();
+	}
 }
 
 void CFDMesh::WriteTecplotFile(std::string fileName)
@@ -217,8 +213,6 @@ void CFDMesh::WriteTecplotFile(std::string fileName)
 	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
 	{
 		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
-		//const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_meshPointPtrVec[i]);
-		//if (mType != cfdPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
 	}
 	ofile.close();
@@ -233,8 +227,6 @@ void CFDMesh::WriteTecplotFile(std::string fileName, std::vector<int>& vMeshID)
 	for (int i = 0; i < vMeshID.size(); i++)
 	{
 		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[vMeshID[i]]);
-		//const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_meshPointPtrVec[i]);
-		//if (mType != cfdPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
 	}
 	ofile.close();

@@ -50,6 +50,8 @@ namespace MHT
 
 		void Display() const;
 
+		void Check() const;
+
 		Scalar GetVolume() const;
 
 		Vector GetCenter() const;

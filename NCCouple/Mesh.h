@@ -77,9 +77,11 @@ public:
 
 protected:
 	MHTMeshPoint() = delete;
-	MHTMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm) :
-		m_poly(isf, curveInfoVec, axisPoint, axisNorm) {
+	MHTMeshPoint(std::istream& isf, std::vector<int>& curveInfoVec, Vector axisPoint, Vector axisNorm)
+		:m_poly(isf, curveInfoVec, axisPoint, axisNorm)
+	{
 		m_poly.CalculateVolume();
+		m_poly.Check();
 	}
 	virtual ~MHTMeshPoint() {}
 
