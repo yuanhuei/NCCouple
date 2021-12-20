@@ -91,6 +91,8 @@ public:
 
     void CheckBoundaryCondition() const;
 
+	void CorrectSide();
+
 };
 
 #endif

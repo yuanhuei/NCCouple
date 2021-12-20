@@ -419,3 +419,96 @@ void Mesh::CheckBoundaryCondition() const
 
 	std::cout << LogLevel(LogLevel::mlOK, "Mesh:") << this->st_meshName << ", physical boundary condition OK." << std::endl;
 }
+
+void Mesh::CorrectSide()
+{
+	//loop over interior faces
+	for (int i = 0;i < (int)fz_interiorFaceZone.v_faceID.size();i++)
+	{
+		//make sure the owner ID is smaller than the nb ID
+		int faceID = this->fz_interiorFaceZone.v_faceID[i];
+		int ownerID = v_face[faceID].n_owner;
+		int nbID = v_face[faceID].n_neighbor;
+		if (ownerID > nbID)
+		{
+			v_face[faceID].n_owner = nbID;
+			v_face[faceID].n_neighbor = ownerID;
+			ownerID = v_face[faceID].n_owner;
+			nbID = v_face[faceID].n_neighbor;
+		}
+		//make sure the vertice list and the face area follows the right-hand rule
+		Vector ownerLocation = v_elem[ownerID].center;
+		Vector nbLocation = v_elem[nbID].center;
+		Vector OToN = nbLocation - ownerLocation;
+		Vector faceArea(0.0, 0.0, 0.0);
+		Vector faceCenter(0.0, 0.0, 0.0);
+		std::vector<Vector> verticeList;
+		for (int j = 0;j < v_face[faceID].v_nodeID.size();j++)
+		{
+			int nodeID = v_face[faceID].v_nodeID[j];
+			verticeList.push_back(v_node[nodeID]);
+		}
+		GetCenterAndArea(verticeList, faceCenter, faceArea);
+		//if not, reverse the node ID list and re-compute face area
+		if ((faceArea & OToN) < 0)
+		{
+			vector<int> temp = v_face[faceID].v_nodeID;
+			v_face[faceID].v_nodeID.assign(temp.rbegin(), temp.rend());
+			verticeList.clear();
+			for (int j = 0;j < v_face[faceID].v_nodeID.size();j++)
+			{
+				int nodeID = v_face[faceID].v_nodeID[j];
+				verticeList.push_back(v_node[nodeID]);
+			}
+			GetCenterAndArea(verticeList, faceCenter, faceArea);
+		}
+		v_face[faceID].area = faceArea;
+		v_face[faceID].center = faceCenter;
+	}
+	//loop over boundary faces
+	for (int i = 0;i < (int)v_boundaryFaceZone.size();i++)
+	{
+		for (int j = 0;j < (int)v_boundaryFaceZone[i].v_faceID.size();j++)
+		{
+			//make sure the nbID is -1 and ownerID is not -1 
+			int faceID = this->v_boundaryFaceZone[i].v_faceID[j];
+			int ownerID = v_face[faceID].n_owner;
+			int nbID = v_face[faceID].n_neighbor;
+			if (ownerID == -1)
+			{
+				v_face[faceID].n_owner = nbID;
+				v_face[faceID].n_neighbor = -1;
+				ownerID = v_face[faceID].n_owner;
+				nbID = -1;
+			}
+			//make sure the vertice list and the face area follows the right-hand rule
+			Vector ownerLocation = v_elem[ownerID].center;
+			Vector faceCenter = v_face[faceID].center;
+			Vector OToN = faceCenter - ownerLocation;
+			Vector faceArea(0.0, 0.0, 0.0);
+			std::vector<Vector> verticeList;
+			for (int k = 0;k < v_face[faceID].v_nodeID.size();k++)
+			{
+				int nodeID = v_face[faceID].v_nodeID[k];
+				verticeList.push_back(v_node[nodeID]);
+			}
+			GetCenterAndArea(verticeList, faceCenter, faceArea);
+			//if not, reverse the node ID list and re-compute face area
+			if ((faceArea & OToN) < 0)
+			{
+				vector<int> temp = v_face[faceID].v_nodeID;
+				v_face[faceID].v_nodeID.assign(temp.rbegin(), temp.rend());
+				verticeList.clear();
+				for (int k = 0;k < v_face[faceID].v_nodeID.size();k++)
+				{
+					int nodeID = v_face[faceID].v_nodeID[k];
+					verticeList.push_back(v_node[nodeID]);
+				}
+				GetCenterAndArea(verticeList, faceCenter, faceArea);
+			}
+			v_face[faceID].area = faceArea;
+			v_face[faceID].center = faceCenter;
+		}
+	}
+	return;
+}

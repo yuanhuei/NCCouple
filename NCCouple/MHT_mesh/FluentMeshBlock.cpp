@@ -27,9 +27,7 @@ Revised:
 \*---------------------------------------------------------------------------*/
 
 #include "FluentMeshBlock.h"
-
 #include <iomanip>
-
 #include "../MHT_common/LogLevel.h"
 #include "../MHT_common/StringTools.h"
 #include "../MHT_common/SystemControl.h"
@@ -89,8 +87,6 @@ FluentMeshBlock::FluentMeshBlock(const std::string& MshFileName)
     std::ifstream	inFile(MshFileName.c_str());
 	FILE *F_FilePointer;
 	F_FilePointer = fopen(MshFileName.c_str(),"r");
-	
-
 	if (inFile.fail())
 	{
         FatalError(std::string("Can not find Mesh file:\n") + MshFileName);
@@ -169,9 +165,7 @@ void FluentMeshBlock::ReadMesh(FILE *F_FilePointer)
 			break;
 		}
 		}
-		
-		s_Index = "";										//Info of marked pos should be reseted
-        //	cout <<"run here"<< endl;
+		s_Index = "";
 	}
 	RefineArrayIndex();
 
@@ -2162,12 +2156,6 @@ void FluentMeshBlock::Decompose(RegionConnection& regionConnectionInfo)
 //Clear Global Fluent mesh
 void FluentMeshBlock::ClearGlobalFluentMesh()
 {
-	//vector::clear() 
-	//http://www.cplusplus.com/reference/vector/vector/clear/
-	//A reallocation is not guaranteed to happen, and the vector capacity is not guaranteed to change due to calling this function. 
-	//A typical alternative that forces a reallocation is to use swap:
-	//vector<T>().swap(x);   // clear x reallocating 
-
 	this->n_elemNum = 0;
 	this->n_faceNum = 0;
 	this->n_nodeNum = 0;
@@ -2187,7 +2175,6 @@ void FluentMeshBlock::ClearGlobalFluentMesh()
 void FluentMeshBlock::GetZoneNumber(int &zoneNum)
 {
 	this->v_regionGrid.resize(zoneNum);
-
 	//---distribute region names (by the way)---
 	for (int i = 0; i < zoneNum; i++)
 	{
@@ -2446,6 +2433,7 @@ void FluentMeshBlock::DistributeInteriorFaceZones(std::vector<std::vector<std::p
 		}
 	}
 }
+
 void FluentMeshBlock::SplitExternalFaceZones(std::vector<std::vector<std::pair<int, int> > > &globalFaceIndex)
 {
 	for (int i = 0; i < (int)this->v_faceZone.size(); i++)
@@ -2596,13 +2584,6 @@ void FluentMeshBlock::SplitInternalFaceZones(std::vector<std::vector<std::pair<i
 		}
 	}
 
-	//for (int i = 0; i < v_regionGrid[1].v_vertice.size();i++)
-	//{
-	//	for (int j = 0; j < v_regionGrid[1].v_vertice.size(); j++)
-	//	std::cout << v_regionGrid[1].v_vertice[j].v_faceID[j] << std::endl;
-	//}
-
-
 	//9.2 write connection information into given RegionConnection
 	for (int i = 0; i < (int)this->v_faceZone.size(); i++)
 	{
@@ -2676,9 +2657,7 @@ void FluentMeshBlock::SplitInternalFaceZones(std::vector<std::vector<std::pair<i
 			//insert the created boundary pair into given regionConnectionInfo
 			regionConnectionInfo.v_coupledBoundary.push_back(tempCB);
 		}
-		
 	}
-
 	return;
 }
 
@@ -2706,7 +2685,7 @@ void FluentMeshBlock::WriteFaceID()
 
 void FluentMeshBlock::SideCheck()
 {
-for (int i = 0; i < (int)this->v_regionGrid.size(); i++)
+	for (int i = 0; i < (int)this->v_regionGrid.size(); i++)
 	{
 		for (int j = 0; j < (int)this->v_regionGrid[i].v_boundaryFaceZone.size(); j++)
 		{
@@ -2718,5 +2697,11 @@ for (int i = 0; i < (int)this->v_regionGrid.size(); i++)
 			}
 		}
 	}
+
+	for (int i = 0; i < (int)this->v_regionGrid.size(); i++)
+	{
+		this->v_regionGrid[i].CorrectSide();
+	}
+	return;
 }
 

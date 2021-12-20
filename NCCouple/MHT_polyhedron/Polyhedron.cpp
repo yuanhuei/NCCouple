@@ -241,10 +241,6 @@ namespace MHT
 				errorMsg << "Polyhedron Check(): direction of face #" << faceID << " is incorrect" << std::endl;
 				pass = false;
 			}
-			else
-			{
-				std::cout << "pass" << std::endl;
-			}
 		}
 		//error 5: negative volume
 		if (volume < 0)
@@ -253,7 +249,6 @@ namespace MHT
 		}
 		if (!pass)
 		{
-			this->Display();
 			FatalError(errorMsg.str());
 		}
 		return;
