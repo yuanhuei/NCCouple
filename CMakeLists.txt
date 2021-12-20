@@ -19,9 +19,11 @@ set(INCLUDE_DIR
 	./tools)
 
 if(WIN32)
+	add_definitions(-D_BasePlatformWinddows_ )
 	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
+	add_definitions(-D_BasePlatformLinux_ )
 	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR})
