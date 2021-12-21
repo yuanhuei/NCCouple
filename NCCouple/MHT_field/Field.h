@@ -13,13 +13,13 @@
 #include "../MHT_field/InteriorFaceZoneField.h"
 #include "../MHT_field/BoundaryFaceZoneField.h"
 
-#include <VTK-9.0.1/include/vtk-9.0/vtkUnstructuredGridReader.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkUnstructuredGrid.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkSmartPointer.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkPointData.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkCellData.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkFloatArray.h >
-#include <VTK-9.0.1/include/vtk-9.0/vtkDataArray.h >
+#include <vtkUnstructuredGridReader.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkSmartPointer.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 
 //Field on unstructured grid block
 template<class Type>
