@@ -3,7 +3,7 @@
 // =======================================Scalar Type BaseField=============================================
 
 template<>
-Scalar Point3D<Scalar>::Mag()
+Scalar Point3D<Scalar>::Mag() const
 {
 	return sqrt(x_*x_ + y_*y_ + z_*z_);
 }
@@ -37,14 +37,14 @@ void Point3D<Scalar>::Projection(Point3D<Scalar>& facenorm)
 
 //"+"overload
 template<>
-Point3D<Scalar> Point3D<Scalar>::operator + (const Point3D<Scalar>& rhs)
+Point3D<Scalar> Point3D<Scalar>::operator + (const Point3D<Scalar>& rhs) const
 {
 	return Point3D<Scalar>(x_ + rhs.x_, y_ + rhs.y_, z_ + rhs.z_);
 }
 
 //"-"overload
 template<>
-Point3D<Scalar> Point3D<Scalar>::operator - (const Point3D<Scalar>& rhs)
+Point3D<Scalar> Point3D<Scalar>::operator - (const Point3D<Scalar>& rhs) const
 {
 	return Point3D<Scalar>(x_ - rhs.x_, y_ - rhs.y_, z_ - rhs.z_);
 }

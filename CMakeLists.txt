@@ -8,33 +8,33 @@ project (${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(VTK_PATH_DIR "./tools/VTK-9.0.1/lib/cmake/vtk-8.2")
+set(VTK_BIN_DIR "./tools/VTK-9.0.1/bin")
+find_package( VTK REQUIRED ) 
+if (NOT VTK_FOUND)
+  message("Skipping marchingCube: ${VTK_NOT_FOUND_MESSAGE}")
+  return ()
+endif()
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
-set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3})
+aux_source_directory(./NCCouple/MHT_mesh SOURCE_FILE4)
+aux_source_directory(./NCCouple/MHT_field SOURCE_FILE5)
+set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3} ${SOURCE_FILE4} ${SOURCE_FILE5})
 set(INCLUDE_DIR 
 	./NCCoouple 
-	./tools)
+	./tools
+	./tools/VTK-9.0.1/include/vtk-9.0
+	)
 
 if(WIN32)
-	set(STATIC_LIBRARY_DIR ./tools/winlib)
-	set(STATIC_LIBRARY_NAME "libmpfr-4" "libgmp-10")
+	set(STATIC_LIBRARY_DIR  )
+	set(STATIC_LIBRARY_NAME ${VTK_LIBRARIES})
 elseif(UNIX)
-	set(STATIC_LIBRARY_DIR /usr/code/lib)
-	set(STATIC_LIBRARY_NAME "pthread" "gmp" "mpfr")
-	set(INCLUDE_DIR ${INCLUDE_DIR} /usr/code/include)
+	set(STATIC_LIBRARY_DIR )
+	set(STATIC_LIBRARY_NAME "pthread")
+	set(INCLUDE_DIR ${INCLUDE_DIR})
 endif()
-
-configure_file (
-  "./NCCouple/CFDCELLSCoarse.txt"
-  "${CMAKE_CURRENT_BINARY_DIR}/CFDCELLSCoarse.txt" 
-  COPYONLY
-)
-configure_file (
-  "./NCCouple/pin_c1.apl"
-  "${CMAKE_CURRENT_BINARY_DIR}/pin_c1.apl" 
-  COPYONLY
-)
 
 if (${CMAKE_VERSION} VERSION_LESS 3.8)
 	message("Include directories: ${INCLUDE_DIR}")
@@ -42,16 +42,11 @@ if (${CMAKE_VERSION} VERSION_LESS 3.8)
 	link_directories(${STATIC_LIBRARY_DIR})
 	link_libraries(${STATIC_LIBRARY_NAME})
 	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
-	add_executable (MYTEST "./test/main.cpp")
+	link_directories(${VTK_BIN_DIR})
 else()
 	add_executable (${PROJECT_NAME} ${SOURCE_FILE})
-	add_executable (MYTEST "./test/main.cpp")
-
 	target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
 	target_link_directories(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_DIR})
 	target_link_libraries(${PROJECT_NAME} PUBLIC ${STATIC_LIBRARY_NAME})
-
-	target_include_directories(MYTEST PUBLIC ${INCLUDE_DIR})
-	target_link_directories(MYTEST PUBLIC ${STATIC_LIBRARY_DIR})
-	target_link_libraries(MYTEST PUBLIC ${STATIC_LIBRARY_NAME})
+	link_directories(${VTK_BIN_DIR})
 endif()

@@ -4,7 +4,7 @@
 #define _PolyhedronSet_
 
 #include "Polyhedron.h"
-#define maxDegree 20.01
+#define maxDegree 10.01
 
 class PolyhedronSet :public MHT::Polyhedron
 {
@@ -25,7 +25,7 @@ public:
 
 	void CalculateRadius();
 
-	void Display();
+	void Display() const;
 
 	PolyhedronSet ClipByPlane(Vector pointOnPlane, Vector planeNorm);
 
@@ -33,13 +33,18 @@ public:
 
 	void CalculateVolume();
 
-	bool IsContaining(Vector&);
+	bool IsContaining(Vector&) const;
 
-	Scalar IntersectionVolumeWithPolyhedron(MHT::Polyhedron&);
+	Scalar IntersectionVolumeWithPolyhedron(const MHT::Polyhedron&) const;
 
-	Scalar IntersectionVolumeWithPolyhedronSet(PolyhedronSet&);
+	Scalar IntersectionVolumeWithPolyhedronSet(const PolyhedronSet&) const;
 
-	void WriteTecplotFile(std::string);
+	void WriteTecplotFile(std::string) const;
 
+	void WriteTecplotFile(ofstream&) const;
+
+	void WriteTecplotHeader(ofstream&) const;
+
+	void WriteTecplotZones(ofstream&) const;
 };
 #endif

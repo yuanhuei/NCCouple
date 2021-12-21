@@ -176,3 +176,61 @@ Scalar& volume
 	center = (dominator > 10 * SMALL) ? (numerator / dominator) : xG;
 	volume = dominator;
 }
+
+//rotate a given point around a given axis at a given angle 
+//https://en.wikipedia.org/wiki/Rotation_matrix#cite_note-5
+Vector RotatePoint
+(
+	const Vector& GivenPoint,
+	const Vector& AxisPoint,
+	Vector axis,
+	const Scalar& theeta
+)
+{
+	axis.Normalize();
+	Scalar alpha = (GivenPoint - AxisPoint) & axis;
+	Vector Pedal = AxisPoint + alpha * axis;
+	Vector PointRelative = GivenPoint - Pedal;
+
+	Tensor rotation;
+
+	rotation.mat_[0][0] = cos(theeta) + pow(axis.x_, 2) * (1 - cos(theeta));
+	rotation.mat_[0][1] = (axis.x_) * (axis.y_) * (1 - cos(theeta)) - (axis.z_) * sin(theeta);
+	rotation.mat_[0][2] = (axis.x_) * (axis.z_) * (1 - cos(theeta)) + (axis.y_) * sin(theeta);
+
+	rotation.mat_[1][0] = (axis.x_) * (axis.y_) * (1 - cos(theeta)) + (axis.z_) * sin(theeta);
+	rotation.mat_[1][1] = cos(theeta) + pow(axis.y_, 2) * (1 - cos(theeta));
+	rotation.mat_[1][2] = (axis.y_) * (axis.z_) * (1 - cos(theeta)) - (axis.x_) * sin(theeta);
+
+	rotation.mat_[2][0] = (axis.x_) * (axis.z_) * (1 - cos(theeta)) - (axis.y_) * sin(theeta);
+	rotation.mat_[2][1] = (axis.y_) * (axis.z_) * (1 - cos(theeta)) + (axis.x_) * sin(theeta);
+	rotation.mat_[2][2] = cos(theeta) + pow(axis.z_, 2) * (1 - cos(theeta));
+
+	return Pedal + rotation * PointRelative;
+}
+
+//added by Kong Ling
+Tensor RotationTensor
+(
+	Vector axis,
+	Scalar theeta
+)
+{
+	Tensor result;
+	Vector norm = axis.GetNormal();
+	Scalar nx = norm.x_;
+	Scalar ny = norm.y_;
+	Scalar nz = norm.z_;
+	Scalar costheeta = cos(theeta);
+	Scalar sintheeta = sin(theeta);
+	result.mat_[0][0] = costheeta + nx * nx * (1.0 - costheeta);
+	result.mat_[0][1] = nx * ny * (1.0 - costheeta) - nz * sintheeta;
+	result.mat_[0][2] = nx * nz * (1.0 - costheeta) + ny * sintheeta;
+	result.mat_[1][0] = nx * ny * (1.0 - costheeta) + nz * sintheeta;
+	result.mat_[1][1] = costheeta + ny * ny * (1.0 - costheeta);
+	result.mat_[1][2] = ny * nz * (1.0 - costheeta) - nx * sintheeta;
+	result.mat_[2][0] = nx * nz * (1.0 - costheeta) - ny * sintheeta;
+	result.mat_[2][1] = ny * nz * (1.0 - costheeta) + nx * sintheeta;
+	result.mat_[2][2] = costheeta + nz * nz * (1.0 - costheeta);
+	return result;
+}

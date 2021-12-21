@@ -10,8 +10,8 @@ class Solver {
 public:
 	Solver() = delete;
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
-	//Added by LingKong, 20211028
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex);
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
+	void CheckMappingWeights();
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {
@@ -30,11 +30,13 @@ public:
 	}
 
 private:
-	void Interception(const Mesh* sourceMesh, Mesh* targetMesh, ValueType vt);
+	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;
 	CFDMesh* m_cfdMeshPtr = nullptr;
+	//a solver is created for the mapping of a specific type;
+	std::string materialName;
 	std::vector<std::unordered_map<int, double>> m_CFD_MOC_Map;
 	std::vector<std::unordered_map<int, double>> m_MOC_CFD_Map;
 };

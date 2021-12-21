@@ -24,25 +24,21 @@ namespace MHT
 		Vector center;
 	public:
 		Polygon() {}
-		void Display()
-		{
-			for (int i = 0; i < (int)v_point.size(); i++)
-			{
-				cout << v_point[i] << endl;
-			}
-		}
 	};
 
 
 	class Polyhedron
 	{
 	public:
-		vector <Vector> v_point;
-		vector<vector<int> > v_facePointID;
-		vector<Vector> v_faceArea;
-		vector<Vector> v_faceCenter;
+		std::vector<Vector> v_point;
+		std::vector<std::vector<int> > v_facePointID;
+		std::vector<Vector> v_faceArea;
+		std::vector<Vector> v_faceCenter;
+		bool geometryCalculated;
 		Scalar volume;
+	private:
 		Vector center;
+	public:
 
 		Polyhedron();
 
@@ -50,41 +46,53 @@ namespace MHT
 
 		Polyhedron(ifstream& infile);
 
-		void ReadGeometry(ifstream& infile);
+		Polyhedron(std::istream& is);
 
-		void Display();
+		void Display() const;
 
-		void CalculateFaceGeometry();
+		void Check() const;
+
+		Scalar GetVolume() const;
+
+		Vector GetCenter() const;
 
 		void CalculateVolume();
 
 		void Clear();
 
-		void WriteDataFile(ofstream&);
+		void WriteDataFile(ofstream&) const;
 
-		void WriteTecplotFile(const string&);
+		void WriteTecplotFile(const string&) const;
 
-		void CutFaceIntoTriangle(int);
+		bool CutWhenNeeded(std::vector<bool>&);
 
-		bool CutWhenNeeded(vector<bool>&);
+		void CreateOldVerticeMap(Vector, Vector, Polyhedron&, std::vector<bool>&, std::vector<int>&);
 
-		bool IsContaining(Vector&);
+		bool IsContaining(Vector&) const;
 
-		bool IsExisting();
+		bool IsExisting() const;
 
-		void CreateOldVerticeMap(Vector, Vector, Polyhedron&, vector<bool>&, vector<int>&);
-
-		Polyhedron ClipByPlane(Vector, Vector, vector<int>&);
-
-		pair<Scalar, Scalar> CutByPlane(Vector, Vector);
+		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 
 		Polygon SearchCutPosition(Vector norm, Scalar volume, Scalar tolerance);
 
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
 
+		void WriteTecplotZones(std::ofstream&) const;
+
+	private:
+
+		void ReadGeometry(ifstream& infile);
+
+		void ReadGeometry(std::istream& is);
+
+		void CalculateFaceGeometry();
+
+		void CutFaceIntoTriangle(int);
+
 	};
 
-	Polyhedron operator && (Polyhedron& left, Polyhedron& right);
+	Polyhedron operator && (const Polyhedron& left, const Polyhedron& right);
 }
 
 #endif

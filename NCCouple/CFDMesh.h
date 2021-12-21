@@ -3,12 +3,10 @@
 
 #include "Mesh.h"
 
-class CFDMeshPoint : public MeshPoint
+class CFDMeshPoint : virtual public MeshPoint
 {
 public:
-	CFDMeshPoint() = delete;
-	CFDMeshPoint(int pointID, std::string polyFileName) : MeshPoint(pointID, polyFileName) {}
-	CFDMeshPoint(int pointID, std::istream& isf) : MeshPoint(pointID, isf) {}
+	CFDMeshPoint() {};
 
 public:
 	void SetValue(double value, ValueType vt) override {
@@ -50,11 +48,27 @@ private:
 	double m_density = 0.0;
 };
 
-class CFDMesh : public Mesh
+
+class MHTCFDMeshPoint : public CFDMeshPoint, public MHTMeshPoint
+{
+public:
+	MHTCFDMeshPoint(
+		int pointID,
+		std::istream& isf,
+		std::vector<int>& curveInfoVec,
+		Vector axisPoint,
+		Vector axisNorm) :
+		MeshPoint(pointID), CFDMeshPoint(), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
+};
+
+class CFDMesh : public GeneralMesh
 {
 public:
 	CFDMesh() = delete;
-	CFDMesh(std::string fileName);
+	CFDMesh(std::string fileName, MeshKernelType kernelType);
+	CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone);
+	void WriteTecplotFile(std::string);
+	void WriteTecplotFile(std::string,std::vector<int>&);
 };
 
 #endif

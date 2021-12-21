@@ -1,11 +1,12 @@
 #include "Polyhedron.h"
 #include "../MHT_common/GeometryTools.h"
+#include "../MHT_common/SystemControl.h"
 #include <algorithm>
 
 namespace MHT
 {
 	Polyhedron::Polyhedron()
-		:volume(0.0)
+		:volume(0.0),geometryCalculated(false)
 	{
 		v_point.clear();
 		v_facePointID.clear();
@@ -29,8 +30,20 @@ namespace MHT
 	(
 		ifstream& infile
 	)
+		:volume(0.0), geometryCalculated(false)
 	{
 		this->ReadGeometry(infile);
+		this->CalculateVolume();
+		return;
+	}
+
+	Polyhedron::Polyhedron
+	(
+		std::istream& is
+	)
+	{
+		this->ReadGeometry(is);
+		this->CalculateVolume();
 		return;
 	}
 
@@ -66,6 +79,42 @@ namespace MHT
 		return;
 	}
 
+	void Polyhedron::ReadGeometry(std::istream& is)
+	{
+		std::string oneline;
+		std::getline(is, oneline);
+		std::getline(is, oneline);
+		std::stringstream ss(oneline);
+		int nodeNum = 0;
+		int faceNum = 0;
+		ss >> nodeNum >> faceNum;
+		this->v_point.resize(nodeNum);
+		this->v_facePointID.resize(faceNum);
+		for (int nodeID = 0; nodeID < nodeNum; nodeID++)
+		{
+			std::getline(is, oneline);
+			std::stringstream nodeData(oneline);
+			Vector node;
+			nodeData >> node.x_ >> node.y_ >> node.z_;
+			this->v_point[nodeID] = node;
+		}
+		for (int faceID = 0; faceID < faceNum; faceID++)
+		{
+			std::getline(is, oneline);
+			std::stringstream faceData(oneline);
+			int nodeNumInFace = 0;
+			faceData >> nodeNumInFace;
+			this->v_facePointID[faceID].resize(nodeNumInFace);
+			for (int nodeCount = 0;nodeCount < nodeNumInFace; nodeCount++)
+			{
+				int nodeID;
+				faceData >> nodeID;
+				this->v_facePointID[faceID][nodeCount] = nodeID;
+			}
+		}
+		return;
+	}
+
 	void Polyhedron::Clear()
 	{
 		this->v_point.clear();
@@ -73,6 +122,7 @@ namespace MHT
 		this->v_faceCenter.clear();
 		this->v_faceArea.clear();
 		this->volume = 0.0;
+		this->geometryCalculated = false;
 		return;
 	}
 
@@ -84,7 +134,7 @@ namespace MHT
 		//calculate face centers and norms
 		Vector centerTemp(0.0, 0.0, 0.0);
 		Vector areaTemp(0.0, 0.0, 0.0);
-		vector<Vector> verticeList;
+		std::vector<Vector> verticeList;
 		for (int faceID = 0; faceID < faceNum; faceID++)
 		{
 			verticeList.clear();
@@ -106,14 +156,16 @@ namespace MHT
 		if (0 == this->v_point.size() || 0 == this->v_facePointID.size())
 		{
 			this->volume = 0.0;
+			this->geometryCalculated = true;
 			return;
 		}
 		this->CalculateFaceGeometry();
 		GetCenterAndVolume(this->v_faceCenter, this->v_faceArea, this->center, this->volume);
+		this->geometryCalculated = true;
 		return;
 	}
 
-	void Polyhedron::Display()
+	void Polyhedron::Display() const
 	{
 		cout << "This polyhedron is composed of points:" << endl;
 		for (int i = 0; i < (int)v_point.size(); i++)
@@ -133,7 +185,104 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::WriteDataFile(ofstream& outfile)
+	void Polyhedron::Check() const
+	{
+		//if the polyhedron is not existint, it is meaningless to check
+		if (false == this->IsExisting())
+		{
+			return;
+		}
+		std::stringstream errorMsg;
+		//error 1: there is no face
+		if (0 == this->v_faceArea.size())
+		{
+			FatalError("Polyhedron Check(): no face is found");
+			return;
+		}
+		bool pass = true;
+		Vector totalArea(0.0, 0.0, 0.0);
+		Scalar denominator = 0.0;
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			totalArea += this->v_faceArea[faceID];
+			denominator += this->v_faceArea[faceID].Mag();
+		}
+		//error 2: there are faces, but no face has area
+		if (denominator < SMALL)
+		{
+			errorMsg << "Polyhedron Check(): no face has any area" << std::endl;
+			this->Display();
+			pass = false;
+		}
+		else
+		{
+			Scalar faceAreaError = totalArea.Mag() / denominator;
+			//error 3: face areas are not conservative
+			if (faceAreaError > SMALL)
+			{
+				errorMsg << "Polyhedron Check(): the face areas are not conservative in this polyhedron:" << std::endl;
+				for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+				{
+					errorMsg << "face #" << faceID << ": " << this->v_faceArea[faceID] << std::endl;
+				}
+				errorMsg << "total area:" << totalArea << std::endl;
+				pass = false;
+			}
+		}
+		//error 4: wrong face direction
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			Vector faceArea = this->v_faceArea[faceID];
+			Vector faceCenter = this->v_faceCenter[faceID];
+			Vector OP = faceCenter - this->center;
+			Scalar OPdotSf = OP & faceArea;
+			if (OPdotSf < 0)
+			{
+				errorMsg << "Polyhedron Check(): direction of face #" << faceID << " is incorrect" << std::endl;
+				pass = false;
+			}
+		}
+		//error 5: negative volume
+		if (volume < 0)
+		{
+			errorMsg << "Polyhedron Check(): the volume is negative: " << this->volume << std::endl;
+		}
+		if (!pass)
+		{
+			FatalError(errorMsg.str());
+		}
+		return;
+	}
+
+	Scalar Polyhedron::GetVolume() const
+	{
+		if (false == this->geometryCalculated)
+		{
+			std::cout << "can not get the volume of this polyhedron, the geomety is not yet calculated" << std::endl;
+			exit(1);
+			return 0.0;
+		}
+		else
+		{
+			return this->volume;
+		}
+	}
+
+	Vector Polyhedron::GetCenter() const
+	{
+		if (false == this->geometryCalculated)
+		{
+			std::cout << "can not get the center of this polyhedron, the geomety is not yet calculated" << std::endl;
+			exit(1);
+			return Vector(0.0, 0.0, 0.0);
+		}
+		else
+		{
+			return this->center;
+		}
+	}
+
+	void Polyhedron::WriteDataFile(ofstream& outfile) const
 	{
 		outfile << this->v_point.size() << std::endl;
 		for (int i = 0; i < this->v_point.size(); i++)
@@ -156,7 +305,7 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::WriteTecplotFile(const string& filename)
+	void Polyhedron::WriteTecplotFile(const string& filename) const
 	{
 		int nCount(0);
 		int faceNum = (int)this->v_facePointID.size();
@@ -196,7 +345,7 @@ namespace MHT
 
 	void Polyhedron::CutFaceIntoTriangle(int nface)
 	{
-		vector<int> mirrorFace = this->v_facePointID[nface];
+		std::vector<int> mirrorFace = this->v_facePointID[nface];
 		int numVertices = (int)mirrorFace.size();
 		if (3 == numVertices)
 		{
@@ -214,7 +363,7 @@ namespace MHT
 		//new triangular faces created
 		for (int i = 1; i < numVertices; i++)
 		{
-			vector<int> newFace;
+			std::vector<int> newFace;
 			newFace.push_back(mirrorFace[i]);
 			newFace.push_back(mirrorFace[(i + 1) % numVertices]);
 			newFace.push_back(newPointID);
@@ -229,7 +378,13 @@ namespace MHT
 		return;
 	}
 
-	void Polyhedron::CreateOldVerticeMap(Vector pointOnPlane, Vector norm, Polyhedron& target, vector<bool>& inside, vector<int>& map)
+	void Polyhedron::CreateOldVerticeMap
+	(
+		Vector pointOnPlane, Vector norm, 
+		Polyhedron& target, 
+		std::vector<bool>& inside,
+		std::vector<int>& map
+	)
 	{
 		target.Clear();
 		inside.resize(this->v_point.size());
@@ -252,13 +407,13 @@ namespace MHT
 		return;
 	}
 
-	bool Polyhedron::CutWhenNeeded(vector<bool>& inside)
+	bool Polyhedron::CutWhenNeeded(std::vector<bool>& inside)
 	{
 		bool cutDone = false;
-		vector<int> faceToBeCut;
+		std::vector<int> faceToBeCut;
 		for (int faceID = 0; faceID < (int)this->v_facePointID.size(); faceID++)
 		{
-			vector<int>& thisFace = this->v_facePointID[faceID];
+			std::vector<int>& thisFace = this->v_facePointID[faceID];
 			int numVertices = (int)thisFace.size();
 			int numIntersections = 0;
 			for (int j = 0; j < (int)thisFace.size(); j++)
@@ -284,12 +439,13 @@ namespace MHT
 		return cutDone;
 	}
 
-	bool Polyhedron::IsContaining(Vector& point)
+	bool Polyhedron::IsContaining(Vector& point) const
 	{
 		bool contain = true;
 		for (int i = 0; i < this->v_faceCenter.size(); i++)
 		{
-			Vector pointToFace = this->v_faceCenter[i] - point;
+			Vector faceCenter = this->v_faceCenter[i];
+			Vector pointToFace = faceCenter - point;
 			if ((pointToFace & this->v_faceArea[i]) < 0)
 			{
 				contain = false;
@@ -299,7 +455,7 @@ namespace MHT
 		return contain;
 	}
 
-	bool Polyhedron::IsExisting()
+	bool Polyhedron::IsExisting() const
 	{
 		if (this->v_point.size() > 0)
 		{
@@ -311,13 +467,18 @@ namespace MHT
 		}
 	}
 
-	Polyhedron Polyhedron::ClipByPlane(Vector pointOnPlane, Vector planeNorm, vector<int>& newFacelist)
+	Polyhedron Polyhedron::ClipByPlane
+	(
+		Vector pointOnPlane, 
+		Vector planeNorm, 
+		std::vector<int>& newFacelist
+	)
 	{
 		Vector clipNorm = planeNorm.GetNormal();
 		newFacelist.clear();
 		//create temperal data needed in the algorithm
-		vector<bool> v_inside;
-		vector<int> v_newPointID;
+		std::vector<bool> v_inside;
+		std::vector<int> v_newPointID;
 		//create a new polygon without any data
 		Polyhedron targetPoly;
 
@@ -332,19 +493,19 @@ namespace MHT
 
 		int numOldPoints = (int)targetPoly.v_point.size();
 
-		vector<int> v_oldFaceID;
-		vector<bool> v_faceCut;
+		std::vector<int> v_oldFaceID;
+		std::vector<bool> v_faceCut;
 
 		//visit all faces to see whether they need to be created in the new polyhedron
 		for (int i = 0; i < (int)this->v_facePointID.size(); i++)
 		{
-			vector<int>& thisFace = this->v_facePointID[i];
+			std::vector<int>& thisFace = this->v_facePointID[i];
 			for (int j = 0; j < (int)this->v_facePointID[i].size(); j++)
 			{
 				int pointID = thisFace[j];
 				if (true == v_inside[pointID])
 				{
-					vector<int> newface;
+					std::vector<int> newface;
 					targetPoly.v_facePointID.push_back(newface);
 					v_oldFaceID.push_back(i);
 					v_faceCut.push_back(false);
@@ -361,7 +522,7 @@ namespace MHT
 		for (int i = 0; i < (int)v_oldFaceID.size(); i++)
 		{
 			int refFaceID = v_oldFaceID[i];
-			vector<int>& refFace = this->v_facePointID[refFaceID];
+			std::vector<int>& refFace = this->v_facePointID[refFaceID];
 			int numSides = (int)refFace.size();
 			for (int j = 0; j < numSides; j++)
 			{
@@ -404,14 +565,14 @@ namespace MHT
 		}
 
 		//create the last polygon face
-		vector<pair<int, int> > v_sideArror;
+		std::vector<std::pair<int, int> > v_sideArror;
 		for (int i = 0; i < (int)targetPoly.v_facePointID.size(); i++)
 		{
 			if (false == v_faceCut[i])
 			{
 				continue;
 			}
-			vector<int>& thisFace = targetPoly.v_facePointID[i];
+			std::vector<int>& thisFace = targetPoly.v_facePointID[i];
 			int numVertices = (int)thisFace.size();
 			//start from an old point
 			int jstart = 0;
@@ -461,7 +622,7 @@ namespace MHT
 			}
 		}
 
-		vector<vector<pair<int, int> > > v_groupedArror;
+		std::vector<std::vector<pair<int, int> > > v_groupedArror;
 
 		v_groupedArror.resize(1);
 		v_groupedArror[0].resize(1);
@@ -470,7 +631,7 @@ namespace MHT
 		{
 			if (v_sideArror[i].first != v_sideArror[i - 1].second)
 			{
-				vector<pair<int, int> > newgroup;
+				std::vector<pair<int, int> > newgroup;
 				v_groupedArror.push_back(newgroup);
 			}
 			v_groupedArror[v_groupedArror.size() - 1].push_back(v_sideArror[i]);
@@ -478,7 +639,7 @@ namespace MHT
 
 		for (int i = 0; i < (int)v_groupedArror.size(); i++)
 		{
-			vector<int> newface;
+			std::vector<int> newface;
 			for (int j = (int)v_groupedArror[i].size() - 1; j >= 0; j--)
 			{
 				newface.push_back(v_groupedArror[i][j].first);
@@ -486,24 +647,34 @@ namespace MHT
 			targetPoly.v_facePointID.push_back(newface);
 			newFacelist.push_back((int)targetPoly.v_facePointID.size() - 1);
 		}
-
 		return targetPoly;
 
 	}
 
-	Polyhedron operator && (Polyhedron& left, Polyhedron& right)
+	Polyhedron operator && (const Polyhedron& left, const Polyhedron& right)
 	{
-		right.CalculateFaceGeometry();
 		Polyhedron result = left;
-		vector<int> cutfaceID;
+		if (false == right.geometryCalculated)
+		{
+			std::cout << "Fatal error: in Polyhedron operator &&, the geometry of the rhs is not calculated" << std::endl;
+			exit(1);
+			return result;
+		}
+		std::vector<int> cutfaceID;
 		for (int i = 0; i < (int)right.v_facePointID.size(); i++)
 		{
 			result = result.ClipByPlane(right.v_faceCenter[i], right.v_faceArea[i], cutfaceID);
 		}
+		result.CalculateVolume();
 		return result;
 	}
 
-	Polygon Polyhedron::SearchCutPosition(Vector normal, Scalar volumeFraction, Scalar tolerance)
+	Polygon Polyhedron::SearchCutPosition
+	(
+		Vector normal,
+		Scalar volumeFraction,
+		Scalar tolerance
+	)
 	{
 		Vector norm = normal.GetNormal();
 		Scalar volumeDesired = volumeFraction * this->volume;
@@ -531,7 +702,7 @@ namespace MHT
 		Scalar alphaRight = totalLength;
 		Scalar alphaMiddle = volumeFraction * totalLength;
 		Polyhedron cutResult;
-		vector<int> v_cutFaceID;
+		std::vector<int> v_cutFaceID;
 		for (int i = 0; i < 100; i++)
 		{
 			cout << "i = " << i << endl;
@@ -543,7 +714,7 @@ namespace MHT
 			for (int i = 0; i < (int)v_cutFaceID.size(); i++)
 			{
 				int faceID = (int)v_cutFaceID[i];
-				vector<Vector> verticeList;
+				std::vector<Vector> verticeList;
 				for (int i = 0; i < (int)cutResult.v_facePointID[faceID].size(); i++)
 				{
 					int pointID = cutResult.v_facePointID[faceID][i];
@@ -603,7 +774,12 @@ namespace MHT
 		return cutFace;
 	}
 
-	Polygon Polyhedron::Reconstruction(Vector normal, Scalar volumeFraction, Scalar tolerance)
+	Polygon Polyhedron::Reconstruction
+	(
+		Vector normal,
+		Scalar volumeFraction,
+		Scalar tolerance
+	)
 	{
 		Polyhedron standardPoly = (*this);
 		Scalar alpha = pow(this->volume, 1.0 / 3.0);
@@ -619,5 +795,40 @@ namespace MHT
 			resultPolygon.v_point[i] = alpha * resultPolygon.v_point[i] + this->center;
 		}
 		return resultPolygon;
+	}
+
+
+	void Polyhedron::WriteTecplotZones(std::ofstream& outFile) const
+	{
+		int nCount(0);
+		int faceNum = (int)this->v_facePointID.size();
+		for (int i = 0; i < faceNum; i++)
+		{
+			nCount += (int)this->v_facePointID[i].size();
+		}
+
+		outFile << "ZONE T = " << "\"" << "polyhedron" << "\"," << " DATAPACKING = POINT, N = " << v_point.size() << ", E = "
+			<< nCount << ", ZONETYPE = FELINESEG" << std::endl;
+
+		for (unsigned int i = 0; i < v_point.size(); i++)
+		{
+			outFile << setprecision(8) << setiosflags(ios::scientific) << v_point[i].x_ << " " << v_point[i].y_ << " " << v_point[i].z_ << endl;
+		}
+
+		for (int i = 0; i < faceNum; i++)
+		{
+			for (int n = 0; n < (int)this->v_facePointID[i].size(); n++)
+			{
+				if (n == (int)this->v_facePointID[i].size() - 1)
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][0] + 1 << std::endl;
+				}
+				else
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][n + 1] + 1 << std::endl;
+				}
+			}
+		}
+		return;
 	}
 }

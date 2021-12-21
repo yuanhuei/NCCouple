@@ -340,3 +340,12 @@ ASALocalRun/
 healthchecksdb
 /out
 /tools/boost
+/tools
+/Polyhedron修改.txt
+/pin_c1.apl
+/pinW.msh
+/CFD9Tubes.msh
+/500_merge.vtk
+/500_combine.vtk
+/40wVTK.rar
+/NCCouple/CFDCELLS0.txt

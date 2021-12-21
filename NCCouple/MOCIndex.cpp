@@ -101,10 +101,15 @@ std::tuple<Scalar, Scalar, Scalar> MOCIndex::GetCylindricalCoordinate
 		return std::tuple<Scalar, Scalar, Scalar>(0.0, radius, height);
 	}
 	Scalar cosTheeta = radialProjection.GetNormal() & this->theetaStartNorm;
-	Scalar theeta = acos(cosTheeta);
-	if (((theetaStartNorm ^ radialProjection) & axisNorm) < 0.0)
+	Scalar theeta = 0.0;
+	//it can be avoid theeta resulted as 2PI when cosTheeta = 1.0
+	if (fabs(cosTheeta - 1.0) > 10.0 * SMALL)
 	{
-		theeta = 2.0 * PI - theeta;
+		theeta = acos(cosTheeta);
+		if (((theetaStartNorm ^ radialProjection) & axisNorm) < 0.0)
+		{
+			theeta = 2.0 * PI - theeta;
+		}
 	}
 	return std::tuple<Scalar, Scalar, Scalar>(theeta, radius, height);
 }

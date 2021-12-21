@@ -1,80 +1,34 @@
 #include "MOCMesh.h"
 #include <iostream> 
 #include <fstream>
-#include <unordered_map>
 #include <map>
-#include<tuple>
-#include"Logger.h"
+#include <tuple>
+#include <regex>
+#include "Logger.h"
 using namespace std;
+
 #define PI 3.14159265358979323846
-/*
-template <class... Args>
-static std::string FormatStr(const std::string& fmtStr, Args... args) {
-	auto size_buf = std::snprintf(nullptr, 0, fmtStr.c_str(), args ...) + 1;
-	std::unique_ptr<char[]> buf(new(std::nothrow) char[size_buf]);
+#define NA 6.022e23
+#define BARN 1.0e-24
 
-	if (!buf)
-		return std::string("");
-
-	std::snprintf(buf.get(), size_buf, fmtStr.c_str(), args ...);
-	return std::string(buf.get(), buf.get() + size_buf - 1);
-}
-*/
-double DensityConversion(std::string mediumName, std::string element, double mediumRho)
-{
-	typedef struct
-	{
-		std::string mediumName;
-		std::vector<std::string> element;
-		std::vector<int> elementNumber;
-		double relativeMolecularMass;
-	} Medium;
-
-	std::vector<Medium> mediumInformation{
-		{ "H2O",{"H","O"},{2,1},18.0 },
-		{ "UO2",{"U","O"},{1,2},270.0277 },
-		{ "He",{"He"},{1},4.002602 },
-		{ "Zr4",{"Zr"},{4},364.896 }
-	};
-
-	double NA = 6.022e23;
-	double barn = 1.0e-24;
-	double rhoNuclide = 0.0;
-	for (int i = 0; i < mediumInformation.size(); i++)
-	{
-		if (mediumName == mediumInformation[i].mediumName)
-		{
-			rhoNuclide = NA * mediumRho / mediumInformation[i].relativeMolecularMass * barn;
-			for (int j = 0; j < mediumInformation[i].element.size(); j++)
-			{
-				if (mediumInformation[i].element[j] == element)
-				{
-					rhoNuclide = rhoNuclide * mediumInformation[i].elementNumber[j];
-				}
-			}
-		}
-	}
-	return rhoNuclide;
-}
-
-MOCMesh::MOCMesh(std::string meshFileName) {
+MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
 	{
-	
-		Logger::LogError("cannot find the moc data file");
+		Logger::LogError("cannot find the moc data file:" + meshFileName);
 		exit(EXIT_FAILURE);
 	}
 	string line;
+	vector<string> meshMaterialNameTemperary;
+	vector<string> meshTemperatureNameTemperary;
 	vector<string> meshFaceTypeTemperary;
 	vector<string> meshFaceTemperatureNameTemperary;
 	vector<string> fileNameTemperary;
 	vector<int> meshIDTemperary;
-
+	int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
 	std::vector<Surface>allMeshFaces;   //all face objects
 	std::vector<Edge>allEdges;    //all edge objects
-
 	while (getline(infile, line))  //read mesh data
 	{
 		stringstream stringline(line);
@@ -105,7 +59,7 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 					getline(infile, lineType);
 					getline(infile, line);
 					getline(infile, linePosition);
-					setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges);
+					setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
 					break;
 				}
 				if (token == "Mesh_no_of_each_coarse_mesh")
@@ -144,7 +98,7 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 								stringlineMaterialType >> token;
 								break;
 							}
-							meshFaceTypeTemperary.push_back(tokenMaterialType);
+							meshMaterialNameTemperary.push_back(tokenMaterialType);
 						}
 					}
 				}
@@ -164,7 +118,7 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 								stringlineTemperatureName >> token;
 								break;
 							}
-							meshFaceTemperatureNameTemperary.push_back(tokenTemperatureName);
+							meshTemperatureNameTemperary.push_back(tokenTemperatureName);
 						}
 					}
 				}
@@ -172,15 +126,20 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 			break;
 		}
 	}
+
+	for (int j = 0; j < axialNum; j++)
+	{
+		for (int i = 0; i < layerMeshNum; i++)
+		{
+			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
+			meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+			meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
+		}
+	}
+
 	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
-	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary);
+	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
 	m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-	static std::unordered_map<std::string, MaterialType> materialNameTypeMap{
-		{ "H2O", MaterialType::H2O},
-		{ "UO2", MaterialType::UO2 },
-		{ "He", MaterialType::He },
-		{ "Zr4", MaterialType::Zr4 }
-	};
 	for (int j = 0; j < axialNum; j++)
 	{
 		for (int i = 0; i < layerMeshNum; i++)
@@ -188,11 +147,22 @@ MOCMesh::MOCMesh(std::string meshFileName) {
 			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum;
 			int index = i + j * layerMeshNum;
 
-			MaterialType faceType = MaterialType::UNKNOWN;
-			auto iter = materialNameTypeMap.find(meshFaceTypeTemperary[index]);
-			if (iter != materialNameTypeMap.end())
-				faceType = iter->second;
-			m_meshPointPtrVec[index] = std::make_shared<MOCMeshPoint>(meshIDtemp_, fileNameTemperary[index], faceType, meshFaceTemperatureNameTemperary[index]);
+			if (kernelType == MeshKernelType::MHT_KERNEL) {
+				Vector point, norm;
+				for (auto& edge : allMeshFaces[i].faceEdges) {
+					if (edge.edgeType == 3) {
+						point = edge.arcCenter;
+						norm = edge.arcAxisDir;
+						break;
+					}
+				}
+				std::ifstream ifs(fileNameTemperary[index]);
+				m_meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
+					meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
+					meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
+			}
+
+
 			const char* removeFile = fileNameTemperary[index].data();
 			if (remove(removeFile)) //delete file
 			{
@@ -236,7 +206,7 @@ void MOCMesh::setAxialInformation(string line)
 
 
 //set all edge objects
-void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges)
+void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh)
 {
 	vector<int> meshIDTemperary;
 	stringstream stringline(lineType);
@@ -262,6 +232,8 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 		std::array<double, 3> beginPoint{ beginPoint_x, beginPoint_y, 0.0 };
 		std::array<double, 3> endPoint{ endPoint_x, endPoint_y, 0.0 };
 		Edge edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
+		edge0.arcCenter = Vector(0.0, 0.0, 0.0);
+		edge0.arcAxisDir = Vector(0.0, 0.0, 0.0);
 		allEdges.push_back(edge0);  //conserve edge object
 	}
 
@@ -310,6 +282,8 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 				AditionArcEdgeID++;//为了保存多出来的弧边的ID
 				edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary + EdgeNum + AditionArcEdgeID, edgeTypeTemperary);  //edge object
 			}
+			edge0.arcCenter = Vector(Center_point_X, Center_point_Y, 0.0);
+			edge0.arcAxisDir = Vector(0.0, 0.0, 1.0);
 			allEdges.push_back(edge0);  //conserve edge object
 			Angle = Angle + fine_Delta_angle;
 		}
@@ -326,7 +300,7 @@ void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> 
 	}
 }
 
-void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer)
+void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
 {
 	string filename = "";
 	int H0 = 0, H1 = 0;
@@ -353,10 +327,13 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			ssID >> sID;
 			ssaxialID << (j + 1);
 			ssaxialID >> axialID;
-			filename = "poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
+			filename = nFineMesh + "_poly" + meshFaceTypeTransfer[index0] + "_" + sID + "_" + axialID;
 			index0++;
-			//cout << filename << endl;
-			filename = filename + ".off";
+
+			//filename = filename + ".off";		
+			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
+			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
+			
 			fileNameTransfer.push_back(filename);
 			ofstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
@@ -383,12 +360,18 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			{
 				outFile << pointNumPerMesh - 1 - allMeshFaces[i].facePointID[j] << "\t";//clockwise
 			}
+			allMeshFaces[i].curveInfo.push_back(0);
+			allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+			allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			outFile << endl;
 			outFile << pointNumPerMesh << "\t";//number of top points
 			for (int j = 0; j < pointNumPerMesh; j++)  //point id of top points;
 			{
 				outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";//anticlockwise
 			}
+			allMeshFaces[i].curveInfo.push_back(0);
+			allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+			allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 			outFile << endl;
 
 			for (int j = 0; j < pointNumPerMesh; j++)  //side faces；
@@ -402,6 +385,9 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					outFile << allMeshFaces[i].facePointID[j + 1] + pointNumPerMesh << "\t";
 					outFile << allMeshFaces[i].facePointID[j] + pointNumPerMesh << "\t";
 					outFile << endl;
+					allMeshFaces[i].curveInfo.push_back(0);
+					allMeshFaces[i].curveFaceCenter.push_back(Vector(0.0, 0.0, 0.0));
+					allMeshFaces[i].curveFaceAxisDir.push_back(Vector(0.0, 0.0, 0.0));
 				}
 				else if (presentEdgeTpye == 2)//圆
 				{
@@ -420,6 +406,9 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					}
 					outFile << endl;
 					j = j + nFineMesh - 1;//跳过多加进来的弧边
+					allMeshFaces[i].curveInfo.push_back(1);
+					allMeshFaces[i].curveFaceCenter.push_back(allMeshFaces[i].faceEdges[j].arcCenter);
+					allMeshFaces[i].curveFaceAxisDir.push_back(allMeshFaces[i].faceEdges[j].arcAxisDir);
 				}
 			}
 			outFile.close();  //close iostream
@@ -430,166 +419,60 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 void MOCMesh::OutputStatus(std::string outputFileName) const {
 	std::ofstream ofs(outputFileName);
 
-	std::map<MaterialType, double> materailVolumeMap;
-	std::map<MaterialType, double> materailMassMap;
-	std::unordered_map<std::string, double> temperatureMassMap;
-	std::unordered_map<std::string, double> temperatureEnergyMap;
-	for (int i = 0; i < m_meshPointPtrVec.size(); i++) {
-		std::shared_ptr<MOCMeshPoint> pointPtr = dynamic_pointer_cast<MOCMeshPoint>(m_meshPointPtrVec[i]);
-		MaterialType pointMaterialType = pointPtr->GetMaterialType();
-		materailVolumeMap[pointMaterialType] += pointPtr->Volume();
-		materailMassMap[pointMaterialType] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY);
+	ofs << m_preContext.str();
+	ofs << std::endl << "\t\t*   material definition" << std::endl;
+	for (auto meshPointPtr : m_meshPointPtrVec) {
+		ofs << std::endl;
+		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
+		std::string materialName = p_mocMeshPoint->GetMaterialName();
+		const Medium* p_medium = nullptr;
+		auto iter1 = m_mediumMap.find(materialName);
+		if (iter1 != m_mediumMap.end())
+			p_medium = &(iter1->second);
 
-		std::string temperatureName = pointPtr->GetTemperatureName();
-		temperatureMassMap[temperatureName] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY);
-		temperatureEnergyMap[temperatureName] += pointPtr->Volume() * pointPtr->GetValue(ValueType::DENSITY) *
-			pointPtr->GetValue(ValueType::TEMPERAURE);
-	}
+		std::smatch m;
+		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+			materialName += "_" + std::to_string(p_mocMeshPoint->PointID());
+			if (!p_medium) {
+				auto iter2 = m_mediumMap.find(materialName);
+				if (iter2 != m_mediumMap.end())
+					p_medium = &(iter2->second);
+			}
+		}
+			
+		ofs << FormatStr("\t\t\t '%s' = MAT (  /", materialName.c_str());
+		for (size_t i = 0; i < p_medium->eleFlagVec.size(); i++) {
+			int eleFlag = p_medium->eleFlagVec[i];
+			double eleDensity = p_medium->eleDensCalcFunVec[i](p_mocMeshPoint->GetValue(ValueType::DENSITY));
+			ofs << eleFlag << "," << FormatStr("%.6f", eleDensity);
 
-	std::string materialDef = "\t\t*   material definition\n";
-	for (auto iter : materailVolumeMap) {
-		double materialAverageDensity = materailMassMap[iter.first] / (iter.second + 1E-8);
-		switch (iter.first)
-		{
-		case MaterialType::H2O:
-		{
-			std::string defTemplate = R"(
-			'H2O' = MAT (  /1001, %lf;
-							8016, %lf;
-							5000, %lf)
-			)";
-			double H_density = DensityConversion("H2O", "H", materialAverageDensity);
-			double O_density = DensityConversion("H2O", "O", materialAverageDensity);
-			std::string h2oDef = FormatStr(defTemplate, H_density, H_density, O_density);
-			materialDef += h2oDef;
-			break;
-		}
-		case MaterialType::UO2:
-		{
-			std::string defTemplate = R"(
-			'UO2' = MAT ( /92235, %lf;
-							92238, %lf;
-							8001,  %lf)
-			)";
-			double U_density = DensityConversion("U2O", "U", materialAverageDensity);
-			double O_density = DensityConversion("U2O", "O", materialAverageDensity);
-			std::string uo2Def = FormatStr(defTemplate, U_density, O_density, O_density);
-			materialDef += uo2Def;
-			break;
-		}
-		case MaterialType::He:
-		{
-			std::string defTemplate = R"(
-			'He' = MAT (/1, %lf)
-			)";
-			double He_density = DensityConversion("He", "He", materialAverageDensity);
-			std::string heDef = FormatStr(defTemplate, He_density);
-			materialDef += heDef;
-			break;
-		}
-		case MaterialType::Zr4: {
-			std::string defTemplate = R"(
-			'Zr4' = MAT (/  40000, %lf;
-							26000, %lf;
-							8016, %lf;
-							6000, %lf;
-							72178, %lf;
-							73181, %lf;
-							41093, %lf;
-							24000, %lf)
-			)";
-			double Zr_density = DensityConversion("Zr4", "Zr", materialAverageDensity);
-			std::string zrDef = FormatStr(defTemplate, Zr_density, Zr_density, Zr_density, Zr_density,
-				Zr_density, Zr_density, Zr_density, Zr_density);
-			materialDef += zrDef;
-			break;
-		}
-		default:
-			break;
+			if (i != p_medium->eleFlagVec.size() - 1)
+				ofs << ";" << std::endl << "\t\t\t\t\t";
+			else
+				ofs << ")" << std::endl;
 		}
 	}
 
-	std::string temperatureDef = "\t\t*   temperature definition\n";
-	for (auto iter : temperatureMassMap) {
-		double averageTemp = temperatureEnergyMap[iter.first] / (iter.second + 1E-8);
-		std::string curtempDef = FormatStr("\t\t\t\t'%s' = TEMP(%lf)\n", iter.first.c_str(), averageTemp);
-		temperatureDef += curtempDef;
+	ofs << std::endl << "\t\t*   temperature definition" << std::endl;
+	for (auto meshPointPtr : m_meshPointPtrVec) {
+		ofs << std::endl;
+		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
+		std::string tempName = p_mocMeshPoint->GetTemperatureName();
+		std::smatch m;
+		if (!std::regex_search(tempName, m, std::regex(R"(_\d+)")))
+			tempName += "_" + std::to_string(p_mocMeshPoint->PointID());
+		
+		ofs << FormatStr("\t\t\t '%s' = TEMP(%.6lf)", tempName.c_str(), p_mocMeshPoint->GetValue(ValueType::TEMPERAURE)) << std::endl;
 	}
 
-	std::string prefix = R"(
-!KYLIN-2 input file
-
-#PROGRAM  pin.hdf5
-
-	MODULE: GENERAL
-		Title  
-		Date   
-		Case_Name program
-                         
-	MODULE: ATTRIBUTION     
-	)";
-	std::string suffix = R"(
-	MODULE: RAY_TRACE
-   
-		Distance_Between_Rays              0.001 
-		Azimuth_Angle_Num  10   
-		Polar_Angle         1  3
-      
-      
-	MODULE: LIBRARY
-		Group_Num          45
-		Lib_Name       lib\hy045n18g17a.dat
-        
-	MODULE: RESONANCE
-		Nuclide_Categorization   9
-     
-	MODULE: FLUX
-   
-		Keff_Iterative_Error 1.0E-5
-		Flux_Iterative_Error 1.0E-4
-		Pn_Order              0
-     
-	MODULE: LEAKAGE
-   
-	MODULE: DEPLETION 
-   
-		Steps_Number   1
-      
-		Burnup_Type   1 1  
-      
-		Burnup_Differential_Steps  0 25   
-      
-      
-		Power_Density 20.19  20.19
-      
-		Iterary_Mode P 
-   
-	MODULE: EDIT_OUTPUT_FOR_CORCA3D
-		Output_Name pin4_edit_for_corca3d      
-      
-		Output_Group 2 6.25E-7
-		Output_Burnup_Point 2  0 25
-      
-            
-		Edit_Geometry RECTANGLAR   1 1      
-		Edit_Geometry_Size_X 1.26
-		Edit_Geometry_Size_Y 1.26
-		Type ASSEMBLY WHOLE
-		Output_Cell_Layout 
-			1                           
-              
-#PROGRAM_END
-	)";
-
-	ofs << prefix << endl;
-	ofs << materialDef << endl;
-	ofs << temperatureDef << endl;
-	ofs << suffix;
+	ofs << std::endl << m_sufContext.str();
 
 	ofs.close();
+
+	return;
 }
 
-/*
+
 //输入MOC中心点坐标，计算出所属网格的编号
 int CalMeshIndex(double x, double y)
 {
@@ -660,7 +543,6 @@ int CalMeshIndexbyCFD(double x, double y)
 	//Logger::LogInfo(FormatStr("dDistance is : %f,angelNum: %d", dDistance, int(dAngletoX / dAngel)));
 	return iMeshIndex;
 }
-
 void MOCMesh::reOrganaziIndex()
 {
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec_copy(m_meshPointPtrVec);
@@ -677,7 +559,184 @@ void MOCMesh::reOrganaziIndex()
 	}
 
 }
-*/
+
+void MOCMesh::InitMOCValue(std::string inputFileName) {
+	std::ifstream ifs(inputFileName);
+	if (!ifs.is_open()) {
+		Logger::LogError("cannot find the cfd data file:" + inputFileName);
+		exit(EXIT_FAILURE);
+	}
+	m_mediumMap.clear();
+	m_preContext.clear();
+	m_sufContext.clear();
+
+	std::unordered_map<std::string, double> materialDensityMap, temperatureMap;
+	enum TOKEN {
+		MATERIAL_DEFINITION,
+		TEMPERATURE_DEFINITION,
+		OTHER_DEFINITION
+	} token = OTHER_DEFINITION;
+	std::string detailDef;
+	std::stringstream* p_currentContext = &m_preContext;
+	while (!ifs.eof()) {
+		std::string line;
+		std::getline(ifs, line);
+		TOKEN nextToken = token;
+		if (std::regex_search(line, std::regex(R"(\*\s*material\s+definition)")))
+			nextToken = MATERIAL_DEFINITION;
+		if (std::regex_search(line, std::regex(R"(\*\s*temperature\s+definition)")))
+			nextToken = TEMPERATURE_DEFINITION;
+		if (std::regex_search(line, std::regex(R"(MODULE)")))
+			nextToken = OTHER_DEFINITION;
+
+		if (nextToken != token) {
+			p_currentContext = &m_sufContext;
+			if (token == MATERIAL_DEFINITION) {
+				std::smatch outer_match;
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('\w+')"))) {
+					std::string materialName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
+					detailDef = outer_match.suffix().str();
+
+					std::regex_search(detailDef, outer_match, std::regex(R"(MAT[^\)]+\))"));
+					std::string matInfo = outer_match.str(0);
+					std::smatch innerMatch;
+					Medium& medium = m_mediumMap[materialName];
+					while (std::regex_search(matInfo, innerMatch, std::regex(R"([\d\.]+)"))) {
+						int eleFlag = std::stoi(innerMatch.str(0));
+						medium.eleFlagVec.push_back(eleFlag);
+
+						matInfo = innerMatch.suffix().str();
+						std::regex_search(matInfo, innerMatch, std::regex(R"([\d\.]+)"));
+						double eleDens = std::stod(innerMatch.str(0));
+						medium.eleDensCalcFunVec.push_back([eleDens](double) {return eleDens; });
+
+						matInfo = innerMatch.suffix().str();
+					}
+
+					if (materialName.find("H2O") != materialName.npos) {
+						double slackH2ODensity = 1e3;
+						for (size_t i = 0; i < medium.eleFlagVec.size(); i++) {
+							int eleFlag = medium.eleFlagVec[i];
+							if (eleFlag == 1001) {
+								double eleDensity = medium.eleDensCalcFunVec[i](0.0);
+								slackH2ODensity = eleDensity / (NA * BARN * 2) * 1800.0;
+								medium.eleDensCalcFunVec[i] = [](double density) {
+									return density / 1800.0 * NA * BARN * 2;
+								};
+							}
+							else if (eleFlag == 8016) {
+								medium.eleDensCalcFunVec[i] = [](double density) {
+									return density / 1800.0 * NA * BARN;
+								};
+							}
+						}
+						for (size_t i = 0; i < medium.eleFlagVec.size(); i++) {
+							int eleFlag = medium.eleFlagVec[i];
+							if (eleFlag == 5000) {
+								double eleDensity = medium.eleDensCalcFunVec[i](0.0);
+								medium.eleDensCalcFunVec[i] = [eleDensity, slackH2ODensity](double density) {
+									return density / slackH2ODensity * eleDensity;
+								};
+							}
+						}
+						materialDensityMap[materialName] = slackH2ODensity;
+					}
+					else
+						materialDensityMap[materialName] = 0.0;
+
+					detailDef = outer_match.suffix().str();
+				}
+			}
+			else if (token == TEMPERATURE_DEFINITION) {
+				std::smatch outer_match;
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('\w+')"))) {
+					std::string tempName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
+					detailDef = outer_match.suffix().str();
+
+					std::regex_search(detailDef, outer_match, std::regex(R"(TEMP[^\)]+\))"));
+					std::string tempInfo = outer_match.str(0);
+					std::smatch innerMatch;
+					std::regex_search(tempInfo, innerMatch, std::regex(R"([\d\.]+)"));
+					double tempValue = std::stod(innerMatch.str(0));
+
+					temperatureMap[tempName] = tempValue;
+					detailDef = outer_match.suffix().str();
+				}
+			}
+			
+			detailDef.clear();
+			token = nextToken;
+		}
+
+		if (token == MATERIAL_DEFINITION ||
+			token == TEMPERATURE_DEFINITION) {
+			detailDef += line;
+		}
+		else
+			*p_currentContext << line << std::endl;
+	}
+
+	ifs.close();
+
+	for (auto meshPointPtr : m_meshPointPtrVec) {
+		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
+		if (p_mocMeshPoint) {
+			{
+				std::smatch m;
+				std::string materialName = p_mocMeshPoint->GetMaterialName();
+				auto iter1 = materialDensityMap.find(materialName);
+				if (iter1 != materialDensityMap.end())
+					p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
+
+				if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+					std::string materialMetaName = m.prefix().str();
+					auto iter2 = materialDensityMap.find(materialMetaName);
+					if (iter2 != materialDensityMap.end()) {
+						p_mocMeshPoint->SetValue(iter2->second, ValueType::DENSITY);
+					}
+				}
+			}
+
+			{
+				std::smatch m;
+				std::string temperatureName = p_mocMeshPoint->GetTemperatureName();
+				auto iter1 = temperatureMap.find(temperatureName);
+				if (iter1 != temperatureMap.end())
+					p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
+
+				if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
+					std::string tempMetaName = m.prefix().str();
+					auto iter2 = temperatureMap.find(tempMetaName);
+					if (iter2 != temperatureMap.end()) {
+						p_mocMeshPoint->SetValue(iter2->second, ValueType::TEMPERAURE);
+					}
+				}
+			}
+		}
+	}
+
+	return;
+}
+
+void MOCMesh::WriteTecplotFile
+(
+	std::string  mType,
+	std::string fileName
+)
+{
+	std::ofstream ofile(fileName);
+	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
+		if (mType != mocPoint.GetMaterialName()) continue;
+		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+	ofile.close();
+	return;
+}
 
 Surface::Surface()
 {

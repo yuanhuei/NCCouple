@@ -7,8 +7,23 @@
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
-
-void InitCFDMeshValue(const Mesh& cfdMesh) 
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+#include "./MHT_mesh/UnGridFactory.h"
+#include "./MHT_mesh/RegionConnection.h"
+#include "./MHT_mesh/Mesh.h"
+#include "./MHT_field/Field.h"
+int g_iProcessID = 0;
+enum class Material
+{
+	H2O,
+	Zr4,
+	UO2
+};
+void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
 	{
@@ -23,7 +38,7 @@ void InitCFDMeshValue(const Mesh& cfdMesh)
 	return;
 }
 
-void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, ValueType vt) {
+void ConservationValidation(const GeneralMesh& sourceMesh, const GeneralMesh& targetMesh, ValueType vt) {
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
 
@@ -53,38 +68,20 @@ void ConservationValidation(const Mesh& sourceMesh, const Mesh& targetMesh, Valu
 	return;
 }
 
-int main()
+void MOCCFDMapping()
 {
-	std::ifstream testOFFFile("poly.off");
-	std::istream& is = testOFFFile;
-	std::vector<int> v_curvedList;
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(0);
-	v_curvedList.push_back(1);
-	v_curvedList.push_back(0);
-	Vector center = Vector(0.63, 0.63, 0.0);
-	Vector norm = Vector(0.0, 0.0, 1.0);
-	PolyhedronSet testPolyhedronSet(is, v_curvedList, center, norm);
-	testOFFFile.close();
-	std::cout << "Before clipping, the volume is " << testPolyhedronSet.volume << std::endl;
-	testPolyhedronSet.ClipIntoSubPolygons(10.02);
-	std::cout << "After clipping, the volume is " << testPolyhedronSet.volume << std::endl;
-	std::ifstream anotherTestOFFFile("anotherPoly.off");
-	std::istream& anotherIss = anotherTestOFFFile;
-	PolyhedronSet anotherPolyhedron(anotherIss, v_curvedList, center, norm);
-	anotherTestOFFFile.close();
-	Scalar volume = testPolyhedronSet.IntersectionVolumeWithPolyhedronSet(anotherPolyhedron);
-	std::cout << "volume = " << volume << std::endl;
-	Scalar volume1 = anotherPolyhedron.IntersectionVolumeWithPolyhedronSet(testPolyhedronSet);
-	std::cout << "volume1 = " << volume1 << std::endl;
-	
-	return 1;
+	//get processor ID
+	g_iProcessID = (int)getpid();
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	//examples for writing tecplot files of each materials
+	//Note: these file can be open by Tecplot
+	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
+	mocMesh.WriteTecplotFile("Zr4", "Zr4MOCFile.plt");
+	mocMesh.WriteTecplotFile("UO2", "U2OMOCFile.plt");
 
-	time_t start, end;
-	MOCMesh mocMesh("pin_c1.apl");
+	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
+	//the following information should be given for a specified tube
 	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
 	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
 	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
@@ -99,19 +96,79 @@ int main()
 	radiusList.push_back(0.475);
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
-
-	CFDMesh cfdMesh("CFDCELLS0.txt");
-	
+	//mapper solvers are created for each zone (H2O, Zr4 and U2O) 
+	time_t start, end;
 	start = time(NULL);
-	//Solver solver(mocMesh, cfdMesh);
-	Solver solver(mocMesh, cfdMesh, mocIndex);
+	//read cfd mesh and create solver
+	CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
+	H2OMapper.CheckMappingWeights();
+	/*
+	//read cfd mesh and create solver
+	CFDMesh Zr4cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::Zr4));
+	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
+	Zr4Mapper.CheckMappingWeights();
+	//read cfd mesh and create solver
+	CFDMesh U2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::UO2));
+	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
+	U2OMapper.CheckMappingWeights();
+	*/
 	end = time(NULL);
-
-	InitCFDMeshValue(cfdMesh);
-	solver.CFDtoMOCinterception(ValueType::DENSITY);
 	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
+	//initialization of a scalar field on CFD mesh at H2O region
+	InitCFDMeshValue(H2OcfdMesh);
+	//Mapping of the scalar field from CFD to MOC
+	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
+	//writting input file
 	mocMesh.OutputStatus("pin_c1.inp");
-	ConservationValidation(cfdMesh,mocMesh, ValueType::DENSITY);
-	ConservationValidation(mocMesh,cfdMesh, ValueType::DENSITY);
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	return;
+}
+
+
+
+void ReadCFDMesh()
+{
+	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+
+
+	Field<Scalar> P(pmesh, 0.0, "Pressure");
+	P.ReadVTK_Field("500_merge.vtk");
+
+	Field<Scalar> epsilon(pmesh, 0.0, "epsilon");
+	epsilon.ReadVTK_Field("500_merge.vtk");
+
+	Field<Scalar> K(pmesh, 0.0, "k");
+	K.ReadVTK_Field("500_merge.vtk");
+
+	epsilon.WriteTecplotField("epsilon.plt");
+	K.WriteTecplotField("K.plt");
+	P.WriteTecplotField("T.plt");
+	return;
+}
+
+
+
+int main()
+{
+	//VTKDataTest();
+	//MOCCFDMapping();
+	ReadCFDMesh();
+	//CFDMesh H2OcfdMesh("CFDCELLS0", MeshKernelType::MHT_KERNEL);
+	//CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	/*
+	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	std::vector<int> vMeshID;
+	for (int i = 0; i < 1000; i++)
+		vMeshID.push_back(i);
+	cfdMesh.WriteTecplotFile("cfdtemp.plt");// , vMeshID);
+	*/
+
 	return 0;
 }
