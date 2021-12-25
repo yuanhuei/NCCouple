@@ -138,9 +138,37 @@ void ReadCFDMesh()
 	return;
 }
 
+void ReadVTKField()
+{
+	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+
+
+	Field<Scalar> P(pmesh, 0.0, "Pressure");
+	P.ReadVTK_Field("500_merge.vtk");
+
+	Field<Scalar> epsilon(pmesh, 0.0, "epsilon");
+	epsilon.ReadVTK_Field("500_merge.vtk");
+
+	Field<Scalar> K(pmesh, 0.0, "k");
+	K.ReadVTK_Field("500_merge.vtk");
+
+	epsilon.WriteTecplotField("epsilon.plt");
+	K.WriteTecplotField("K.plt");
+	P.WriteTecplotField("T.plt");
+	return;
+}
+
+
+
 int main()
 {
-	MOCCFDMapping();
+	ReadVTKField();
+	//MOCCFDMapping();
 	//ReadCFDMesh();
+
 	return 0;
 }
