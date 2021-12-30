@@ -130,5 +130,4 @@ public:
 	void ReadVTK_Field(const std::string& inVTKFileName);
 };
 
-
 #endif

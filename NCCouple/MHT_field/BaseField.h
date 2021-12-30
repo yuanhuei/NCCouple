@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include "../MHT_common/Configuration.h"
-
+#include "../MHT_common/Vector.h"
 class Mesh;
 
 // Base class Field
@@ -58,4 +58,8 @@ public:
 
 };
 
+template<>
+Vector BaseField<Vector>::GetValue(const int ElementID) const;
+template<>
+void BaseField<Vector>::SetValue(const int ElementID, const Vector& value);
 #endif

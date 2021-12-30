@@ -1201,7 +1201,6 @@ void Field<Scalar>::WriteVTK_Field(const std::string& outMshFileName)
 
 	outFile.close();
 }
-
 template<>
 void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 {

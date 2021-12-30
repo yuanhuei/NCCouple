@@ -74,11 +74,10 @@ void MOCCFDMapping()
 	g_iProcessID = (int)getpid();
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	//examples for writing tecplot files of each materials
-	//Note: these file can be open by Tecplot
+	//Note: these file can be viewed by Tecplot
 	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
 	mocMesh.WriteTecplotFile("Zr4", "Zr4MOCFile.plt");
 	mocMesh.WriteTecplotFile("UO2", "U2OMOCFile.plt");
-
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -100,22 +99,21 @@ void MOCCFDMapping()
 	time_t start, end;
 	start = time(NULL);
 	//read cfd mesh and create solver
-	CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	std::string CFDMeshFile = "pinW.msh";
+	CFDMesh H2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
-	/*
 	//read cfd mesh and create solver
-	CFDMesh Zr4cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::Zr4));
+	CFDMesh Zr4cfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::Zr4));
 	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
 	Zr4Mapper.CheckMappingWeights();
 	//read cfd mesh and create solver
-	CFDMesh U2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::UO2));
+	CFDMesh U2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::UO2));
 	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
 	U2OMapper.CheckMappingWeights();
-	*/
 	end = time(NULL);
-	Logger::LogInfo(FormatStr("Time for caculatation:%d second", int(difftime(end, start))));
+	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
 	//initialization of a scalar field on CFD mesh at H2O region
 	InitCFDMeshValue(H2OcfdMesh);
 	//Mapping of the scalar field from CFD to MOC
@@ -127,9 +125,20 @@ void MOCCFDMapping()
 	return;
 }
 
-
-
 void ReadCFDMesh()
+{
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+
+	Field<Scalar> T(pmesh, 300.0, "T");
+	T.WriteTecplotField("T.plt");
+	return;
+}
+
+void ReadVTKField()
 {
 	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
@@ -157,18 +166,9 @@ void ReadCFDMesh()
 
 int main()
 {
-	//VTKDataTest();
+	ReadVTKField();
 	//MOCCFDMapping();
-	ReadCFDMesh();
-	//CFDMesh H2OcfdMesh("CFDCELLS0", MeshKernelType::MHT_KERNEL);
-	//CFDMesh H2OcfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
-	/*
-	CFDMesh cfdMesh("pinW.msh", MeshKernelType::MHT_KERNEL, int(Material::H2O));
-	std::vector<int> vMeshID;
-	for (int i = 0; i < 1000; i++)
-		vMeshID.push_back(i);
-	cfdMesh.WriteTecplotFile("cfdtemp.plt");// , vMeshID);
-	*/
+	//ReadCFDMesh();
 
 	return 0;
 }

@@ -126,8 +126,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		4	5	6	7	4
 		4	0	1	5	4
 	*/
-	std::ofstream of("outcfdtemp_cfd");
-	of << cellNum << std::endl;
 	for (int i = 0; i < cellNum; i++)
 	{
 		int verticesNum = pmesh->v_elem[i].v_nodeID.size();
@@ -136,16 +134,13 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		//mapping nodeIDs for each polyhedron
 		std::map<int, int> nodeID_id_map;
 		//write node coordinates in form like 0.0296111	0.0292265	0
-		of << verticesNum << std::endl;
 		for (int j = 0; j < verticesNum; j++) {
-			std::string verticesCordinateStr;
 			int iNodeID	=pmesh->v_elem[i].v_nodeID[j];
 			nodeID_id_map.insert(std::pair<int,int>(iNodeID, j));
-			verticesCordinateStr = std::to_string(pmesh->v_node[iNodeID].x_) + " " + std::to_string(pmesh->v_node[iNodeID].y_) + " " + std::to_string(pmesh->v_node[iNodeID].z_);
-			offFileLineVec.push_back(verticesCordinateStr);
-			of << verticesCordinateStr << std::endl;
+			std::stringstream strCor;
+			strCor << pmesh->v_node[iNodeID].x_ << " " << pmesh->v_node[iNodeID].y_ << " " << pmesh->v_node[iNodeID].z_;
+			offFileLineVec.push_back(strCor.str());
 		}
-		of << faceNum << std::endl;
 		//create faceID list in form like  4	3	2	1	0	
 		for (int j = 0; j < faceNum; j++) 
 		{
@@ -172,7 +167,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 				}
 			}
 			offFileLineVec.push_back(faceStr);
-			of << faceStr << std::endl;
 		}
 
 		auto constructMeshFun = [this, i, offFileLineVec, &mtx, &currentConstructMeshNum, kernelType,
@@ -198,7 +192,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		constructMeshFun();
 	}
 	infile.close();
-	of.close();
 	for (size_t i = 0; i < futureVec.size(); i++)
 	{
 		futureVec[i].get();
