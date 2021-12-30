@@ -202,31 +202,14 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType, int iMeshRegio
 
 CFDMesh::CFDMesh(Mesh* pmesh, MeshKernelType kernelType,int iMeshRegionZone)
 {
-	//std::ifstream infile(fileName);
 	if (pmesh == nullptr)
 		return;
-	/*
-	if (!infile.is_open())
-	{
-		Logger::LogError("cannot find the cfd data file:" + fileName);
-		exit(EXIT_FAILURE);
-	}
-	*/
 	if (iMeshRegionZone < 0)
 	{
 		Logger::LogError("wrong iRegionID input");
 		exit(EXIT_FAILURE);
 	}
-	/*
-	UnGridFactory meshFactoryCon(fileName, UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[iMeshRegionZone]);
-	*/
 	int cellNum = pmesh->n_elemNum;
-	//std::string cellNumStr;
-	//std::getline(infile, cellNumStr);
 	m_meshPointPtrVec.resize(cellNum);
 	Logger::LogInfo("reading CFD cells...");
 	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
@@ -317,7 +300,6 @@ CFDMesh::CFDMesh(Mesh* pmesh, MeshKernelType kernelType,int iMeshRegionZone)
 		};
 		constructMeshFun();
 	}
-	//infile.close();
 	for (size_t i = 0; i < futureVec.size(); i++)
 	{
 		futureVec[i].get();
