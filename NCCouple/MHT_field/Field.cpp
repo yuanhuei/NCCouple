@@ -1202,6 +1202,66 @@ void Field<Scalar>::WriteVTK_Field(const std::string& outMshFileName)
 	outFile.close();
 }
 
+template<>
+void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
+{
+	vtkObject::GlobalWarningDisplayOff();
+	std::string vtkFileName = "500_merge.vtk";
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName(vtkFileName.c_str());
+	reader->SetReadAllColorScalars(true);
+	reader->SetReadAllFields(true);
+	reader->SetReadAllScalars(true);
+	reader->Update();
+
+	vtkSmartPointer<vtkUnstructuredGrid> Grid;
+	Grid = reader->GetOutput();
+
+	vtkDataArray* fieldArray;
+
+	enum VTKFieldType
+	{
+		point =  0,
+		cell = 1,
+		field = 2
+	}vtkType;
+
+	fieldArray = Grid->GetPointData()->GetArray(st_name.c_str());
+	vtkType = point;
+	if (fieldArray==NULL)
+	{
+		fieldArray = Grid->GetCellData()->GetArray(st_name.c_str());
+		vtkType = cell;
+		if (fieldArray == NULL)
+		{
+			fieldArray = Grid->GetFieldData()->GetArray(st_name.c_str());
+			vtkType = field;
+			if (fieldArray == NULL)
+			{
+				FatalError("field name is wrong or haven't field in vtk file");
+			}
+		}
+	}
+
+	if (vtkType == point)
+	{
+		ElementToNode();
+		for (size_t i = 0; i < Grid->GetPointData()->GetArray(st_name.c_str())->GetNumberOfTuples(); i++)
+		{
+			nodeField.SetValue(i, Grid->GetPointData()->GetArray(st_name.c_str())->GetTuple1(i));
+		}
+	}
+	if (vtkType == cell)
+	{
+		for (size_t i = 0; i < Grid->GetCellData()->GetArray(st_name.c_str())->GetNumberOfTuples(); i++)
+		{
+			elementField.SetValue(i, Grid->GetCellData()->GetArray(st_name.c_str())->GetTuple1(i));
+		}
+	}
+
+	
+}
 // =======================================Vector Type Field=============================================
 
 //creating boundary fields according to mesh information
@@ -2385,4 +2445,12 @@ void Field<Vector>::WriteTecplotField(const std::string& outMshFileName, outType
 		}
 		outFile.close();
 	}
+}
+
+
+
+template<>
+void Field<Vector>::ReadVTK_Field(const std::string& inVTKFileName)
+{
+	
 }

@@ -14,7 +14,7 @@ Description:
 #define _PlatformOS_
 
 // Platform
-#define _BasePlatformWinddows_ 
+//#define _BasePlatformWinddows_ 
 //#define _BasePlatformLinux_
 
 // Macro define
