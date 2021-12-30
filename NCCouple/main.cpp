@@ -171,13 +171,60 @@ void ReadVTKField()
 	return;
 }
 
-
+void ReadVTKAndThenSolve()
+{
+	//get processor ID
+	g_iProcessID = (int)getpid();
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	//create an index for fast searching
+	MOCIndex mocIndex(mocMesh);
+	//the following information should be given for a specified tube
+	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
+	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
+	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	mocIndex.circularCellNum = 8;
+	mocIndex.axialCellNum = 5;
+	mocIndex.axialCellSize = 1.0;
+	std::vector<Scalar> radiusList;
+	radiusList.push_back(0.1024);
+	radiusList.push_back(0.2048);
+	radiusList.push_back(0.3072);
+	radiusList.push_back(0.4096);
+	radiusList.push_back(0.475);
+	mocIndex.SetRadial(radiusList);
+	mocIndex.BuildUpIndex();
+	//create MHT mesh
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+	//create MHT field
+	Field<Scalar> T(pmesh, 0.0, "T");
+	//read cfd mesh and create solver
+	std::string CFDMeshFile = "pinW.msh";
+	CFDMesh H2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
+	H2OMapper.CheckMappingWeights();
+	//read CFD Field From Field
+	T.ReadVTK_Field("pinW.vtk");
+	//ReadFromField(H2OcfdMesh,T,ValueType::TEMPERAURE);//to be written and tested
+	//WriteToField(H2OcfdMesh,T,ValueType::TEMPERAURE);//to be written and tested
+	//Mapping of the scalar field from CFD to MOC
+	H2OMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
+	//writting input file
+	mocMesh.OutputStatus("pin_c1.inp");
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::TEMPERAURE);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::TEMPERAURE);
+	return;
+}
 
 int main()
 {
 	//ReadVTKField();
 	//MOCCFDMapping();
-	ReadCFDMesh();
-
+	//ReadCFDMesh();
+	ReadVTKAndThenSolve();
 	return 0;
 }
