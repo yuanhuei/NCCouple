@@ -18,13 +18,11 @@ Revised:
 	Modified Date:	2018-11-28
 \*---------------------------------------------------------------------------*/
 
-#include "IO/FieldIO.h"
-
+#include "../MHT_IO/FieldIO.h"
 #include <map>
 #include <iomanip>
 #include "../MHT_mesh/Mesh.h"
 #include "../MHT_field/Field.h"
-
 
 FieldIO::FieldIO()
 	:

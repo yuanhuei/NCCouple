@@ -23,7 +23,8 @@ aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
 aux_source_directory(./NCCouple/MHT_mesh SOURCE_FILE4)
 aux_source_directory(./NCCouple/MHT_field SOURCE_FILE5)
-set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3} ${SOURCE_FILE4} ${SOURCE_FILE5})
+aux_source_directory(./NCCouple/MHT_IO SOURCE_FILE6)
+set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3} ${SOURCE_FILE4} ${SOURCE_FILE5} ${SOURCE_FILE6})
 set(INCLUDE_DIR 
 	./NCCoouple 
 	./tools

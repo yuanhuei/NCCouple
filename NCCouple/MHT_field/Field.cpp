@@ -1205,10 +1205,8 @@ template<>
 void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 {
 	vtkObject::GlobalWarningDisplayOff();
-	std::string vtkFileName = "500_merge.vtk";
-
 	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(vtkFileName.c_str());
+	reader->SetFileName(inVTKFileName.c_str());
 	reader->SetReadAllColorScalars(true);
 	reader->SetReadAllFields(true);
 	reader->SetReadAllScalars(true);

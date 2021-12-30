@@ -16,6 +16,8 @@
 #include "./MHT_mesh/RegionConnection.h"
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
+#include "./MHT_IO/FieldIO.h"
+
 int g_iProcessID = 0;
 enum class Material
 {
@@ -133,8 +135,14 @@ void ReadCFDMesh()
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 
-	Field<Scalar> T(pmesh, 300.0, "T");
+	Field<Scalar> T(pmesh, 0.0, "T");
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
+	T.ReadVTK_Field("pinW.vtk");
+	rho.ReadVTK_Field("pinW.vtk");
 	T.WriteTecplotField("T.plt");
+	system("T.plt");
+	rho.WriteTecplotField("rho.plt");
+	system("rho.plt");
 	return;
 }
 
@@ -148,6 +156,7 @@ void ReadVTKField()
 
 
 	Field<Scalar> P(pmesh, 0.0, "Pressure");
+
 	P.ReadVTK_Field("500_merge.vtk");
 
 	Field<Scalar> epsilon(pmesh, 0.0, "epsilon");
@@ -166,9 +175,9 @@ void ReadVTKField()
 
 int main()
 {
-	ReadVTKField();
+	//ReadVTKField();
 	//MOCCFDMapping();
-	//ReadCFDMesh();
+	ReadCFDMesh();
 
 	return 0;
 }
