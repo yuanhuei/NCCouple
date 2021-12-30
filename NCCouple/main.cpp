@@ -171,12 +171,17 @@ void ReadVTKField()
 	return;
 }
 
-
+void MOC_APL_INP_FileTest() {
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp");
+	mocMesh.OutputStatus("pin_c1_out.inp");
+}
 
 int main()
 {
 	//ReadVTKField();
 	//MOCCFDMapping();
+	MOC_APL_INP_FileTest();
 	ReadCFDMesh();
 
 	return 0;
