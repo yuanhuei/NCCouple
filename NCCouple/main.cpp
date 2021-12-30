@@ -135,7 +135,7 @@ void ReadCFDMesh()
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 
-	Field<Scalar> T(pmesh, initialT, "T");
+	Field<Scalar> T(pmesh, 0.0, "T");
 	Field<Scalar> rho(pmesh, 0.0, "Rho");
 	T.ReadVTK_Field("pinW.vtk");
 	rho.ReadVTK_Field("pinW.vtk");

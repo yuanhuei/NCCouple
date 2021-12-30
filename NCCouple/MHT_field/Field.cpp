@@ -580,7 +580,15 @@ void Field<Scalar>::WriteTecplotField(const std::string& outMshFileName)
 
 	if (p_blockMesh->md_meshDim == Mesh::md2D)
 	{
-        outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\"Field Var\"" << std::endl;
+		if (this->st_name!="")
+		{
+			outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\""<<this->st_name << "\"" << std::endl;
+		}
+		else
+		{
+			outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\"Field Var\"" << std::endl;
+		}
+ 
 
 		if (p_blockMesh->est_shapeType == Element::estTriangular)
 		{
@@ -730,7 +738,16 @@ void Field<Scalar>::WriteTecplotField(const std::string& outMshFileName)
 		}
 		else
 		{
-            outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\"z [m]\"" << "\"Field Var\"" << std::endl;
+			if (this->st_name!="")
+			{
+				outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\"z [m]\"" << "\"" << this->st_name << "\"" << std::endl;
+			}
+			else
+			{
+				outFile << "VARIABLES = " << "\"x [m]\"," << "\"y [m]\"," << "\"z [m]\"" << "\"Field Var\"" << std::endl;
+			}
+
+            
 
 			if (p_blockMesh->est_shapeType == Element::estTetrahedral)
 			{
@@ -1281,6 +1298,7 @@ void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 		{
 			nodeField.SetValue(i, Grid->GetPointData()->GetArray(st_name.c_str())->GetTuple1(i));
 		}
+		NodeToElement();
 	}
 	if (vtkType == cell)
 	{
