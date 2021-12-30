@@ -20,6 +20,11 @@
           "name": "CMAKE_RC_FLAGS",
           "value": "-DWIN32",
           "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS_DEBUG",
+          "value": "/MD /Zi /Ob0 /Od /RTC1",
+          "type": "STRING"
         }
       ]
     },

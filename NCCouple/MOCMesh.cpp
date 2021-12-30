@@ -13,6 +13,7 @@ using namespace std;
 
 MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
+	ofstream outFile("addID_" + meshFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
 	{
@@ -31,6 +32,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 	std::vector<Edge>allEdges;    //all edge objects
 	while (getline(infile, line))  //read mesh data
 	{
+		outFile << line << endl;
 		stringstream stringline(line);
 		string token;
 		while (stringline >> token)
@@ -41,12 +43,14 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 				if (token == "Mesh")
 				{
 					getline(infile, line);
+					outFile << line << endl;
 					setMeshInformation(line);
 					break;
 				}
 				if (token == "AXIAL")
 				{
 					getline(infile, line);
+					outFile << line << endl;
 					setAxialInformation(line);
 					break;
 				}
@@ -57,8 +61,11 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 					string lineType;
 					string linePosition;
 					getline(infile, lineType);
+					outFile << lineType << endl;
 					getline(infile, line);
+					outFile << line << endl;
 					getline(infile, linePosition);
+					outFile << linePosition << endl;
 					setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
 					break;
 				}
@@ -69,6 +76,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 					while (out0 != 0)
 					{
 						getline(infile, line);
+						outFile << line << endl;
 						stringstream stringlineMeshID(line);
 						while (stringlineMeshID >> tokenMeshId)
 						{
@@ -84,6 +92,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 				}
 				if (token == "Material_name_of_each_mesh")
 				{
+					int ID_order = 1;
 					string tokenMaterialType = "";
 					int out0 = 1;
 					while (out0 != 0)
@@ -99,11 +108,22 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 								break;
 							}
 							meshMaterialNameTemperary.push_back(tokenMaterialType);
+							outFile << tokenMaterialType << "_" << ID_order << "  ";
+							ID_order++;
+						}
+						if (out0 != 0)
+						{
+							outFile << endl;
+						}
+						else
+						{
+							outFile << line << endl;
 						}
 					}
 				}
 				if (token == "Temperature_name_of_each_mesh")
 				{
+					int ID_order = 1;
 					string tokenTemperatureName = "";
 					int out0 = 1;
 					while (out0 != 0)
@@ -119,6 +139,16 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 								break;
 							}
 							meshTemperatureNameTemperary.push_back(tokenTemperatureName);
+							outFile << tokenTemperatureName << "_" << ID_order << "  ";
+							ID_order++;
+						}
+						if (out0 != 0)
+						{
+							outFile << endl;
+						}
+						else
+						{
+							outFile << line << endl;
 						}
 					}
 				}
@@ -126,6 +156,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
 			break;
 		}
 	}
+	outFile.close();
 
 	for (int j = 0; j < axialNum; j++)
 	{
