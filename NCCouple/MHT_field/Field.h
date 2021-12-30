@@ -106,6 +106,9 @@ public:
 	//interpolate from element to node
 	void ElementToNode();
 
+	//interpolation from node to element
+	void NodeToElement();
+
 	//Kong Ling supplemented on 2019/12/23
 	//extract values on a specfic boundary
 	std::vector<Type> ExtractBoundary(const std::string&);

@@ -419,6 +419,39 @@ void Field<Scalar>::ElementToFace(const std::string& option1, const std::string&
 }
 
 template<>
+void Field<Scalar>::NodeToElement()
+{
+	//step 1: check whether the element field has values on it
+	if (false == this->nodeField.Assignment())
+	{
+		FatalError("Cannot proceed NodeToElement for not passing Assignment Check");
+	}
+	//step 2: create elementfield if not existing
+	if (BaseField<Scalar>::fsNotExist == nodeField.fs_status)
+	{
+		elementField.Initialize();
+	}
+	//step 3: visit all nodes in mesh data
+	for (int i = 0; i < p_blockMesh->n_elemNum; i++)
+	{
+        std::vector<Node> relativePos;
+        std::vector<Scalar> value;
+		Vector cellCenter = p_blockMesh->v_elem[i].center;
+		for (int j = 0;j < p_blockMesh->v_elem[i].v_nodeID.size();j++)
+		{
+			int nodeID = p_blockMesh->v_elem[i].v_nodeID[j];
+			Scalar nodeValue = this->nodeField.GetValue(nodeID);
+			relativePos.push_back(p_blockMesh->v_node[nodeID] - cellCenter);
+			value.push_back(nodeValue);
+		}
+		Scalar interpolatedValue = Interpolation(relativePos, value);
+		elementField.SetValue(i, interpolatedValue);
+	}
+	elementField.fs_status = BaseField<Scalar>::fsAssigned;
+	return;
+}
+
+template<>
 void Field<Scalar>::ElementToNode()
 {
 	//step 1: check whether the element field has values on it
@@ -434,9 +467,9 @@ void Field<Scalar>::ElementToNode()
 	//step 3: visit all nodes in mesh data
 	for (int i = 0; i < (int)p_blockMesh->v_vertice.size(); i++)
 	{
-        std::vector<Node> relativePos;
-        std::vector<Scalar> value;
-        std::vector<bool> isBoundary;
+		std::vector<Node> relativePos;
+		std::vector<Scalar> value;
+		std::vector<bool> isBoundary;
 		//step 3.1: collect topological information from element field
 		for (int j = 0; j < (int)p_blockMesh->v_vertice[i].v_elemID.size(); j++)
 		{
@@ -476,8 +509,8 @@ void Field<Scalar>::ElementToNode()
 		}
 		if (true == hasBoundary)
 		{
-            std::vector<Node> relativePos_backup;
-            std::vector<Scalar> value_backup;
+			std::vector<Node> relativePos_backup;
+			std::vector<Scalar> value_backup;
 			for (int j = 0; j < (int)isBoundary.size(); j++)
 			{
 				relativePos_backup.push_back(relativePos[j]);
@@ -1702,6 +1735,39 @@ void Field<Vector>::ElementToNode()
 	}
 
 	nodeField.fs_status = BaseField<Vector>::fsAssigned;
+}
+
+template<>
+void Field<Vector>::NodeToElement()
+{
+	//step 1: check whether the element field has values on it
+	if (false == this->nodeField.Assignment())
+	{
+		FatalError("Cannot proceed NodeToElement for not passing Assignment Check");
+	}
+	//step 2: create elementfield if not existing
+	if (BaseField<Vector>::fsNotExist == nodeField.fs_status)
+	{
+		elementField.Initialize();
+	}
+	//step 3: visit all nodes in mesh data
+	for (int i = 0; i < p_blockMesh->n_elemNum; i++)
+	{
+		std::vector<Node> relativePos;
+		std::vector<Vector> value;
+		Vector cellCenter = p_blockMesh->v_elem[i].center;
+		for (int j = 0;j < p_blockMesh->v_elem[i].v_nodeID.size();j++)
+		{
+			int nodeID = p_blockMesh->v_elem[i].v_nodeID[j];
+			Vector nodeValue = this->nodeField.GetValue(nodeID);
+			relativePos.push_back(p_blockMesh->v_node[nodeID] - cellCenter);
+			value.push_back(nodeValue);
+		}
+		Vector interpolatedValue = Interpolation(relativePos, value);
+		elementField.SetValue(i, interpolatedValue);
+	}
+	elementField.fs_status = BaseField<Vector>::fsAssigned;
+	return;
 }
 
 //Kong Ling supplemented on 2019/12/23
