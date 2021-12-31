@@ -70,7 +70,7 @@ void MOCFieldsToCFD
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 	//create MHT field
-	Field<Scalar> rho(pmesh, 0.0, "Rho");
+	Field<Scalar> heatpower (pmesh, 0.0, "heatpower");
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 
@@ -79,19 +79,8 @@ void MOCFieldsToCFD
 
 	H2OMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 
-	H2OcfdMesh.SetFieldValue(rho, ValueType::HEATPOWER);
-	rho.WriteVTK_Field(strOutput_vtkFileName);
-
-
-	//read CFD Field From Field
-	rho.ReadVTK_Field("pinW.vtk");
-	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
-	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
-	H2OMapper.MOCtoCFDinterception(ValueType::DENSITY);
-	H2OcfdMesh.SetFieldValue(rho, ValueType::DENSITY);
-	rho.WriteTecplotField("rho.plt");
-
-
+	H2OcfdMesh.SetFieldValue(heatpower, ValueType::HEATPOWER);
+	heatpower.WriteVTK_Field(strOutput_vtkFileName);
 }
 
 void CFDFieldsToMOC

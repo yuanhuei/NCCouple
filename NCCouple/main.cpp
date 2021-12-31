@@ -7,6 +7,8 @@
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
+#include "FileConvertor.h"
+#include <string.h>
 #ifdef _WIN32
 #include <process.h>
 #else
@@ -223,12 +225,98 @@ void MOC_APL_INP_FileTest()
 	return;
 }
 
-int main()
+int main(int argc, char** argv)
 {
-	ReadCFDMeshAndFieldTest();
-	SolverCreatingTest();
-	SolverCreatingAndMappingTest();
-	MOC_APL_INP_FileTest();
+	/*
+	五种输入格式,其它都非法
+	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl
+	NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh
+	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl
+	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh
+	NCCouple test
+	*/
+	if (argc != 2 || argc != 5 || argc != 6)
+	{
+		Logger::LogError("wrong parameter input");
+		exit(EXIT_FAILURE);
+	}
+
+	if (strcpy(argv[1],"cfdtomoc")==0)
+	{
+		if (strcpy(argv[2],"renew")==0)
+		{
+			//根据已经保存的插值系数初始化
+			std::string argv3 = argv[3];
+			std::string argv4 = argv[4];
+			std::string argv5 = argv[5];
+			if (argv3.find(".msh") == std::string::npos || argv4.find(".vtk") == std::string::npos
+				|| argv3.find(".apl") == std::string::npos)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
+			std::string strOutput_inpName = argv5.substr(0, argv5.find(".")) + ".inp";
+
+		}
+		else
+		{
+			//第一次插值，需要做插值计算
+			//MOCFieldsToCFD
+			std::string argv2 = argv[2];
+			std::string argv3 = argv[3];
+			std::string argv4 = argv[4];
+			if (argv2.find(".msh") == std::string::npos || argv3.find(".vtk") == std::string::npos
+				|| argv4.find(".apl") == std::string::npos)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
+			std::string strOutput_inpName = argv4.substr(0, argv4.find(".")) + ".inp";
+			CFDFieldsToMOC(argv2,argv3,argv4, strOutput_inpName);
+		}
+	}
+	else if (strcpy(argv[1], "moctocfd") == 0 )
+	{
+		if (strcpy(argv[2], "renew") == 0)
+		{
+			//根据已经保存的插值系数初始化
+			std::string argv3 = argv[3];
+			std::string argv4 = argv[4];
+			std::string argv5 = argv[5];
+			if (argv3.find(".apl") == std::string::npos || argv4.find(".inp") == std::string::npos
+				|| argv3.find(".msh") == std::string::npos)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
+			std::string strOutput_vtkName = argv5.substr(0, argv5.find(".")) + ".vtk";
+		}
+		else
+		{
+			//第一次插值，需要做插值计算
+			//MOCFieldsToCFD(std::string(argv[
+			std::string argv2 = argv[2];
+			std::string argv3 = argv[3];
+			std::string argv4 = argv[4];
+			if (argv2.find(".apl") == std::string::npos || argv3.find(".inp") == std::string::npos
+				|| argv4.find(".msh") == std::string::npos)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
+			std::string strOutput_vtkName = argv4.substr(0, argv4.find(".")) + ".vtk";
+			MOCFieldsToCFD(argv2, argv3, argv4, strOutput_vtkName);
+		}
+	}
+	else if (strcpy(argv[1], "test") == 0 )
+	{
+		ReadCFDMeshAndFieldTest();
+		SolverCreatingTest();
+		SolverCreatingAndMappingTest();
+		MOC_APL_INP_FileTest();
+
+	}
+
 	return 0;
 
 
