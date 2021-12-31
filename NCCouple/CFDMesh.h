@@ -1,7 +1,7 @@
 #ifndef CFDMESH_HEADER
 #define CFDMESH_HEADER
 
-#include "Mesh.h"
+#include "GeneralMesh.h"
 class Mesh;
 template<class Type>
 class Field;
@@ -68,8 +68,6 @@ class CFDMesh : public GeneralMesh
 {
 public:
 	CFDMesh() = delete;
-	CFDMesh(std::string fileName, MeshKernelType kernelType);
-	CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone);
 	CFDMesh(Mesh* pmesh, MeshKernelType kernelType, int iMeshRegionZone);
 	void WriteTecplotFile(std::string);
 	void WriteTecplotFile(std::string,std::vector<int>&);

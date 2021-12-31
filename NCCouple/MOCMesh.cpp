@@ -11,8 +11,8 @@ using namespace std;
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType) {
-	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
+MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType)
+{
 	ofstream outFile("addID_" + meshFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
