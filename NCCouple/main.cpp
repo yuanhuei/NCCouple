@@ -101,6 +101,30 @@ void MOCCFDMapping()
 	time_t start, end;
 	start = time(NULL);
 	//read cfd mesh and create solver
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+
+	Field<Scalar> T(pmesh, 0.0, "T");
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
+	T.ReadVTK_Field("pinW.vtk");
+	rho.ReadVTK_Field("pinW.vtk");
+
+	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
+
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
+	H2OMapper.CheckMappingWeights();
+	//Mapping of the scalar field from CFD to MOC
+	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
+	//writting input file
+	mocMesh.OutputStatus("pin_c1.inp");
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+
+	/*
 	std::string CFDMeshFile = "pinW.msh";
 	CFDMesh H2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
@@ -124,6 +148,9 @@ void MOCCFDMapping()
 	mocMesh.OutputStatus("pin_c1.inp");
 	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+
+	*/
+
 	return;
 }
 
@@ -143,6 +170,10 @@ void ReadCFDMesh()
 	system("T.plt");
 	rho.WriteTecplotField("rho.plt");
 	system("rho.plt");
+
+	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	H2OcfdMesh.SetValueVec(T.elementField.v_value, ValueType::TEMPERAURE);
+	H2OcfdMesh.SetFieldValue(T, ValueType::TEMPERAURE);
 	return;
 }
 
@@ -229,6 +260,9 @@ void MOC_APL_INP_FileTest()
 int main()
 {
 	//ReadVTKField();
+	MOCCFDMapping();
+	//ReadCFDMesh();
+
 	MOCCFDMapping();
 	//MOC_APL_INP_FileTest();
 	//ReadCFDMesh();

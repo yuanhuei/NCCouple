@@ -2,6 +2,9 @@
 #define CFDMESH_HEADER
 
 #include "Mesh.h"
+class Mesh;
+template<class Type>
+class Field;
 
 class CFDMeshPoint : virtual public MeshPoint
 {
@@ -67,8 +70,10 @@ public:
 	CFDMesh() = delete;
 	CFDMesh(std::string fileName, MeshKernelType kernelType);
 	CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone);
+	CFDMesh(Mesh* pmesh, MeshKernelType kernelType, int iMeshRegionZone);
 	void WriteTecplotFile(std::string);
 	void WriteTecplotFile(std::string,std::vector<int>&);
+	void SetFieldValue(Field<Scalar>& field, ValueType vt);
 };
 
 #endif
