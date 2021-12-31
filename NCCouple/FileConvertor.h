@@ -1,3 +1,6 @@
+
+#ifndef FILECONVERTOR_HEADER
+#define FILECONVERTOR_HEADER
 #include "./Solver.h"
 #include <string>
 
@@ -11,14 +14,19 @@ void CreateSolver
 
 void MOCFieldsToCFD
 (
-	Solver& solver
-	std::string inpFileName,
-	std::string vtkFileName
-	);
+	std::string  strInput_aplFileName,
+	std::string strInput_inpFileName,
+	std::string strInput_meshFileName,
+	std::string strOutput_vtkFileName
+);
 
 void CFDFieldsToMOC
 (
-	Solver& solver
-	std::string inpFileName,
-	std::string vtkFileName
+	std::string strInput_meshFileName,
+	std::string strInput_vtkFileName,
+	std::string  strInput_aplFileName,
+	std::string strOutput_inpFileName
+
 );
+
+#endif
