@@ -4,6 +4,7 @@
 #include <mutex>
 #include<algorithm>
 
+extern int g_iProcessID;
 
 #define INTERSECT_JUDGE_LIMIT 1e-10
 Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
@@ -301,8 +302,8 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 
 void Solver::writeMapInfortoFile()
 {
-	ofstream CFDtoMOC_MapFile("CFDtoMOC_MapFile");
-	ofstream MOCtoCFD_MapFile("MOCtoCFD_MapFile");
+	ofstream CFDtoMOC_MapFile(materialName+"_CFDtoMOC_MapFile");
+	ofstream MOCtoCFD_MapFile(materialName+"_MOCtoCFD_MapFile");
 
 	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{
@@ -327,7 +328,7 @@ int Solver::readMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
 	m_MOC_CFD_Map.resize(m_mocMeshPtr->GetMeshPointNum());
-	ifstream infile("CFDtoMOC_MapFile");
+	ifstream infile(materialName+"_CFDtoMOC_MapFile");
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the CFDtoMOC_MapFile:" );
@@ -345,7 +346,7 @@ int Solver::readMapInfor()
 	}
 	infile.close();
 
-	infile= ifstream("MOCtoCFD_MapFile");
+	infile= ifstream(materialName+"_MOCtoCFD_MapFile");
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the MOCtoCFD_MapFile:");
