@@ -220,16 +220,17 @@ void MOC_APL_INP_FileTest()
 int main(int argc, char** argv)
 {
 	/*
-	五种输入格式,其它都非法
+	六种输入格式,其它都非法
 	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl
 	NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh
 	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl
 	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh
 	NCCouple 
+	NCCouple --help
 	*/
 	//get processor ID
 	g_iProcessID = (int)getpid();
-	if (argc != 1 && argc != 5 && argc != 6)
+	if (argc != 1 && argc != 5 && argc != 6&&argc!=2)
 	{
 		Logger::LogError("Wrong parameter input");
 		exit(EXIT_FAILURE);
@@ -242,6 +243,19 @@ int main(int argc, char** argv)
 		//MOC_APL_INP_FileTest();
 		return 0;
 
+	}
+	if (argc == 2)
+	{
+		if (strcmp(argv[1], "--help") == 0)
+		{
+			std::cout << "Please input command like this:" << std::endl;
+			std::cout << "NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl" << std::endl;
+			std::cout << "NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh" << std::endl;
+			std::cout << "NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl" << std::endl;
+			std::cout << "NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh" << std::endl;
+			std::cout << "NCCouple" << std::endl;
+		}
+		return 0;
 	}
 
 	if (strcmp(argv[1],"cfdtomoc")==0)
