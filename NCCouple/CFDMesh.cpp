@@ -7,100 +7,16 @@
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
 
-CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType) {
-	std::ifstream infile(fileName);
-	if (!infile.is_open())
-	{
-		Logger::LogError("cannot find the cfd data file:" + fileName);
-		exit(EXIT_FAILURE);
-	}
-	int cellNum = 0;
-	std::string cellNumStr;
-	std::getline(infile, cellNumStr);
-	cellNum = std::stoi(cellNumStr);
-	m_meshPointPtrVec.resize(cellNum);
-	
-	Logger::LogInfo("reading CFD cells...");
-	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
-
-	std::mutex mtx;
-	int currentConstructMeshNum = 0;
-	std::vector<std::future<void>> futureVec;
-	for (int i = 0; i < cellNum; i++)
-	{
-		std::vector<std::string> offFileLineVec;
-		int verticesNum = 0;
-		std::string verticesNumStr;
-		std::getline(infile, verticesNumStr);
-		verticesNum = std::stoi(verticesNumStr);
-		for (int j = 0; j < verticesNum; j++) {
-			std::string verticesCordinateStr;
-			std::getline(infile, verticesCordinateStr);
-			offFileLineVec.push_back(verticesCordinateStr);
-		}
-		int faceNum = 0;
-		std::string faceNumStr;
-		std::getline(infile, faceNumStr);
-		faceNum = std::stoi(faceNumStr);
-		for (int j = 0; j < faceNum; j++) {
-			std::string faceStr;
-			std::getline(infile, faceStr);
-			offFileLineVec.push_back(faceStr);
-		}
-
-		auto constructMeshFun = [this, i, offFileLineVec, &mtx, &currentConstructMeshNum, kernelType,
-			verticesNum, faceNum, cellNum]() {
-			std::string polyDesc = FormatStr("%d %d 0", verticesNum, faceNum);
-			std::stringstream ss;
-			ss << "OFF" << std::endl;
-			ss << polyDesc << std::endl;
-			for (auto& lineStr : offFileLineVec)
-				ss << lineStr << std::endl;
-
-			if (kernelType == MeshKernelType::MHT_KERNEL)
-			{
-				std::vector<int> curveInfo(faceNum, 0.0);
-				Vector point, norm;
-				m_meshPointPtrVec[i] = std::make_shared<MHTCFDMeshPoint>(i, ss,
-					curveInfo, point, norm);
-			}
-				
-			std::lock_guard<std::mutex> lg(mtx);
-			currentConstructMeshNum++;
-			if(currentConstructMeshNum % (cellNum / 10) == 0)
-				Logger::LogInfo(FormatStr("%.2lf%% completed", currentConstructMeshNum * 100.0 / cellNum));
-		};
-		//constructMeshFun();
-		futureVec.push_back(std::async(std::launch::async | std::launch::deferred, constructMeshFun));
-	}
-	infile.close();
-
-	for (size_t i = 0; i < futureVec.size(); i++)
-		futureVec[i].get();
-}
-
-CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegionZone)
+CFDMesh::CFDMesh(Mesh* pmesh, MeshKernelType kernelType,int iMeshRegionZone)
 {
-	std::ifstream infile(fileName);
-	if (!infile.is_open())
-	{
-		Logger::LogError("cannot find the cfd data file:" + fileName);
-		exit(EXIT_FAILURE);
-	}
+	if (pmesh == nullptr)
+		return;
 	if (iMeshRegionZone < 0)
 	{
 		Logger::LogError("wrong iRegionID input");
 		exit(EXIT_FAILURE);
 	}
-	UnGridFactory meshFactoryCon(fileName, UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[iMeshRegionZone]);
-
 	int cellNum = pmesh->n_elemNum;
-	std::string cellNumStr;
-	std::getline(infile, cellNumStr);
 	m_meshPointPtrVec.resize(cellNum);
 	Logger::LogInfo("reading CFD cells...");
 	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
@@ -191,7 +107,6 @@ CFDMesh::CFDMesh(std::string fileName, MeshKernelType kernelType,int iMeshRegion
 		};
 		constructMeshFun();
 	}
-	infile.close();
 	for (size_t i = 0; i < futureVec.size(); i++)
 	{
 		futureVec[i].get();
@@ -223,5 +138,14 @@ void CFDMesh::WriteTecplotFile(std::string fileName, std::vector<int>& vMeshID)
 		mhtPolyhedron.WriteTecplotZones(ofile);
 	}
 	ofile.close();
+	return;
+}
+
+void CFDMesh::SetFieldValue(Field<Scalar>& field, ValueType vt)
+{
+	for (int i = 0; i < m_meshPointPtrVec.size(); i++)
+	{
+		field.elementField.SetValue(i, m_meshPointPtrVec[i]->GetValue(vt));
+	}
 	return;
 }

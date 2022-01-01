@@ -12,6 +12,7 @@
 #else
 #include <unistd.h>
 #endif
+#include "./MHT_common/SystemControl.h"
 #include "./MHT_mesh/UnGridFactory.h"
 #include "./MHT_mesh/RegionConnection.h"
 #include "./MHT_mesh/Mesh.h"
@@ -25,6 +26,7 @@ enum class Material
 	Zr4,
 	UO2
 };
+
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
@@ -40,7 +42,13 @@ void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 	return;
 }
 
-void ConservationValidation(const GeneralMesh& sourceMesh, const GeneralMesh& targetMesh, ValueType vt) {
+void ConservationValidation
+(
+	const GeneralMesh& sourceMesh,
+	const GeneralMesh& targetMesh,
+	ValueType vt
+) 
+{
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
 
@@ -70,8 +78,34 @@ void ConservationValidation(const GeneralMesh& sourceMesh, const GeneralMesh& ta
 	return;
 }
 
-void MOCCFDMapping()
+//this example was designed for test of
+//(1) reading a CFD mesh file
+//(2) creating a field and read variables from a vkt file
+void ReadCFDMeshAndFieldTest()
 {
+	WarningContinue("ReadCFDMeshAndFieldTest");
+	//open a mesh file
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+	//create field and read from vtk file
+	Field<Scalar> T(pmesh, 0.0, "T");
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
+	T.ReadVTK_Field("pinW.vtk");
+	rho.ReadVTK_Field("pinW.vtk");
+	T.WriteTecplotField("T.plt");
+	rho.WriteTecplotField("rho.plt");
+	return;
+}
+
+//this example was designed for test of
+//(1) creating mapping solvers for different regions
+//(2) conservation validation of H2O region
+void SolverCreatingTest()
+{
+	WarningContinue("SolverCreatingTest");
 	//get processor ID
 	g_iProcessID = (int)getpid();
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
@@ -100,84 +134,102 @@ void MOCCFDMapping()
 	//mapper solvers are created for each zone (H2O, Zr4 and U2O) 
 	time_t start, end;
 	start = time(NULL);
+	//read cfd mesh
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh0 = &(FluentPtrCon->v_regionGrid[0]);
+	Mesh* pmesh1 = &(FluentPtrCon->v_regionGrid[1]);
+	Mesh* pmesh2 = &(FluentPtrCon->v_regionGrid[2]);
 	//read cfd mesh and create solver
-	std::string CFDMeshFile = "pinW.msh";
-	CFDMesh H2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::H2O));
-	//CFDMesh H2OcfdMesh("outcfdtemp_cfd", MeshKernelType::MHT_KERNEL);
+	CFDMesh H2OcfdMesh(pmesh0, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 	//read cfd mesh and create solver
-	CFDMesh Zr4cfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::Zr4));
+	CFDMesh Zr4cfdMesh(pmesh1, MeshKernelType::MHT_KERNEL, int(Material::Zr4));
 	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
 	Zr4Mapper.CheckMappingWeights();
 	//read cfd mesh and create solver
-	CFDMesh U2OcfdMesh(CFDMeshFile, MeshKernelType::MHT_KERNEL, int(Material::UO2));
+	CFDMesh U2OcfdMesh(pmesh2, MeshKernelType::MHT_KERNEL, int(Material::UO2));
 	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
 	U2OMapper.CheckMappingWeights();
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
-	//initialization of a scalar field on CFD mesh at H2O region
-	InitCFDMeshValue(H2OcfdMesh);
-	//Mapping of the scalar field from CFD to MOC
-	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
-	//writting input file
-	mocMesh.OutputStatus("pin_c1.inp");
+	//Conservation Validation in H2O region
 	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
 	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
 	return;
 }
 
-void ReadCFDMesh()
+//this example was designed for test of
+//(1) creating a solver
+//(2) reading field from a vtk file
+//(3) interpolations of CFD to MOC and then MOC to CFD
+void SolverCreatingAndMappingTest()
 {
+	WarningContinue("SolverCreatingAndMappingTest");
+	//get processor ID
+	g_iProcessID = (int)getpid();
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	//create an index for fast searching
+	MOCIndex mocIndex(mocMesh);
+	//the following information should be given for a specified tube
+	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
+	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
+	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	mocIndex.circularCellNum = 8;
+	mocIndex.axialCellNum = 5;
+	mocIndex.axialCellSize = 1.0;
+	std::vector<Scalar> radiusList;
+	radiusList.push_back(0.1024);
+	radiusList.push_back(0.2048);
+	radiusList.push_back(0.3072);
+	radiusList.push_back(0.4096);
+	radiusList.push_back(0.475);
+	mocIndex.SetRadial(radiusList);
+	mocIndex.BuildUpIndex();
+	//create MHT mesh
 	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
 	RegionConnection Bridges;
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
-
-	Field<Scalar> T(pmesh, 0.0, "T");
-	Field<Scalar> rho(pmesh, 0.0, "Rho");
-	T.ReadVTK_Field("pinW.vtk");
+	//create MHT field
+	Field<Scalar> rho(pmesh, 0.0,"Rho");
+	//read cfd mesh and create solver
+	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
+	H2OMapper.CheckMappingWeights();
+	//read CFD Field From Field
 	rho.ReadVTK_Field("pinW.vtk");
-	T.WriteTecplotField("T.plt");
-	system("T.plt");
+	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
+	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
+	H2OMapper.MOCtoCFDinterception(ValueType::DENSITY);
+	H2OcfdMesh.SetFieldValue(rho, ValueType::DENSITY);
 	rho.WriteTecplotField("rho.plt");
-	system("rho.plt");
 	return;
 }
 
-void ReadVTKField()
+//this example was designed for test of
+//(1) rewritting a apl file
+//(2) reading and writting of inp files
+void MOC_APL_INP_FileTest() 
 {
-	UnGridFactory meshFactoryCon("CFD9Tubes.msh", UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
-
-
-	Field<Scalar> P(pmesh, 0.0, "Pressure");
-
-	P.ReadVTK_Field("500_merge.vtk");
-
-	Field<Scalar> epsilon(pmesh, 0.0, "epsilon");
-	epsilon.ReadVTK_Field("500_merge.vtk");
-
-	Field<Scalar> K(pmesh, 0.0, "k");
-	K.ReadVTK_Field("500_merge.vtk");
-
-	epsilon.WriteTecplotField("epsilon.plt");
-	K.WriteTecplotField("K.plt");
-	P.WriteTecplotField("T.plt");
+	WarningContinue("MOC_APL_INP_FileTest");
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp");
+	mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
-
-
 
 int main()
 {
-	//ReadVTKField();
-	//MOCCFDMapping();
-	ReadCFDMesh();
-
+	ReadCFDMeshAndFieldTest();
+	SolverCreatingTest();
+	SolverCreatingAndMappingTest();
+	MOC_APL_INP_FileTest();
 	return 0;
+
+
 }

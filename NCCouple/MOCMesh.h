@@ -1,7 +1,7 @@
 #ifndef MOCMESH_HEADER
 #define MOCMESH_HEADER
 
-#include "Mesh.h"
+#include "GeneralMesh.h"
 #include <algorithm>
 #include <array>
 #include <unordered_map>
