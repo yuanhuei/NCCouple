@@ -130,7 +130,7 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
