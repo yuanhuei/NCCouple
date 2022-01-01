@@ -6,12 +6,8 @@
 #include "Solver.h"
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
-#include<time.h>
-#ifdef _WIN32
-#include <process.h>
-#else
-#include <unistd.h>
-#endif
+#include "FileConvertor.h"
+
 #include "./MHT_common/SystemControl.h"
 #include "./MHT_mesh/UnGridFactory.h"
 #include "./MHT_mesh/RegionConnection.h"
@@ -37,12 +33,11 @@ void MOCFieldsToCFD
 	std::string  strInput_aplFileName,
 	std::string strInput_inpFileName,
 	std::string strInput_meshFileName,
-	std::string strOutput_vtkFileName
+	std::string strOutput_vtkFileName,
+	bool bRenew
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	//get processor ID
-	g_iProcessID = (int)getpid();
 	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
@@ -73,14 +68,21 @@ void MOCFieldsToCFD
 	Field<Scalar> heatpower (pmesh, 0.0, "heatpower");
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	Solver H2OMapper;
+	if(bRenew)
+		H2OMapper=Solver(mocMesh, H2OcfdMesh, "H2O"); 
+	else
+		H2OMapper=Solver(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 
 	H2OMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 
-	H2OcfdMesh.SetFieldValue(heatpower, ValueType::HEATPOWER);
+	H2OcfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 	heatpower.WriteVTK_Field(strOutput_vtkFileName);
+
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::HEATPOWER);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::HEATPOWER);
 }
 
 void CFDFieldsToMOC
@@ -88,13 +90,12 @@ void CFDFieldsToMOC
 	std::string strInput_meshFileName,
 	std::string strInput_vtkFileName,
 	std::string  strInput_aplFileName,
-	std::string strOutput_inpFileName
-
+	std::string strOutput_inpFileName,
+	bool bRenew//判断是否是第一次做插值，false为第一次
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	//get processor ID
-	g_iProcessID = (int)getpid();
+
 	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
@@ -122,7 +123,7 @@ void CFDFieldsToMOC
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 	//create MHT field
 	Field<Scalar> rho(pmesh, 0.0, "Rho");
-	rho.ReadVTK_Field(vtkFileName);
+	rho.ReadVTK_Field(strInput_vtkFileName);
 	Field<Scalar> T(pmesh, 0.0, "T");
 	T.ReadVTK_Field(strInput_vtkFileName);
 
@@ -130,11 +131,23 @@ void CFDFieldsToMOC
 	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
 	H2OcfdMesh.SetValueVec(T.elementField.v_value, ValueType::TEMPERAURE);
+	Solver H2OMapper;
+	if (bRenew)
+		H2OMapper = Solver(mocMesh, H2OcfdMesh, "H2O");
+	else
+		H2OMapper = Solver(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
 	H2OMapper.CheckMappingWeights();
 
 	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
+	H2OMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
+
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::TEMPERAURE);
+	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::TEMPERAURE);
 
 	mocMesh.OutputStatus(strOutput_inpFileName);
+
+	
 }

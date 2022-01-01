@@ -73,6 +73,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 		}
 	}
 	*/
+	writeMapInfortoFile();
 }
 
 Solver::Solver
@@ -174,7 +175,7 @@ Solver::Solver
 	}
 
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
-
+	writeMapInfortoFile();
 }
 
 void Solver::CheckMappingWeights()
@@ -296,4 +297,78 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 	targetMesh->SetValueVec(targetValueField, vt);
 
 	return;
+}
+
+void Solver::writeMapInfortoFile()
+{
+	ofstream CFDtoMOC_MapFile("CFDtoMOC_MapFile");
+	ofstream MOCtoCFD_MapFile("MOCtoCFD_MapFile");
+
+	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
+	{
+		std::unordered_map<int, double>::iterator it;
+		for (it = m_CFD_MOC_Map[i].begin(); it != m_CFD_MOC_Map[i].end(); it++)
+			CFDtoMOC_MapFile << i << " " << it->first << " " << it->second << std::endl;
+
+	}
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	{
+		std::unordered_map<int, double>::iterator it;
+		for (it = m_MOC_CFD_Map[i].begin(); it != m_MOC_CFD_Map[i].end(); it++)
+			MOCtoCFD_MapFile << i << " " << it->first << " " << it->second << std::endl;
+
+	}
+	CFDtoMOC_MapFile.close();
+	MOCtoCFD_MapFile.close();
+
+}
+
+int Solver::readMapInfor()
+{
+	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
+	m_MOC_CFD_Map.resize(m_mocMeshPtr->GetMeshPointNum());
+	ifstream infile("CFDtoMOC_MapFile");
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the CFDtoMOC_MapFile:" );
+		return -1;
+	}
+	std::string line;
+	while (getline(infile, line))
+	{
+		int i, j;
+		double k;
+		stringstream stringline(line);
+		stringline >> i >> j >> k;
+		m_CFD_MOC_Map[i][j] = k;
+
+	}
+	infile.close();
+
+	infile= ifstream("MOCtoCFD_MapFile");
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the MOCtoCFD_MapFile:");
+		return -1;
+	}
+	while (getline(infile, line))
+	{
+		int i, j;
+		double k;
+		stringstream stringline(line);
+		stringline >> i >> j >> k;
+		m_MOC_CFD_Map[i][j] = k;
+
+	}
+	infile.close();
+}
+
+
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName)
+	:
+	m_mocMeshPtr(&mocMesh),
+	m_cfdMeshPtr(&cfdMesh),
+	materialName(mName)
+{
+	readMapInfor();
 }

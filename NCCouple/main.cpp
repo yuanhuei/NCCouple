@@ -22,12 +22,7 @@
 #include "./MHT_IO/FieldIO.h"
 
 int g_iProcessID = 0;
-enum class Material
-{
-	H2O,
-	Zr4,
-	UO2
-};
+
 
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
@@ -108,8 +103,6 @@ void ReadCFDMeshAndFieldTest()
 void SolverCreatingTest()
 {
 	WarningContinue("SolverCreatingTest");
-	//get processor ID
-	g_iProcessID = (int)getpid();
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	//examples for writing tecplot files of each materials
 	//Note: these file can be viewed by Tecplot
@@ -171,8 +164,6 @@ void SolverCreatingTest()
 void SolverCreatingAndMappingTest()
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	//get processor ID
-	g_iProcessID = (int)getpid();
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
@@ -208,7 +199,8 @@ void SolverCreatingAndMappingTest()
 	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
 	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
 	H2OMapper.MOCtoCFDinterception(ValueType::DENSITY);
-	H2OcfdMesh.SetFieldValue(rho, ValueType::DENSITY);
+	mocMesh.OutputStatus("pin_cl.inp");
+	H2OcfdMesh.SetFieldValue(rho.elementField.v_value, ValueType::DENSITY);
 	rho.WriteTecplotField("rho.plt");
 	return;
 }
@@ -233,30 +225,41 @@ int main(int argc, char** argv)
 	NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh
 	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl
 	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh
-	NCCouple test
+	NCCouple 
 	*/
-	if (argc != 2 || argc != 5 || argc != 6)
+	//get processor ID
+	g_iProcessID = (int)getpid();
+	if (argc != 1 && argc != 5 && argc != 6)
 	{
-		Logger::LogError("wrong parameter input");
+		Logger::LogError("Wrong parameter input");
 		exit(EXIT_FAILURE);
 	}
-
-	if (strcpy(argv[1],"cfdtomoc")==0)
+	if (argc == 1)
 	{
-		if (strcpy(argv[2],"renew")==0)
+		//ReadCFDMeshAndFieldTest();
+		//SolverCreatingTest();
+		SolverCreatingAndMappingTest();
+		//MOC_APL_INP_FileTest();
+		return 0;
+
+	}
+
+	if (strcmp(argv[1],"cfdtomoc")==0)
+	{
+		if (strcmp(argv[2],"renew")==0)
 		{
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
 			if (argv3.find(".msh") == std::string::npos || argv4.find(".vtk") == std::string::npos
-				|| argv3.find(".apl") == std::string::npos)
+				|| argv5.find(".apl") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
 			std::string strOutput_inpName = argv5.substr(0, argv5.find(".")) + ".inp";
-
+			CFDFieldsToMOC(argv3, argv4, argv5, strOutput_inpName,true);
 		}
 		else
 		{
@@ -275,21 +278,22 @@ int main(int argc, char** argv)
 			CFDFieldsToMOC(argv2,argv3,argv4, strOutput_inpName);
 		}
 	}
-	else if (strcpy(argv[1], "moctocfd") == 0 )
+	else if (strcmp(argv[1], "moctocfd") == 0 )
 	{
-		if (strcpy(argv[2], "renew") == 0)
+		if (strcmp(argv[2], "renew") == 0)
 		{
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
 			if (argv3.find(".apl") == std::string::npos || argv4.find(".inp") == std::string::npos
-				|| argv3.find(".msh") == std::string::npos)
+				|| argv5.find(".msh") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
 			std::string strOutput_vtkName = argv5.substr(0, argv5.find(".")) + ".vtk";
+			MOCFieldsToCFD(argv3, argv4, argv5, strOutput_vtkName, true);
 		}
 		else
 		{
@@ -308,16 +312,10 @@ int main(int argc, char** argv)
 			MOCFieldsToCFD(argv2, argv3, argv4, strOutput_vtkName);
 		}
 	}
-	else if (strcpy(argv[1], "test") == 0 )
+	else
 	{
-		ReadCFDMeshAndFieldTest();
-		SolverCreatingTest();
-		SolverCreatingAndMappingTest();
-		MOC_APL_INP_FileTest();
-
+		Logger::LogError("wrong parameter input");
+		exit(EXIT_FAILURE);
 	}
-
 	return 0;
-
-
 }

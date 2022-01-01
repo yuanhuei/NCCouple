@@ -8,9 +8,10 @@
 
 class Solver {
 public:
-	Solver() = delete;
+	Solver() {};
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName);
 	void CheckMappingWeights();
 
 public:
@@ -31,6 +32,8 @@ public:
 
 private:
 	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
+	void writeMapInfortoFile();
+	int readMapInfor();
 
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;
