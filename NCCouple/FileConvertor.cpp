@@ -32,6 +32,7 @@ void MOCFieldsToCFD
 (
 	std::string  strInput_aplFileName,
 	std::string strInput_inpFileName,
+	std::string strInput_txtFileName,
 	std::string strInput_meshFileName,
 	std::string strOutput_vtkFileName,
 	bool bRenew
@@ -39,6 +40,7 @@ void MOCFieldsToCFD
 {
 	WarningContinue("SolverCreatingAndMappingTest");
 	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
+	//mocMesh.InitMOCValue("pin_c1.inp");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -97,6 +99,7 @@ void CFDFieldsToMOC
 	WarningContinue("SolverCreatingAndMappingTest");
 
 	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube

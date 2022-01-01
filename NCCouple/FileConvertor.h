@@ -21,6 +21,7 @@ void MOCFieldsToCFD
 (
 	std::string  strInput_aplFileName,
 	std::string strInput_inpFileName,
+	std::string strInput_txtFileName,
 	std::string strInput_meshFileName,
 	std::string strOutput_vtkFileName,
 	bool bRenew=false//判断是否是第一次做插值，false为第一次

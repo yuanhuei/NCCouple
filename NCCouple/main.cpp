@@ -165,6 +165,7 @@ void SolverCreatingAndMappingTest()
 {
 	WarningContinue("SolverCreatingAndMappingTest");
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -199,6 +200,7 @@ void SolverCreatingAndMappingTest()
 	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
 	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
 	H2OMapper.MOCtoCFDinterception(ValueType::DENSITY);
+
 	mocMesh.OutputStatus("pin_cl.inp");
 	H2OcfdMesh.SetFieldValue(rho.elementField.v_value, ValueType::DENSITY);
 	rho.WriteTecplotField("rho.plt");
@@ -221,16 +223,16 @@ int main(int argc, char** argv)
 {
 	/*
 	六种输入格式,其它都非法
-	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl
-	NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh
-	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl
-	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh
+	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
+	NCCouple moctocfd  pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk 
+	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
+	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk
 	NCCouple 
 	NCCouple --help
 	*/
 	//get processor ID
 	g_iProcessID = (int)getpid();
-	if (argc != 1 && argc != 5 && argc != 6&&argc!=2)
+	if (argc != 1 && argc != 2 && argc != 5 &&argc!= 6 && argc!=7 && argc != 8)
 	{
 		Logger::LogError("Wrong parameter input");
 		exit(EXIT_FAILURE);
@@ -266,14 +268,15 @@ int main(int argc, char** argv)
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
+			std::string argv6 = argv[6];
 			if (argv3.find(".msh") == std::string::npos || argv4.find(".vtk") == std::string::npos
-				|| argv5.find(".apl") == std::string::npos)
+				|| argv5.find(".apl") == std::string::npos || argv6.find(".inp") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
-			std::string strOutput_inpName = argv5.substr(0, argv5.find(".")) + ".inp";
-			CFDFieldsToMOC(argv3, argv4, argv5, strOutput_inpName,true);
+			//std::string strOutput_inpName = argv5.substr(0, argv5.find(".")) + ".inp";
+			CFDFieldsToMOC(argv3, argv4, argv5, argv6,true);
 		}
 		else
 		{
@@ -282,14 +285,15 @@ int main(int argc, char** argv)
 			std::string argv2 = argv[2];
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
+			std::string argv5 = argv[5];
 			if (argv2.find(".msh") == std::string::npos || argv3.find(".vtk") == std::string::npos
-				|| argv4.find(".apl") == std::string::npos)
+				|| argv4.find(".apl") == std::string::npos|| argv5.find(".inp") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
-			std::string strOutput_inpName = argv4.substr(0, argv4.find(".")) + ".inp";
-			CFDFieldsToMOC(argv2,argv3,argv4, strOutput_inpName);
+			//std::string strOutput_inpName = argv4.substr(0, argv4.find(".")) + ".inp";
+			CFDFieldsToMOC(argv2,argv3,argv4, argv5);
 		}
 	}
 	else if (strcmp(argv[1], "moctocfd") == 0 )
@@ -300,14 +304,17 @@ int main(int argc, char** argv)
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
+			std::string argv6 = argv[6];
+			std::string argv7 = argv[7];
 			if (argv3.find(".apl") == std::string::npos || argv4.find(".inp") == std::string::npos
-				|| argv5.find(".msh") == std::string::npos)
+				|| argv5.find(".txt") == std::string::npos
+				|| argv6.find(".msh") == std::string::npos || argv7.find(".vtk") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
-			std::string strOutput_vtkName = argv5.substr(0, argv5.find(".")) + ".vtk";
-			MOCFieldsToCFD(argv3, argv4, argv5, strOutput_vtkName, true);
+			//std::string strOutput_vtkName = argv5.substr(0, argv5.find(".")) + ".vtk";
+			MOCFieldsToCFD(argv3, argv4, argv5, argv6, argv7, true);
 		}
 		else
 		{
@@ -316,14 +323,17 @@ int main(int argc, char** argv)
 			std::string argv2 = argv[2];
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
+			std::string argv5 = argv[5];
+			std::string argv6 = argv[6];
 			if (argv2.find(".apl") == std::string::npos || argv3.find(".inp") == std::string::npos
-				|| argv4.find(".msh") == std::string::npos)
+				|| argv4.find(".txt") == std::string::npos || argv4.find(".msh") == std::string::npos
+				|| argv4.find(".vtk") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);
 			}
-			std::string strOutput_vtkName = argv4.substr(0, argv4.find(".")) + ".vtk";
-			MOCFieldsToCFD(argv2, argv3, argv4, strOutput_vtkName);
+			//std::string strOutput_vtkName = argv4.substr(0, argv4.find(".")) + ".vtk";
+			MOCFieldsToCFD(argv2, argv3, argv4, argv5,argv6);
 		}
 	}
 	else
