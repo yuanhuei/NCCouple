@@ -131,6 +131,8 @@ public:
     void WriteVTK_Field(const std::string& outMshFileName);
 
 	void ReadVTK_Field(const std::string& inVTKFileName);
+
+	void ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName);
 };
 
 #endif

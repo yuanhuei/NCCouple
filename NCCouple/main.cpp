@@ -222,13 +222,77 @@ void MOC_APL_INP_FileTest()
 	mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
+#include <vtkDelaunay3D.h>
+#include <vtkNew.h>
+#include <vtkSphereSource.h>
+#include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkUnstructuredGridWriter.h>
+#include <vtkAppendFilter.h>
+#include <vtkMultiBlockDataSet.h>
+void VTK_Test()
+{
+	vtkObject::GlobalWarningDisplayOff();
+	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName("500_0.vtk");
+	reader->SetReadAllColorScalars(true);
+	reader->SetReadAllFields(true);
+	reader->SetReadAllScalars(true);
+	reader->Update();
 
+	vtkSmartPointer<vtkUnstructuredGrid> Grid;
+	Grid = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader_1 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader_1->SetFileName("500_1.vtk");
+	reader_1->SetReadAllColorScalars(true);
+	reader_1->SetReadAllFields(true);
+	reader_1->SetReadAllScalars(true);
+	reader_1->Update();
+
+	vtkSmartPointer<vtkUnstructuredGrid> Grid_1;
+	Grid_1 = reader_1->GetOutput();
+
+	// create the append filter
+	vtkSmartPointer<vtkAppendFilter> append =
+		vtkSmartPointer<vtkAppendFilter>::New();
+
+	// add each data set
+	append->AddInputData(Grid);
+	append->AddInputData(Grid_1);
+	append->Update();
+
+
+	vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+	writer->SetInputData(append->GetOutput());
+
+	writer->SetFileName("500_0_1.vtk");
+	writer->Update();
+}
+
+#include "./MHT_IO/VTKIO.h"
+void VTKReaderTest()
+{
+	std::vector<std::string> mshFileName;
+	std::vector<std::string> vtkfileName;
+	std::vector<std::string> fieldName;
+	vtkfileName.push_back("pinW.vtk");
+	mshFileName.push_back("pinW.msh");
+
+	fieldName.push_back("T");
+	fieldName.push_back("Rho");
+
+
+	MHTVTKReader reader(mshFileName, vtkfileName, fieldName);
+
+	reader.GetFieldIO(0).WriteTecplotField("pinWTotal.plt");
+}
 int main()
 {
-	ReadCFDMeshAndFieldTest();
-	SolverCreatingTest();
-	SolverCreatingAndMappingTest();
-	MOC_APL_INP_FileTest();
+//	ReadCFDMeshAndFieldTest();
+//	SolverCreatingTest();
+//	SolverCreatingAndMappingTest();
+//	MOC_APL_INP_FileTest();
+	VTKReaderTest();
 	return 0;
 
 
