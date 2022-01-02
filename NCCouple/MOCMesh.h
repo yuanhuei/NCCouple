@@ -33,6 +33,7 @@ public:
 			m_temperature = value;
 			break;
 		case ValueType::HEATPOWER:
+			m_heatPower = value;
 			break;
 		case ValueType::DENSITY:
 			m_density = value;
@@ -49,6 +50,7 @@ public:
 		case ValueType::TEMPERAURE:
 			return m_temperature;
 		case ValueType::HEATPOWER:
+			return m_heatPower;
 			break;
 		case ValueType::DENSITY:
 			return m_density;
@@ -70,6 +72,7 @@ private:
 	std::string m_temperatureName;
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
+	double m_heatPower = 0.0;
 };
 
 
@@ -130,14 +133,14 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string inputFileName, std::string powerFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
 	void WriteTecplotFile(std::string, std::string);
-	void InitMOCValue(std::string inputFileName);
+	void InitMOCValue(std::string inputFileName, std::string powerFileName);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information

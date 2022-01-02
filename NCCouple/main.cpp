@@ -74,7 +74,7 @@ void MOCCFDMapping()
 {
 	//get processor ID
 	g_iProcessID = (int)getpid();
-	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", "heatPower.txt", MeshKernelType::MHT_KERNEL);
 	//examples for writing tecplot files of each materials
 	//Note: these file can be viewed by Tecplot
 	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
@@ -172,7 +172,7 @@ void ReadVTKField()
 }
 
 void MOC_APL_INP_FileTest() {
-	MOCMesh mocMesh("pin_c1.apl","pin_c1.inp", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh("pin_c1.apl","pin_c1.inp", "heatPower.txt", MeshKernelType::MHT_KERNEL);
 	mocMesh.OutputStatus("pin_c1_out.inp");
 }
 
