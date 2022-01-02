@@ -29,7 +29,7 @@ enum class Material
 
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
+	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
 		double x, y, z;
 		std::tie(x, y, z) = cfdMesh.GetMeshPointPtr(i)->CentralCoordinate();
@@ -47,7 +47,7 @@ void ConservationValidation
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
 	ValueType vt
-) 
+)
 {
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
@@ -196,7 +196,7 @@ void SolverCreatingAndMappingTest()
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 	//create MHT field
-	Field<Scalar> rho(pmesh, 0.0,"Rho");
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
@@ -214,7 +214,7 @@ void SolverCreatingAndMappingTest()
 //this example was designed for test of
 //(1) rewritting a apl file
 //(2) reading and writting of inp files
-void MOC_APL_INP_FileTest() 
+void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
 	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
@@ -272,9 +272,12 @@ void VTK_Test()
 #include "./MHT_IO/VTKIO.h"
 void VTKReaderTest()
 {
+	//mshFileName size must same with vtkfileName
 	std::vector<std::string> mshFileName;
 	std::vector<std::string> vtkfileName;
 	std::vector<std::string> fieldName;
+	vtkfileName.push_back("pinW.vtk");
+	mshFileName.push_back("pinW.msh");
 	vtkfileName.push_back("pinW.vtk");
 	mshFileName.push_back("pinW.msh");
 
@@ -284,14 +287,15 @@ void VTKReaderTest()
 
 	MHTVTKReader reader(mshFileName, vtkfileName, fieldName);
 
-	reader.GetFieldIO(0).WriteTecplotField("pinWTotal.plt");
+	reader.GetFieldIO(0).WriteTecplotField("pinW_Total_0.plt");
+	reader.GetFieldIO(1).WriteTecplotField("pinW_Total_1.plt");
 }
 int main()
 {
-//	ReadCFDMeshAndFieldTest();
-//	SolverCreatingTest();
-//	SolverCreatingAndMappingTest();
-//	MOC_APL_INP_FileTest();
+	//	ReadCFDMeshAndFieldTest();
+	//	SolverCreatingTest();
+	//	SolverCreatingAndMappingTest();
+	//	MOC_APL_INP_FileTest();
 	VTKReaderTest();
 	return 0;
 

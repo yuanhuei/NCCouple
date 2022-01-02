@@ -53,13 +53,15 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vecto
 			v_scalarFieldList[i * vFiedNameList.size() + j].ReadVTKGridField(Grid, vFiedNameList[j]);	
 		}
 
+	}
+	for (size_t i = 0; i < vVTKFileName.size(); i++)
+	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
 			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
 		}
-
 	}
-	
+
 }
 
 void MHTVTKReader::ReadMSHFile(std::string MeshFileName, int Num)
