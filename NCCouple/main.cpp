@@ -27,6 +27,26 @@ enum class Material
 	UO2
 };
 
+Scalar initialT(Scalar x, Scalar y, Scalar z)
+{
+	Vector PointCenter(x, y, z);
+	Vector axisCenter(0.63, 0.63, 0.0);
+	Vector axisNorm(0.0, 0.0, 1.0);
+	Vector OP = PointCenter - axisCenter;
+	Vector axicialLocation = (OP & axisNorm) * axisNorm;
+	Scalar radius = (OP - axicialLocation).Mag();
+	Scalar sigma = 1.0;
+	Scalar temperature = (1000.0 / sqrt(2.0 * PI) / sigma) * exp(-radius * radius / 2 / pow(sigma, 2));
+	return temperature;
+}
+
+Scalar initialRho(Scalar x, Scalar y, Scalar z)
+{
+	Scalar add = 100.0 * z * (5.0 - z);
+	return 1000.0 + add;
+}
+
+
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
 	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
@@ -270,25 +290,25 @@ void VTK_Test()
 }
 
 #include "./MHT_IO/VTKIO.h"
+#include <fstream>
 void VTKReaderTest()
 {
-	//mshFileName size must same with vtkfileName
-	std::vector<std::string> mshFileName;
-	std::vector<std::string> vtkfileName;
+
 	std::vector<std::string> fieldName;
-	vtkfileName.push_back("pinW.vtk");
-	mshFileName.push_back("pinW.msh");
-	vtkfileName.push_back("pinW.vtk");
-	mshFileName.push_back("pinW.msh");
+
 
 	fieldName.push_back("T");
 	fieldName.push_back("Rho");
 
 
-	MHTVTKReader reader(mshFileName, vtkfileName, fieldName);
+	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);
+	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
+	{
+		reader.GetFieldIO(i).WriteTecplotField("pinWR_"+std::to_string(i)+".plt");
 
-	reader.GetFieldIO(0).WriteTecplotField("pinW_Total_0.plt");
-	reader.GetFieldIO(1).WriteTecplotField("pinW_Total_1.plt");
+	}
+	
+	std::cout <<"success end"<<std::endl;
 }
 int main()
 {
