@@ -750,7 +750,7 @@ void MOCMesh::InitMOCValue(std::string inputFileName, std::string powerFileName)
 
 	std::ifstream ifs2(powerFileName);
 	if (!ifs2.is_open()) {
-		Logger::LogError("cannot find the cfd data file:" + powerFileName);
+		Logger::LogError("cannot find the moc data file:" + powerFileName);
 		exit(EXIT_FAILURE);
 	}
 	std::vector<double> powerInput;
@@ -761,7 +761,7 @@ void MOCMesh::InitMOCValue(std::string inputFileName, std::string powerFileName)
 		powerInput.push_back(std::stod(line));
 	}
 	for (auto p_meshPoint : m_meshPointPtrVec) {
-		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1), ValueType::HEATPOWER);
+		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
 	}
 	ifs2.close();
 
