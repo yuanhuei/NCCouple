@@ -193,8 +193,7 @@ void SolverCreatingTest()
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
 	//Conservation Validation in H2O region
-	//ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
-	//ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY,"H2O");
 	return;
 }
 
@@ -346,10 +345,10 @@ int main(int argc, char** argv)
 	/*
 	六种输入格式,其它都非法
 	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd  pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk 
+	NCCouple moctocfd  pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk 
 	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk
-	NCCouple 
+	NCCouple moctocfd renew pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk
+	NCCouple
 	NCCouple --help
 	*/
 	//get processor ID
