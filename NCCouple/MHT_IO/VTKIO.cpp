@@ -5,19 +5,15 @@ MHTVTKReader::MHTVTKReader()
 }
 
 
-MHTVTKReader::MHTVTKReader(std::vector<std::string>& vMshFileName, std::vector<std::string>& vVTKFileName,  std::vector<std::string>& vFiedNameList)
+MHTVTKReader::MHTVTKReader(std::string MshFileName, std::string VTKFileName,  std::vector<std::string>& vFiedNameList)
 {
-	v_stdMesh.resize(vMshFileName.size());
 
-	for (size_t i = 0; i < vMshFileName.size(); i++)
-	{
-		ReadMSHFile(vMshFileName[i], i);
-	}
-	
-	v_FieldIO.resize(vVTKFileName.size());
 
-	ReadVTKFile(vVTKFileName, vFiedNameList);
+	ReadMSHFile(MshFileName);
+
+//	ReadVTKFile(VTKFileName, vFiedNameList);
 	
+	ReadDataFile(VTKFileName, vFiedNameList);
 }
 
 MHTVTKReader::~MHTVTKReader()
@@ -28,9 +24,10 @@ MHTVTKReader::~MHTVTKReader()
 	std::vector<StandardMeshBlock>().swap(v_stdMesh);
 }
 
-void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vector<std::string>& vFiedNameList)
+void MHTVTKReader::ReadVTKFile(std::string vVTKFileName, std::vector<std::string>& vFiedNameList)
 {
 	std::cout << "start Read Field" << std::endl;
+/*
 	for (size_t i = 0; i < vVTKFileName.size(); i++)
 	{
 		vtkObject::GlobalWarningDisplayOff();
@@ -60,17 +57,71 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vecto
 		{
 			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
 		}
-	}
+	}*/
 
 }
 
-void MHTVTKReader::ReadMSHFile(std::string MeshFileName, int Num)
+void MHTVTKReader::ReadMSHFile(std::string MeshFileName)
 {
 	std::cout<<"start Read Mesh" << std::endl;
 	UnGridFactory meshFactoryCon(MeshFileName, UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
 	RegionConnection Bridges;
 	FluentPtrCon->Decompose(Bridges);
-	v_stdMesh[Num] = FluentPtrCon->v_regionGrid[0];
+	v_stdMesh.resize(FluentPtrCon->v_regionGrid.size());
+	for (size_t i = 0; i < FluentPtrCon->v_regionGrid.size(); i++)
+	{
+		v_stdMesh[i] = std::move(FluentPtrCon->v_regionGrid[i]);
+		v_pmesh.push_back(&v_stdMesh[i]);
+	}
+}
+
+void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList)
+{
+	std::cout << "start Read Data Field" << std::endl;
+
+	v_FieldIO.resize(v_pmesh.size());
+	
+	int nTotalFieldNum(v_pmesh.size()* vFiedNameList.size());
+
+	std::ifstream inFile(DataFileName);
+
+	std::vector<std::string> vFieldName();
+
+	std::string sMeshName;
+	std::string sFieldName;
+	int nFieldNum;
+	for (size_t i = 0; i < v_pmesh.size(); i++)
+	{
+		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		{	
+			inFile >> sMeshName;
+			inFile >> sFieldName;
+			inFile >> nFieldNum;
+
+			if (vFiedNameList[j]!= sFieldName)
+			{
+				FatalError("read field name and given field name are not same please check your input or dataFile");
+			}
+
+			Field<Scalar> thisField(v_pmesh[i], 0.0, sFieldName);
+			
+			for (size_t fieldIndex = 0; fieldIndex < nFieldNum; fieldIndex++)
+			{
+				double dFieldData;
+				inFile >> dFieldData;
+				thisField.elementField.SetValue(fieldIndex, dFieldData);
+			}
+			v_scalarFieldList.push_back(std::move(thisField));
+		}
+	}
+	//do this must after v_scalarFieldList.push_back because point will change
+	for (size_t i = 0; i < v_pmesh.size(); i++)
+	{
+		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		{
+			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
+		}
+	}
 }
 

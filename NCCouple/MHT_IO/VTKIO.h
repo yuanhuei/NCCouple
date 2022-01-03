@@ -8,6 +8,7 @@
 #include "../MHT_mesh/UnGridFactory.h"
 #include "../MHT_mesh/RegionConnection.h"
 #include "../MHT_common/SystemControl.h"
+#include <memory>
 class Mesh;
 
 template<class Type>
@@ -17,7 +18,7 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::vector<std::string>& vMshFileName,std::vector<std::string>& vVTKFileName, std::vector<std::string>& vFiedNameList);
+	MHTVTKReader(std::string vMshFileName,std::string vVTKFileName, std::vector<std::string>& vFiedNameList);
 	~MHTVTKReader();
 
 	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
@@ -26,16 +27,17 @@ public:
 
 
 	FieldIO GetFieldIO(int num) { return v_FieldIO[num]; }
-	StandardMeshBlock GetMesh(int num) { return v_stdMesh[num]; }
+	std::vector<Mesh*> GetMeshListPtr() { return v_pmesh; }
 private:
 
 	std::vector<Field<Scalar>> v_scalarFieldList;
 	
 	std::vector<FieldIO> v_FieldIO;
 	std::vector<StandardMeshBlock> v_stdMesh;
-
-	void ReadVTKFile(std::vector<std::string> vVTKFileName, std::vector<std::string>& vFiedNameList);
-	void ReadMSHFile(std::string MeshFileName, int Num);
+	std::vector<Mesh*> v_pmesh;
+	void ReadVTKFile(std::string VTKFileName, std::vector<std::string>& vFiedNameList);
+	void ReadMSHFile(std::string MeshFileName);
+	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 };
 
 
