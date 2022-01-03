@@ -354,7 +354,7 @@ int main(int argc, char** argv)
 	*/
 	//get processor ID
 	g_iProcessID = (int)getpid();
-	if (argc != 1 && argc != 2 && argc != 5 &&argc!= 6 && argc!=7 && argc != 8)
+	if (argc != 1 && argc != 2  &&argc!= 6 && argc!=7 && argc != 8)
 	{
 		Logger::LogError("Wrong parameter input");
 		exit(EXIT_FAILURE);
@@ -386,6 +386,11 @@ int main(int argc, char** argv)
 	{
 		if (strcmp(argv[2],"renew")==0)
 		{
+			if (argc != 7)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
@@ -402,6 +407,11 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			if (argc != 6)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//第一次插值，需要做插值计算
 			//MOCFieldsToCFD
 			std::string argv2 = argv[2];
@@ -422,6 +432,11 @@ int main(int argc, char** argv)
 	{
 		if (strcmp(argv[2], "renew") == 0)
 		{
+			if (argc != 8)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
@@ -440,6 +455,11 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			if(argc!=7)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//第一次插值，需要做插值计算
 			//MOCFieldsToCFD(std::string(argv[
 			std::string argv2 = argv[2];
