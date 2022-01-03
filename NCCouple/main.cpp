@@ -356,7 +356,7 @@ int main(int argc, char** argv)
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
 			std::string argv6 = argv[6];
-			if (argv3.find(".msh") == std::string::npos || argv4.find(".vtk") == std::string::npos
+			if (argv3.find(".msh") == std::string::npos || argv4.find(".txt") == std::string::npos
 				|| argv5.find(".apl") == std::string::npos || argv6.find(".inp") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
@@ -373,7 +373,7 @@ int main(int argc, char** argv)
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
 			std::string argv5 = argv[5];
-			if (argv2.find(".msh") == std::string::npos || argv3.find(".vtk") == std::string::npos
+			if (argv2.find(".msh") == std::string::npos || argv3.find(".txt") == std::string::npos
 				|| argv4.find(".apl") == std::string::npos|| argv5.find(".inp") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");

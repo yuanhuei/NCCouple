@@ -39,7 +39,7 @@ void MOCFieldsToCFD
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName,"pin_c1.txt", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName, strInput_txtFileName, MeshKernelType::MHT_KERNEL);
 	//mocMesh.InitMOCValue("pin_c1.inp");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
