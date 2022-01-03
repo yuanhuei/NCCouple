@@ -11,8 +11,8 @@ using namespace std;
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType)
-{
+MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, std::string powerFileName, MeshKernelType kernelType) {
+	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
 	ofstream outFile("addID_" + meshFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
@@ -202,6 +202,7 @@ MOCMesh::MOCMesh(std::string meshFileName, MeshKernelType kernelType)
 		}
 	}
 
+	InitMOCValue(inputFileName, powerFileName);
 }
 
 void MOCMesh::setMeshInformation(string line)
@@ -591,7 +592,7 @@ void MOCMesh::reOrganaziIndex()
 
 }
 
-void MOCMesh::InitMOCValue(std::string inputFileName) {
+void MOCMesh::InitMOCValue(std::string inputFileName, std::string powerFileName) {
 	std::ifstream ifs(inputFileName);
 	if (!ifs.is_open()) {
 		Logger::LogError("cannot find the cfd data file:" + inputFileName);
@@ -745,6 +746,24 @@ void MOCMesh::InitMOCValue(std::string inputFileName) {
 			}
 		}
 	}
+
+
+	std::ifstream ifs2(powerFileName);
+	if (!ifs2.is_open()) {
+		Logger::LogError("cannot find the moc data file:" + powerFileName);
+		exit(EXIT_FAILURE);
+	}
+	std::vector<double> powerInput;
+	while (!ifs2.eof()) {
+		std::string line;
+		std::getline(ifs2, line);
+		if (line == "") continue;
+		powerInput.push_back(std::stod(line));
+	}
+	for (auto p_meshPoint : m_meshPointPtrVec) {
+		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
+	}
+	ifs2.close();
 
 	return;
 }

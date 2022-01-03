@@ -133,14 +133,14 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string inputFileName, std::string powerFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
 	void WriteTecplotFile(std::string, std::string);
-	void InitMOCValue(std::string inputFileName);
+	void InitMOCValue(std::string inputFileName, std::string powerFileName);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
