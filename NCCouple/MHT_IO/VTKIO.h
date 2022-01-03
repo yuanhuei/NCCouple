@@ -25,17 +25,19 @@ public:
 	MHTVTKReader(std::string MshFileName);
 	~MHTVTKReader();
 
-	const std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
-	const std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
-	const std::vector<Mesh*> GetMeshListPtr() { return v_pmesh; }
-	const std::vector<Field<Scalar>> GetFieldList() { return v_scalarFieldList; }
-
+	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
 	FieldIO GetFieldIO(int num) { return v_FieldIO[num]; }
 
+	std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
+	std::vector<Mesh*> GetMeshListPtr() { return v_pmesh; }
+
+	const std::vector < std::vector<Field<Scalar>>> GetFieldList() { return vv_scalarFieldList; }
+	Field<Scalar> GetField(int regionNum, int fieldNum) { return vv_scalarFieldList[regionNum][fieldNum]; }
+
+	void WriteDataFile(std::string DataFileName);
 private:
 
-	std::vector<Field<Scalar>> v_scalarFieldList;
-	
+	std::vector < std::vector<Field<Scalar>>> vv_scalarFieldList;
 	std::vector<FieldIO> v_FieldIO;
 	std::vector<StandardMeshBlock> v_stdMesh;
 	std::vector<Mesh*> v_pmesh;

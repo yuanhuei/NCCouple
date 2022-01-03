@@ -12,13 +12,16 @@ MHTVTKReader::MHTVTKReader(std::string MshFileName, std::string VTKFileName,  st
 	ReadMSHFile(MshFileName);
 
 //	ReadVTKFile(VTKFileName, vFiedNameList);
-	
+	this->vv_scalarFieldList.resize(this->v_pmesh.size());
+
 	ReadDataFile(VTKFileName, vFiedNameList);
 }
 
 MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList)
 {
 	ReadMSHFile(MshFileName);
+
+	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 
 	InitializeEmptyField(vFiedNameList);
 }
@@ -30,10 +33,31 @@ MHTVTKReader::MHTVTKReader(std::string MshFileName)
 
 MHTVTKReader::~MHTVTKReader()
 {
-	std::vector<Field<Scalar>> ().swap(v_scalarFieldList);
-
+	std::vector < std::vector<Field<Scalar>>>().swap(vv_scalarFieldList);
 	std::vector<FieldIO>().swap(v_FieldIO);
 	std::vector<StandardMeshBlock>().swap(v_stdMesh);
+}
+
+void MHTVTKReader::WriteDataFile(std::string DataFileName)
+{
+
+	std::ofstream outFile(DataFileName);
+
+	for (size_t i = 0; i < this->vv_scalarFieldList.size(); i++)
+	{
+		for (size_t j = 0; j < this->vv_scalarFieldList[i].size(); j++)
+		{
+			outFile << vv_scalarFieldList[i][j].p_blockMesh->st_meshName<<"\t";
+			outFile << vv_scalarFieldList[i][j].st_name << "\t";
+			outFile << vv_scalarFieldList[i][j].p_blockMesh->n_elemNum << std::endl;
+
+			for (size_t k = 0; k < vv_scalarFieldList[i][j].p_blockMesh->n_elemNum; k++)
+			{
+				outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << vv_scalarFieldList[i][j].elementField.GetValue(k)<<"\t";
+			}
+			outFile << std::endl;
+		}
+	}
 }
 
 void MHTVTKReader::ReadVTKFile(std::string vVTKFileName, std::vector<std::string>& vFiedNameList)
@@ -120,7 +144,7 @@ void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::strin
 				inFile >> dFieldData;
 				thisField.elementField.SetValue(fieldIndex, dFieldData);
 			}
-			v_scalarFieldList.push_back(std::move(thisField));
+			vv_scalarFieldList[i].push_back(std::move(thisField));
 		}
 	}
 	//do this must after v_scalarFieldList.push_back because point will change
@@ -128,7 +152,7 @@ void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::strin
 	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
-			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
+			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
 		}
 	}
 }
@@ -147,7 +171,7 @@ void MHTVTKReader::InitializeEmptyField(std::vector<std::string>& vFiedNameList)
 		{
 			Field<Scalar> thisField(v_pmesh[i], 0.0, vFiedNameList[j]);
 
-			v_scalarFieldList.push_back(std::move(thisField));
+			vv_scalarFieldList[i].push_back(std::move(thisField));
 		}
 	}
 
@@ -155,7 +179,7 @@ void MHTVTKReader::InitializeEmptyField(std::vector<std::string>& vFiedNameList)
 	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
-			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
+			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
 		}
 	}
 }

@@ -301,21 +301,22 @@ void VTKReaderTest()
 	fieldName.push_back("Rho");
 
 
-//	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);		//initialize with meshFile and VTKDataFile
+	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);		//initialize with meshFile and VTKDataFile
 //	MHTVTKReader reader("pinWR.msh", fieldName);						//initialize with meshFile and EmptyField
-	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
+//	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
 
-//	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
+	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
+	{
+		reader.GetFieldIO(i).WriteTecplotField("pinWR_" + std::to_string(i) + ".plt");
+	}
+	reader.WriteDataFile("TestData.txt");
+
+
+//	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
 //	{
-//		reader.GetFieldIO(i).WriteTecplotField("pinWR_" + std::to_string(i) + ".plt");
+//		reader.GetMeshListPtr()[i]->WriteTecplotMesh("pinWR_"+std::to_string(i)+".plt");
 //
 //	}
-
-	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
-	{
-		reader.GetMeshListPtr()[i]->WriteTecplotMesh("pinWR_"+std::to_string(i)+".plt");
-
-	}
 	
 	std::cout <<"success end"<<std::endl;
 }
