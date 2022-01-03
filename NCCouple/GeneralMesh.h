@@ -27,6 +27,7 @@ public:
 
 public:
 	virtual double Volume() const = 0;
+	virtual Vector Center() const = 0;
 	virtual std::tuple<double, double, double> CentralCoordinate() const = 0;
 	virtual double IntersectedVolume(const MeshPoint& other) const = 0;
 	virtual int VerticesNum() const = 0;
@@ -51,6 +52,11 @@ public:
 	double Volume() const override {
 		return m_poly.GetVolume();
 	}
+
+	Vector Center() const override {
+		return m_poly.GetCenter();
+	}
+
 	std::tuple<double, double, double> CentralCoordinate() const override {
 		Vector center = m_poly.GetCenter();
 		return std::make_tuple(center.x_, center.y_, center.z_);
@@ -73,6 +79,11 @@ public:
 
 	void WriteTecplotZones(std::ofstream& ofile) const {
 		m_poly.WriteTecplotZones(ofile);
+	}
+
+	Vector GetCenter()
+	{
+		return m_poly.GetCenter();
 	}
 
 protected:

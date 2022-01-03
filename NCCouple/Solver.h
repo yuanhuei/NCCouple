@@ -12,6 +12,7 @@ public:
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
 	void CheckMappingWeights();
+	void WriteTestTxtFile();
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {

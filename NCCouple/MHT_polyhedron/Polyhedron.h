@@ -36,8 +36,8 @@ namespace MHT
 		std::vector<Vector> v_faceCenter;
 		bool geometryCalculated;
 		Scalar volume;
-	private:
 		Vector center;
+
 	public:
 
 		Polyhedron();
@@ -79,6 +79,11 @@ namespace MHT
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
 
 		void WriteTecplotZones(std::ofstream&) const;
+
+		Vector GetCenter()
+		{
+			return this->center;
+		}
 
 	private:
 

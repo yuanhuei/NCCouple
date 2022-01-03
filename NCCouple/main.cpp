@@ -223,12 +223,48 @@ void MOC_APL_INP_FileTest()
 	return;
 }
 
+void WritePowerTxt()
+{
+	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	//create an index for fast searching
+	MOCIndex mocIndex(mocMesh);
+	//the following information should be given for a specified tube
+	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
+	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
+	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	mocIndex.circularCellNum = 8;
+	mocIndex.axialCellNum = 5;
+	mocIndex.axialCellSize = 1.0;
+	std::vector<Scalar> radiusList;
+	radiusList.push_back(0.1024);
+	radiusList.push_back(0.2048);
+	radiusList.push_back(0.3072);
+	radiusList.push_back(0.4096);
+	radiusList.push_back(0.475);
+	mocIndex.SetRadial(radiusList);
+	mocIndex.BuildUpIndex();
+	//create MHT mesh
+	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
+	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
+	RegionConnection Bridges;
+	FluentPtrCon->Decompose(Bridges);
+	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
+	//create MHT field
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
+	//read cfd mesh and create solver
+	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
+	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
+	H2OMapper.WriteTestTxtFile();
+	return;
+}
+
 int main()
 {
-	ReadCFDMeshAndFieldTest();
+	//ReadCFDMeshAndFieldTest();
 	SolverCreatingTest();
-	SolverCreatingAndMappingTest();
-	MOC_APL_INP_FileTest();
+	//SolverCreatingAndMappingTest();
+	//MOC_APL_INP_FileTest();
+	//WritePowerTxt();
 	return 0;
 
 

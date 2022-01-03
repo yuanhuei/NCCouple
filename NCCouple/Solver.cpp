@@ -297,3 +297,24 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 
 	return;
 }
+
+void Solver::WriteTestTxtFile()
+{
+	std::ofstream outFile("power.txt");
+	for (int j = 0; j < m_mocMeshPtr->GetMeshPointNum(); j++)
+	{
+		const MHTMeshPoint& mocPoint = dynamic_cast<const MHTMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
+		Vector PointCenter = mocPoint.Center();
+		Vector axisCenter(0.63, 0.63, 0.0);
+		Vector axisNorm(0.0, 0.0, 1.0);
+		Vector OP = PointCenter - axisCenter;
+		Vector axicialLocation = (OP & axisNorm) * axisNorm;
+		Scalar radius = (OP - axicialLocation).Mag();
+		Scalar power = 10.0 / (radius + 0.1);
+		Scalar height = axicialLocation.Mag();
+		power = power * (5.0 - height) * height;
+		outFile << power << std::endl;
+	}
+	outFile.close();
+	return;
+}
