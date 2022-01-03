@@ -63,33 +63,54 @@ void ConservationValidation
 (
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
-	ValueType vt
+	ValueType vt,
+	std::string strZoneName
 )
 {
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
-
-	for (int i = 0; i < sourceMesh.GetMeshPointNum(); i++) {
-		double sourceValue = sourceMesh.GetMeshPointPtr(i)->GetValue(vt);
-		double pointVolume = sourceMesh.GetMeshPointPtr(i)->Volume();
-		sourceIntegralValue += sourceValue * pointVolume;
-	}
-
-	for (int i = 0; i < targetMesh.GetMeshPointNum(); i++) {
-		double targetValue = targetMesh.GetMeshPointPtr(i)->GetValue(vt);
-		double pointVolume = targetMesh.GetMeshPointPtr(i)->Volume();
-		targetIntegralValue += targetValue * pointVolume;
-	}
-
+	bool bSourceMoc = false;
 	std::string sourceMeshName, targetMeshName;
 	if (dynamic_cast<const CFDMesh*>(&sourceMesh)) {
 		sourceMeshName = "CFD Mesh";
 		targetMeshName = "MOC Mesh";
 	}
 	else {
+		bSourceMoc = true;
 		sourceMeshName = "MOC Mesh";
 		targetMeshName = "CFD Mesh";
 	}
+	// = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
+
+	for (int i = 0; i < sourceMesh.GetMeshPointNum(); i++) {
+		double sourceValue=0;
+		if (bSourceMoc)
+		{
+			const MOCMeshPoint&  mocPoint = dynamic_cast<const MOCMeshPoint&>(*sourceMesh.GetMeshPointPtr(i));
+			if(mocPoint.GetMaterialName()==strZoneName)
+				sourceValue = sourceMesh.GetMeshPointPtr(i)->GetValue(vt);
+		}
+		else
+			sourceValue = sourceMesh.GetMeshPointPtr(i)->GetValue(vt);
+		double pointVolume = sourceMesh.GetMeshPointPtr(i)->Volume();
+		sourceIntegralValue += sourceValue * pointVolume;
+	}
+
+	for (int i = 0; i < targetMesh.GetMeshPointNum(); i++) {
+		double targetValue = 0;
+		if (!bSourceMoc)
+		{
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*targetMesh.GetMeshPointPtr(i));
+			if (mocPoint.GetMaterialName() == strZoneName)
+				targetValue = targetMesh.GetMeshPointPtr(i)->GetValue(vt);
+		}
+		else
+			targetValue = targetMesh.GetMeshPointPtr(i)->GetValue(vt);
+		double pointVolume = targetMesh.GetMeshPointPtr(i)->Volume();
+		targetIntegralValue += targetValue * pointVolume;
+	}
+
+
 	Logger::LogInfo(FormatStr("The Integral Value of Source %s : %.6lf", sourceMeshName.c_str(), sourceIntegralValue));
 	Logger::LogInfo(FormatStr("The Integral Value of Target %s : %.6lf", targetMeshName.c_str(), targetIntegralValue));
 	return;
@@ -172,8 +193,8 @@ void SolverCreatingTest()
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
 	//Conservation Validation in H2O region
-	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
-	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	//ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
+	//ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
 	return;
 }
 
@@ -234,8 +255,12 @@ void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
 	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp",MeshKernelType::MHT_KERNEL);
+	mocMesh.WriteTecplotFile("H2O", "h2O.plt");
+	mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
+	mocMesh.WriteTecplotFile("UO2", "u2o.plt");
+
 	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
-	mocMesh.OutputStatus("pin_c1_out.inp");
+	//mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
 #include <vtkDelaunay3D.h>
@@ -338,8 +363,8 @@ int main(int argc, char** argv)
 	{
 		//ReadCFDMeshAndFieldTest();
 		//SolverCreatingTest();
-		SolverCreatingAndMappingTest();
-		//MOC_APL_INP_FileTest();
+		//SolverCreatingAndMappingTest();
+		MOC_APL_INP_FileTest();
 		return 0;
 
 	}
@@ -348,10 +373,10 @@ int main(int argc, char** argv)
 		if (strcmp(argv[1], "--help") == 0)
 		{
 			std::cout << "Please input command like this:" << std::endl;
-			std::cout << "NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl" << std::endl;
-			std::cout << "NCCouple moctocfd  pin_c1.apl pin_c1.inp pinW.msh" << std::endl;
-			std::cout << "NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl" << std::endl;
-			std::cout << "NCCouple moctocfd renew pin_c1.apl pin_c1.inp pinW.msh" << std::endl;
+			std::cout << "NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp" << std::endl;
+			std::cout << "NCCouple moctocfd  pin_c1.apl pin_c1.inp heatpower.txt pinW.msh pinW.vtk " << std::endl;
+			std::cout << "NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp" << std::endl;
+			std::cout << "NCCouple moctocfd renew pin_c1.apl pin_c1.inp heatpower.txt pinW.msh pinW.vtk" << std::endl;
 			std::cout << "NCCouple" << std::endl;
 		}
 		return 0;
@@ -423,8 +448,8 @@ int main(int argc, char** argv)
 			std::string argv5 = argv[5];
 			std::string argv6 = argv[6];
 			if (argv2.find(".apl") == std::string::npos || argv3.find(".inp") == std::string::npos
-				|| argv4.find(".txt") == std::string::npos || argv4.find(".msh") == std::string::npos
-				|| argv4.find(".vtk") == std::string::npos)
+				|| argv4.find(".txt") == std::string::npos || argv5.find(".msh") == std::string::npos
+				|| argv6.find(".vtk") == std::string::npos)
 			{
 				Logger::LogError("wrong parameter input");
 				exit(EXIT_FAILURE);

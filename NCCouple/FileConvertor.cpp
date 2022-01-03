@@ -68,11 +68,13 @@ void MOCFieldsToCFD
 		H2OMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
-		heatpower.WriteVTK_Field(strOutput_vtkFileName);
+		std::string strOutput_inpName = strOutput_vtkFileName.substr(0, strOutput_vtkFileName.find(".")) + pmesh->st_meshName+ ".vtk";
+
+		heatpower.WriteVTK_Field(strOutput_inpName);
 
 		//create MHT field
-		ConservationValidation(cfdMesh, mocMesh, ValueType::HEATPOWER);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::HEATPOWER,pmesh->st_meshName);
+		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER,pmesh->st_meshName);
 	}
 
 	//mocMesh.InitMOCValue(strInput_inpFileName);
@@ -127,9 +129,9 @@ void CFDFieldsToMOC
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
-		for (int j = 0; j < reader.GetFieldList().size(); j++)
+		for (int j = 0; j < reader.GetFieldList()[i].size(); j++)
 		{
-			const Field<Scalar>& field = reader.GetFieldList()[j];
+			const Field<Scalar>& field = reader.GetField(i,j);
 			if(field.st_name=="T")
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::TEMPERAURE);
 			else if(field.st_name=="Rho")
@@ -146,13 +148,12 @@ void CFDFieldsToMOC
 		H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
 		H2OMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
 
-		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::DENSITY);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::TEMPERAURE);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY,pmesh->st_meshName);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE,pmesh->st_meshName);
 
-		std::string strOutput_inpName = strInput_inpFileName.substr(0, strInput_inpFileName.find(".")) + "_out.inp";
-		mocMesh.OutputStatus(strOutput_inpName);
 
 	}
+	std::string strOutput_inpName = strInput_inpFileName.substr(0, strInput_inpFileName.find(".")) + "_out.inp";
+	mocMesh.OutputStatus(strOutput_inpName);
+
 }
