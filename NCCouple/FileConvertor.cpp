@@ -49,43 +49,33 @@ void MOCFieldsToCFD
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
+	MHTVTKReader reader(strInput_meshFileName);									//initialize with meshFile
 	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
 	{
-		//reader.GetMeshListPtr()[i]->WriteTecplotMesh("pinWR_" + std::to_string(i) + ".plt");
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
 		Field<Scalar> heatpower(pmesh, 0.0, "heatpower");
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
-		Solver H2OMapper;
+		Solver solverMapper;
+		std::string strMocMeshName = strInput_aplFileName.substr(0, strInput_aplFileName.find(".")) + "_";
 		if (bRenew)
-			H2OMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName);
+			solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName,strMocMeshName);
 		else
-			H2OMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName);
+			solverMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName,strMocMeshName);
 
-		H2OMapper.CheckMappingWeights();
+		solverMapper.CheckMappingWeights();
 
-		H2OMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
+		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = strOutput_vtkFileName.substr(0, strOutput_vtkFileName.find(".")) + pmesh->st_meshName+ ".vtk";
 
 		heatpower.WriteVTK_Field(strOutput_inpName);
 
-		//create MHT field
 		ConservationValidation(cfdMesh, mocMesh, ValueType::HEATPOWER,pmesh->st_meshName);
 		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER,pmesh->st_meshName);
 	}
 
-	//mocMesh.InitMOCValue(strInput_inpFileName);
-	//create MHT mesh
-	/*
-	UnGridFactory meshFactoryCon(strInput_meshFileName, UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
-	*/
 }
 
 void CFDFieldsToMOC
@@ -137,16 +127,17 @@ void CFDFieldsToMOC
 			else if(field.st_name=="Rho")
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::DENSITY);
 		}
-		Solver H2OMapper;
+		Solver solverMapper;
+		std::string strMocMeshName = strInput_aplFileName.substr(0, strInput_aplFileName.find(".")) + "_";
 		if (bRenew)
-			H2OMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName);
+			solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName, strMocMeshName);
 		else
-			H2OMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName);
+			solverMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName, strMocMeshName);
 
-		H2OMapper.CheckMappingWeights();
+		solverMapper.CheckMappingWeights();
 
-		H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
-		H2OMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
+		solverMapper.CFDtoMOCinterception(ValueType::DENSITY);
+		solverMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
 
 		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY,pmesh->st_meshName);
 		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE,pmesh->st_meshName);
