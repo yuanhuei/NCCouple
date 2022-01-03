@@ -133,20 +133,21 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, std::string inputFileName, std::string powerFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
 	void WriteTecplotFile(std::string, std::string);
-	void InitMOCValue(std::string inputFileName, std::string powerFileName);
+	void InitMOCHeatPower(std::string heatPowerFileName);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void setAxialInformation(std::string line); //set mesh information
 	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
 	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
+	void InitMOCFromInputFile(std::string inputFileName);
 
 private:
 	std::vector<std::vector<int>> m_coarseMeshInfo;
