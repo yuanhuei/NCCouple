@@ -39,7 +39,7 @@ void MOCFieldsToCFD
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName,"pin_c1.txt", MeshKernelType::MHT_KERNEL);
 	//mocMesh.InitMOCValue("pin_c1.inp");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
@@ -59,7 +59,7 @@ void MOCFieldsToCFD
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	mocMesh.InitMOCValue(strInput_inpFileName);
+	mocMesh.InitMOCValue(strInput_inpFileName,"pin_c1.txt");
 	//create MHT mesh
 	UnGridFactory meshFactoryCon(strInput_meshFileName, UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
@@ -98,8 +98,8 @@ void CFDFieldsToMOC
 {
 	WarningContinue("SolverCreatingAndMappingTest");
 
-	MOCMesh mocMesh(strInput_aplFileName, MeshKernelType::MHT_KERNEL);
-	mocMesh.InitMOCValue("pin_c1.inp");
+	MOCMesh mocMesh(strInput_aplFileName, strOutput_inpFileName, "pin_c1.txt",MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube

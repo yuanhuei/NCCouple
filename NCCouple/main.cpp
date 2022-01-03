@@ -103,7 +103,7 @@ void ReadCFDMeshAndFieldTest()
 void SolverCreatingTest()
 {
 	WarningContinue("SolverCreatingTest");
-	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh("pin_c1.apl","pin_c1.inp","pin_c1.txt" ,MeshKernelType::MHT_KERNEL);
 	//examples for writing tecplot files of each materials
 	//Note: these file can be viewed by Tecplot
 	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
@@ -164,8 +164,8 @@ void SolverCreatingTest()
 void SolverCreatingAndMappingTest()
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
-	mocMesh.InitMOCValue("pin_c1.inp");
+	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp","pin_c1.txt",MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -213,8 +213,8 @@ void SolverCreatingAndMappingTest()
 void MOC_APL_INP_FileTest() 
 {
 	WarningContinue("MOC_APL_INP_FileTest");
-	MOCMesh mocMesh("pin_c1.apl", MeshKernelType::MHT_KERNEL);
-	mocMesh.InitMOCValue("pin_c1.inp");
+	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp","pin_c1.txt",MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
 	mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
