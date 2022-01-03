@@ -16,17 +16,6 @@
 #include "./MHT_IO/FieldIO.h"
 
 
-void CreateSolver
-(
-	std::string aplFileName,
-	std::string auxFileName,
-	std::string mshFileName
-)
-{
-
-
-
-}
 
 void MOCFieldsToCFD
 (
@@ -39,8 +28,9 @@ void MOCFieldsToCFD
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
-	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName, strInput_txtFileName, MeshKernelType::MHT_KERNEL);
-	//mocMesh.InitMOCValue("pin_c1.inp");
+	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName, MeshKernelType::MHT_KERNEL);
+	mocMesh.InitMOCHeatPower(strInput_txtFileName);
+
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -59,7 +49,7 @@ void MOCFieldsToCFD
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
 
-	mocMesh.InitMOCValue(strInput_inpFileName,"pin_c1.txt");
+	//mocMesh.InitMOCValue(strInput_inpFileName);
 	//create MHT mesh
 	UnGridFactory meshFactoryCon(strInput_meshFileName, UnGridFactory::ugtFluent);
 	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
@@ -92,14 +82,14 @@ void CFDFieldsToMOC
 	std::string strInput_meshFileName,
 	std::string strInput_vtkFileName,
 	std::string  strInput_aplFileName,
-	std::string strOutput_inpFileName,
+	std::string strInput_inpFileName,
 	bool bRenew//判断是否是第一次做插值，false为第一次
 )
 {
 	WarningContinue("SolverCreatingAndMappingTest");
 
-	MOCMesh mocMesh(strInput_aplFileName, strOutput_inpFileName, "pin_c1.txt",MeshKernelType::MHT_KERNEL);
-	mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
+	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName,MeshKernelType::MHT_KERNEL);
+	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -150,7 +140,8 @@ void CFDFieldsToMOC
 	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::TEMPERAURE);
 	ConservationValidation(mocMesh, H2OcfdMesh, ValueType::TEMPERAURE);
 
-	mocMesh.OutputStatus(strOutput_inpFileName);
+	std::string strOutput_inpName = strInput_inpFileName.substr(0, strInput_inpFileName.find(".")) + "_out.inp";
+	mocMesh.OutputStatus(strOutput_inpName);
 
 	
 }

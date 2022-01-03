@@ -145,8 +145,8 @@ public:
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void setAxialInformation(std::string line); //set mesh information
-	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
-	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
+	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<MOCEdge>& allEdges, int nFineMesh);//set edge objects
+	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<MOCEdge>& allEdges);  //set surface objects
 	void InitMOCFromInputFile(std::string inputFileName);
 
 private:

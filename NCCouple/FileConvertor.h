@@ -10,12 +10,7 @@ enum class Material
 	UO2
 };
 //detailed requirements are needed
-void CreateSolver
-(
-	std::string aplFileName,
-	std::string auxFileName,
-	std::string mshFileName
-);
+
 
 void MOCFieldsToCFD
 (
