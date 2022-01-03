@@ -301,7 +301,9 @@ void VTKReaderTest()
 	fieldName.push_back("Rho");
 
 
-	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);
+//	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);		//initialize with meshFile and VTKDataFile
+	MHTVTKReader reader("pinWR.msh", fieldName);						//initialize with meshFile and EmptyField
+//	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
 	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
 	{
 		reader.GetFieldIO(i).WriteTecplotField("pinWR_"+std::to_string(i)+".plt");

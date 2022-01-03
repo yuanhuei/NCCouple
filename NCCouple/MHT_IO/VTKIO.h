@@ -18,16 +18,20 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string vMshFileName,std::string vVTKFileName, std::vector<std::string>& vFiedNameList);
+	MHTVTKReader(std::string MshFileName,std::string vVTKFileName, std::vector<std::string>& vFiedNameList);
+
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList);
+
+	MHTVTKReader(std::string MshFileName);
 	~MHTVTKReader();
 
-	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
-	std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
-	std::vector<Field<Scalar>> GetFieldList() { return v_scalarFieldList; }
-
+	const std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
+	const std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
+	const std::vector<Mesh*> GetMeshListPtr() { return v_pmesh; }
+	const std::vector<Field<Scalar>> GetFieldList() { return v_scalarFieldList; }
 
 	FieldIO GetFieldIO(int num) { return v_FieldIO[num]; }
-	std::vector<Mesh*> GetMeshListPtr() { return v_pmesh; }
+
 private:
 
 	std::vector<Field<Scalar>> v_scalarFieldList;
@@ -38,6 +42,7 @@ private:
 	void ReadVTKFile(std::string VTKFileName, std::vector<std::string>& vFiedNameList);
 	void ReadMSHFile(std::string MeshFileName);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
+	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);
 };
 
 
