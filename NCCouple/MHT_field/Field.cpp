@@ -1264,25 +1264,32 @@ void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 
 	vtkSmartPointer<vtkUnstructuredGrid> Grid;
 	Grid = reader->GetOutput();
+	
+	ReadVTKGridField(Grid,this->st_name);
+}
 
+
+template<>
+void Field<Scalar>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid,const std::string ArryName)
+{
 	vtkDataArray* fieldArray;
 
 	enum VTKFieldType
 	{
-		point =  0,
+		point = 0,
 		cell = 1,
 		field = 2
 	}vtkType;
 
-	fieldArray = Grid->GetPointData()->GetArray(st_name.c_str());
+	fieldArray = uGrid->GetPointData()->GetArray(ArryName.c_str());
 	vtkType = point;
-	if (fieldArray==NULL)
+	if (fieldArray == NULL)
 	{
-		fieldArray = Grid->GetCellData()->GetArray(st_name.c_str());
+		fieldArray = uGrid->GetCellData()->GetArray(ArryName.c_str());
 		vtkType = cell;
 		if (fieldArray == NULL)
 		{
-			fieldArray = Grid->GetFieldData()->GetArray(st_name.c_str());
+			fieldArray = uGrid->GetFieldData()->GetArray(ArryName.c_str());
 			vtkType = field;
 			if (fieldArray == NULL)
 			{
@@ -1294,22 +1301,22 @@ void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 	if (vtkType == point)
 	{
 		ElementToNode();
-		for (size_t i = 0; i < Grid->GetPointData()->GetArray(st_name.c_str())->GetNumberOfTuples(); i++)
+		for (size_t i = 0; i < uGrid->GetPointData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
 		{
-			nodeField.SetValue(i, Grid->GetPointData()->GetArray(st_name.c_str())->GetTuple1(i));
+			nodeField.SetValue(i, uGrid->GetPointData()->GetArray(ArryName.c_str())->GetTuple1(i));
 		}
 		NodeToElement();
 	}
 	if (vtkType == cell)
 	{
-		for (size_t i = 0; i < Grid->GetCellData()->GetArray(st_name.c_str())->GetNumberOfTuples(); i++)
+		for (size_t i = 0; i < uGrid->GetCellData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
 		{
-			elementField.SetValue(i, Grid->GetCellData()->GetArray(st_name.c_str())->GetTuple1(i));
+			elementField.SetValue(i, uGrid->GetCellData()->GetArray(ArryName.c_str())->GetTuple1(i));
 		}
 	}
-
-	
 }
+
+
 // =======================================Vector Type Field=============================================
 
 //creating boundary fields according to mesh information
@@ -2534,4 +2541,10 @@ template<>
 void Field<Vector>::ReadVTK_Field(const std::string& inVTKFileName)
 {
 	
+}
+
+template<>
+void Field<Vector>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName)
+{
+
 }

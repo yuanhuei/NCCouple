@@ -29,7 +29,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, std::strin
 	vector<int> meshIDTemperary;
 	int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
 	std::vector<Surface>allMeshFaces;   //all face objects
-	std::vector<Edge>allEdges;    //all edge objects
+	std::vector<MOCEdge>allEdges;    //all edge objects
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -238,7 +238,7 @@ void MOCMesh::setAxialInformation(string line)
 
 
 //set all edge objects
-void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh)
+void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeIDTemperary, std::vector<MOCEdge>& allEdges, int nFineMesh)
 {
 	vector<int> meshIDTemperary;
 	stringstream stringline(lineType);
@@ -263,7 +263,7 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 		double endPoint_y = stod(token) + beginPoint_y;
 		std::array<double, 3> beginPoint{ beginPoint_x, beginPoint_y, 0.0 };
 		std::array<double, 3> endPoint{ endPoint_x, endPoint_y, 0.0 };
-		Edge edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
+		MOCEdge edge0 = MOCEdge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
 		edge0.arcCenter = Vector(0.0, 0.0, 0.0);
 		edge0.arcAxisDir = Vector(0.0, 0.0, 0.0);
 		allEdges.push_back(edge0);  //conserve edge object
@@ -308,11 +308,11 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 			double endPoint_y = Center_point_Y + Radius * sin((Angle + fine_Delta_angle) * PI / 180.0);
 			std::array<double, 3> beginPoint{ beginPoint_x, beginPoint_y, 0.0 };
 			std::array<double, 3> endPoint{ endPoint_x, endPoint_y, 0.0 };
-			Edge edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
+			MOCEdge edge0 = MOCEdge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary, edgeTypeTemperary);  //edge object
 			if (i > 1)
 			{
 				AditionArcEdgeID++;//为了保存多出来的弧边的ID
-				edge0 = Edge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary + EdgeNum + AditionArcEdgeID, edgeTypeTemperary);  //edge object
+				edge0 = MOCEdge(beginPoint, endPoint, meshIDTemperary, edgeIDTemperary + EdgeNum + AditionArcEdgeID, edgeTypeTemperary);  //edge object
 			}
 			edge0.arcCenter = Vector(Center_point_X, Center_point_Y, 0.0);
 			edge0.arcAxisDir = Vector(0.0, 0.0, 1.0);
@@ -323,7 +323,7 @@ void MOCMesh::setEdgeInformation(string lineType, string linePosition, int edgeI
 
 }
 //set all surface objects
-void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> meshFaceTypeTransfer, vector<string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges)
+void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> meshFaceTypeTransfer, vector<string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<MOCEdge>& allEdges)
 {
 	for (int i = 0; i < layerMeshNum; i++)
 	{
@@ -797,7 +797,7 @@ Surface::Surface()
 	faceType = "";
 }
 
-Surface::Surface(int faceID0, int nodeID, vector<Edge> allEdgesTransfer, string meshFaceTypeTransfer, string meshTemperatureNameTransfer)
+Surface::Surface(int faceID0, int nodeID, vector<MOCEdge> allEdgesTransfer, string meshFaceTypeTransfer, string meshTemperatureNameTransfer)
 {
 	int edgeNum0 = 0;
 	faceID = faceID0;
@@ -820,10 +820,10 @@ Surface::Surface(int faceID0, int nodeID, vector<Edge> allEdgesTransfer, string 
 void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 {
 	int face_edge_num = faceEdges.size();
-	Edge mostLeftEdge;
+	MOCEdge mostLeftEdge;
 	double minx = 1.0e8;
 	double RoundingError = 1.0e-12;  //Rounding error of computer
-	vector <Edge> edgeTemperary;
+	vector <MOCEdge> edgeTemperary;
 	for (int i = 0; i < face_edge_num; i++)  //the most left edge and the edge type is line
 	{
 		for (int j = 0; j < 2; j++)
@@ -836,7 +836,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 		}
 	}
 	edgeTemperary.push_back(mostLeftEdge);
-	vector<Edge>faceEdgesTemporary;    //temporary variables for edge object
+	vector<MOCEdge>faceEdgesTemporary;    //temporary variables for edge object
 	for (int i = 0; i < faceEdges.size(); i++)
 	{
 		if (mostLeftEdge.edgeID == faceEdges[i].edgeID)continue;
@@ -867,7 +867,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 	}
 	//Sort other edges and points anticlockwise
 
-	Edge presentEdge = mostLeftEdge;
+	MOCEdge presentEdge = mostLeftEdge;
 	for (int i = 1; i < face_edge_num; i++)
 	{
 		for (int j = 0; j < faceEdgesTemporary.size(); j++)
@@ -922,7 +922,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 	}
 }
 
-Edge::Edge()
+MOCEdge::MOCEdge()
 {
 	edgePoints.clear();
 	sideMeshID.clear();
@@ -930,7 +930,7 @@ Edge::Edge()
 	edgeType = 0;
 }
 
-Edge::Edge(std::array<double, 3> beginPoint, std::array<double, 3> endPoint, vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer)
+MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoint, vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer)
 {
 	int sideMeshIDnum = 0;
 	edgeID = edgeIDTransfer;

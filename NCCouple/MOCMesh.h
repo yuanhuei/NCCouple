@@ -90,7 +90,7 @@ public:
 		MeshPoint(pointID), MOCMeshPoint(materialName, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
-class Edge
+class MOCEdge
 {
 public:
 	std::vector <std::array<double, 3>> edgePoints;
@@ -100,8 +100,8 @@ public:
 	Vector arcCenter;
 	Vector arcAxisDir;
 public:
-	Edge();
-	Edge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
+	MOCEdge();
+	MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
 };
 
 class Surface
@@ -109,7 +109,7 @@ class Surface
 public:
 	std::vector <std::array<double, 3>> facePointPosition;
 	std::vector <int> facePointID;
-	std::vector<Edge>faceEdges;
+	std::vector<MOCEdge>faceEdges;
 	std::vector <int> curveInfo;
 	std::vector<Vector> curveFaceCenter;
 	std::vector<Vector> curveFaceAxisDir;
@@ -118,7 +118,7 @@ public:
 	std::string face_temperatureName;
 public:
 	Surface();
-	Surface(int faceID0, int nodeID, std::vector<Edge> allEdgesTransfer, std::string meshFaceTypeTransfer, std::string meshFaceTemperatureNameTransfer);
+	Surface(int faceID0, int nodeID, std::vector<MOCEdge> allEdgesTransfer, std::string meshFaceTypeTransfer, std::string meshFaceTemperatureNameTransfer);
 	void faceEdgeOrder(int nodeID);
 };
 
@@ -145,8 +145,8 @@ public:
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void setAxialInformation(std::string line); //set mesh information
-	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
-	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
+	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<MOCEdge>& allEdges, int nFineMesh);//set edge objects
+	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<MOCEdge>& allEdges);  //set surface objects
 
 private:
 	std::vector<std::vector<int>> m_coarseMeshInfo;

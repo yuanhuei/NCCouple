@@ -26,7 +26,7 @@ int g_iProcessID = 0;
 
 void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 {
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) 
+	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
 	{
 		double x, y, z;
 		std::tie(x, y, z) = cfdMesh.GetMeshPointPtr(i)->CentralCoordinate();
@@ -44,7 +44,7 @@ void ConservationValidation
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
 	ValueType vt
-) 
+)
 {
 	double sourceIntegralValue = 0.0;
 	double targetIntegralValue = 0.0;
@@ -190,7 +190,7 @@ void SolverCreatingAndMappingTest()
 	FluentPtrCon->Decompose(Bridges);
 	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
 	//create MHT field
-	Field<Scalar> rho(pmesh, 0.0,"Rho");
+	Field<Scalar> rho(pmesh, 0.0, "Rho");
 	//read cfd mesh and create solver
 	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
 	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
@@ -210,7 +210,7 @@ void SolverCreatingAndMappingTest()
 //this example was designed for test of
 //(1) rewritting a apl file
 //(2) reading and writting of inp files
-void MOC_APL_INP_FileTest() 
+void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
 	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp","pin_c1.txt",MeshKernelType::MHT_KERNEL);
@@ -218,7 +218,75 @@ void MOC_APL_INP_FileTest()
 	mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
+#include <vtkDelaunay3D.h>
+#include <vtkNew.h>
+#include <vtkSphereSource.h>
+#include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkUnstructuredGridWriter.h>
+#include <vtkAppendFilter.h>
+#include <vtkMultiBlockDataSet.h>
+void VTK_Test()
+{
+	vtkObject::GlobalWarningDisplayOff();
+	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader->SetFileName("500_0.vtk");
+	reader->SetReadAllColorScalars(true);
+	reader->SetReadAllFields(true);
+	reader->SetReadAllScalars(true);
+	reader->Update();
 
+	vtkSmartPointer<vtkUnstructuredGrid> Grid;
+	Grid = reader->GetOutput();
+
+	vtkSmartPointer<vtkUnstructuredGridReader> reader_1 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+	reader_1->SetFileName("500_1.vtk");
+	reader_1->SetReadAllColorScalars(true);
+	reader_1->SetReadAllFields(true);
+	reader_1->SetReadAllScalars(true);
+	reader_1->Update();
+
+	vtkSmartPointer<vtkUnstructuredGrid> Grid_1;
+	Grid_1 = reader_1->GetOutput();
+
+	// create the append filter
+	vtkSmartPointer<vtkAppendFilter> append =
+		vtkSmartPointer<vtkAppendFilter>::New();
+
+	// add each data set
+	append->AddInputData(Grid);
+	append->AddInputData(Grid_1);
+	append->Update();
+
+
+	vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+	writer->SetInputData(append->GetOutput());
+
+	writer->SetFileName("500_0_1.vtk");
+	writer->Update();
+}
+
+#include "./MHT_IO/VTKIO.h"
+void VTKReaderTest()
+{
+	//mshFileName size must same with vtkfileName
+	std::vector<std::string> mshFileName;
+	std::vector<std::string> vtkfileName;
+	std::vector<std::string> fieldName;
+	vtkfileName.push_back("pinW.vtk");
+	mshFileName.push_back("pinW.msh");
+	vtkfileName.push_back("pinW.vtk");
+	mshFileName.push_back("pinW.msh");
+
+	fieldName.push_back("T");
+	fieldName.push_back("Rho");
+
+
+	MHTVTKReader reader(mshFileName, vtkfileName, fieldName);
+
+	reader.GetFieldIO(0).WriteTecplotField("pinW_Total_0.plt");
+	reader.GetFieldIO(1).WriteTecplotField("pinW_Total_1.plt");
+}
+int main()
 int main(int argc, char** argv)
 {
 	/*
