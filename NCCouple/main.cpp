@@ -286,7 +286,6 @@ void VTKReaderTest()
 	reader.GetFieldIO(0).WriteTecplotField("pinW_Total_0.plt");
 	reader.GetFieldIO(1).WriteTecplotField("pinW_Total_1.plt");
 }
-int main()
 int main(int argc, char** argv)
 {
 	/*
