@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
-#include "FileConvertor.h"
+#include "./FileConvertor.h"
 #include <string.h>
 #ifdef _WIN32
 #include <process.h>
@@ -193,8 +193,7 @@ void SolverCreatingTest()
 	end = time(NULL);
 	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
 	//Conservation Validation in H2O region
-	//ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY);
-	//ConservationValidation(mocMesh, H2OcfdMesh, ValueType::DENSITY);
+	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY,"H2O");
 	return;
 }
 
@@ -346,15 +345,15 @@ int main(int argc, char** argv)
 	/*
 	六种输入格式,其它都非法
 	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd  pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk 
+	NCCouple moctocfd  pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk 
 	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd renew pin_c1.apl pin_c1.inp pin_c1.txt pinW.msh pinW.vtk
-	NCCouple 
+	NCCouple moctocfd renew pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk
+	NCCouple
 	NCCouple --help
 	*/
 	//get processor ID
 	g_iProcessID = (int)getpid();
-	if (argc != 1 && argc != 2 && argc != 5 &&argc!= 6 && argc!=7 && argc != 8)
+	if (argc != 1 && argc != 2  &&argc!= 6 && argc!=7 && argc != 8)
 	{
 		Logger::LogError("Wrong parameter input");
 		exit(EXIT_FAILURE);
@@ -386,6 +385,11 @@ int main(int argc, char** argv)
 	{
 		if (strcmp(argv[2],"renew")==0)
 		{
+			if (argc != 7)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
@@ -402,6 +406,11 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			if (argc != 6)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//第一次插值，需要做插值计算
 			//MOCFieldsToCFD
 			std::string argv2 = argv[2];
@@ -422,6 +431,11 @@ int main(int argc, char** argv)
 	{
 		if (strcmp(argv[2], "renew") == 0)
 		{
+			if (argc != 8)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//根据已经保存的插值系数初始化
 			std::string argv3 = argv[3];
 			std::string argv4 = argv[4];
@@ -440,6 +454,11 @@ int main(int argc, char** argv)
 		}
 		else
 		{
+			if(argc!=7)
+			{
+				Logger::LogError("wrong parameter input");
+				exit(EXIT_FAILURE);
+			}
 			//第一次插值，需要做插值计算
 			//MOCFieldsToCFD(std::string(argv[
 			std::string argv2 = argv[2];
