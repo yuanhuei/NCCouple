@@ -7,7 +7,10 @@
 extern int g_iProcessID;
 
 #define INTERSECT_JUDGE_LIMIT 1e-10
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,std::string strMocMeshName) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
+
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh)
+	: m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh)
+{
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
@@ -18,14 +21,6 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,std::string strMocMeshName) : 
 			auto fun = [this, &mtx, i, j]() {
 				const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(i));
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
-				/*
-				const MHTMeshPoint* p_MHTMP = dynamic_cast<const MHTMeshPoint*>(&mocPoint);
-				if (p_MHTMP)
-				{
-					p_MHTMP->WriteToTecplotFile("myFileName.plt");
-					system("myFileName.plt");
-				}
-				*/
 				double cfdPointVolume = cfdPoint.Volume();
 				double mocPointVolume = mocPoint.Volume();
 				double intersectedVolume = 0.0;
@@ -47,34 +42,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,std::string strMocMeshName) : 
 		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
 	}
-	/*
-	//指定被插值MOC编号，输出MOC网格权系数,
-	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
-		if (m_mocMeshPtr->GetMeshPointPtr(j)->PointID() == 3) {
-			double value = 0.0;
-			for (auto& iter : m_MOC_CFD_Map[j]) {
-				value += iter.second;
-
-				Logger::LogInfo(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
-			}
-			Logger::LogInfo(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
-			//std::cout << value << std::endl;
-		}
-	}
-	//指定被插值CFD编号，输出CFD网格权系数,
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) {
-		if (m_cfdMeshPtr->GetMeshPointPtr(i)->PointID() == 2762)
-		{
-			double value = 0.0;
-			for (auto& iter : m_CFD_MOC_Map[i]) {
-				value += iter.second;
-				Logger::LogInfo(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
-			}
-			Logger::LogInfo(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
-		}
-	}
-	*/
-	writeMapInfortoFile(strMocMeshName);
+	writeMapInfortoFile();
 }
 
 Solver::Solver
@@ -82,8 +50,7 @@ Solver::Solver
 	MOCMesh& mocMesh, 
 	CFDMesh& cfdMesh, 
 	MOCIndex& mocIndex, 
-	std::string mName,
-	std::string strMocMeshName
+	std::string mName
 )
 	:
 	m_mocMeshPtr(&mocMesh),
@@ -176,7 +143,7 @@ Solver::Solver
 	}
 
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
-	writeMapInfortoFile(strMocMeshName);
+	writeMapInfortoFile();
 }
 
 void Solver::CheckMappingWeights()
@@ -273,10 +240,10 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 	return;
 }
 
-void Solver::writeMapInfortoFile(std::string strMocMeshName)
+void Solver::writeMapInfortoFile()
 {
-	ofstream CFDtoMOC_MapFile(strMocMeshName+materialName+"_CFDtoMOC_MapFile");
-	ofstream MOCtoCFD_MapFile(strMocMeshName+materialName+"_MOCtoCFD_MapFile");
+	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC");
+	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD");
 
 	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{
@@ -297,16 +264,19 @@ void Solver::writeMapInfortoFile(std::string strMocMeshName)
 
 }
 
-int Solver::readMapInfor(std::string strMocMeshName)
+void Solver::readMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
 	m_MOC_CFD_Map.resize(m_mocMeshPtr->GetMeshPointNum());
-	ifstream infile(strMocMeshName+materialName+"_CFDtoMOC_MapFile");
+	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC";
+	ifstream infile(fileName);
 	if (!infile.is_open())
 	{
-		Logger::LogError("cannot find the CFDtoMOC_MapFile:" );
-		return -1;
+		Logger::LogError("cannot find the CFD to MOC map file: "+ fileName);
+		exit(EXIT_FAILURE);
+		return;
 	}
+	Logger::LogInfo("reading CFD to MOC map file in material: " + materialName);
 	std::string line;
 	while (getline(infile, line))
 	{
@@ -318,13 +288,15 @@ int Solver::readMapInfor(std::string strMocMeshName)
 
 	}
 	infile.close();
-
-	infile= ifstream(strMocMeshName+materialName+"_MOCtoCFD_MapFile");
+	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
+	infile = ifstream(fileName);
 	if (!infile.is_open())
 	{
-		Logger::LogError("cannot find the MOCtoCFD_MapFile:");
-		return -1;
+		Logger::LogError("cannot find the MOC to CFD map file:" + fileName);
+		exit(EXIT_FAILURE);
+		return;
 	}
+	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
 	while (getline(infile, line))
 	{
 		int i, j;
@@ -332,17 +304,17 @@ int Solver::readMapInfor(std::string strMocMeshName)
 		stringstream stringline(line);
 		stringline >> i >> j >> k;
 		m_MOC_CFD_Map[i][j] = k;
-
 	}
 	infile.close();
+	return;
 }
 
 
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName, std::string strMocMeshName)
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName)
 	:
 	m_mocMeshPtr(&mocMesh),
 	m_cfdMeshPtr(&cfdMesh),
 	materialName(mName)
 {
-	readMapInfor(strMocMeshName);
+	readMapInfor();
 }

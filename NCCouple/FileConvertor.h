@@ -11,6 +11,23 @@ enum class Material
 };
 //detailed requirements are needed
 
+void DisplayHelpInfo();
+
+void ConservationValidation
+(
+	const GeneralMesh& sourceMesh,
+	const GeneralMesh& targetMesh,
+	ValueType vt,
+	std::string strZoneName
+);
+
+
+void CreateMapper
+(
+	std::string strInput_aplFileName,
+	std::string strInput_inpFileName,
+	std::string strInput_meshFileName
+);
 
 void MOCFieldsToCFD
 (
@@ -18,8 +35,7 @@ void MOCFieldsToCFD
 	std::string strInput_inpFileName,
 	std::string strInput_txtFileName,
 	std::string strInput_meshFileName,
-	std::string strOutput_vtkFileName,
-	bool bRenew=false//判断是否是第一次做插值，false为第一次
+	std::string strOutput_vtkFileName
 );
 
 //vtk中提温度（K），密度（kg/m3）
@@ -29,14 +45,7 @@ void CFDFieldsToMOC
 	std::string strInput_meshFileName,
 	std::string strInput_vtkFileName,
 	std::string  strInput_aplFileName,
-	std::string strOutput_inpFileName,
-	bool bRenew = false//判断是否是第一次做插值，false为第一次
+	std::string strOutput_inpFileName
 );
-void ConservationValidation
-(
-	const GeneralMesh& sourceMesh,
-	const GeneralMesh& targetMesh,
-	ValueType vt,
-	std::string strZoneName
-);
+
 #endif

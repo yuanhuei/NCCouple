@@ -8,7 +8,8 @@
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
 #include "./FileConvertor.h"
-#include <string.h>
+#include <string>
+#include <sstream>
 #ifdef _WIN32
 #include <process.h>
 #else
@@ -44,152 +45,6 @@ Scalar initialRho(Scalar x, Scalar y, Scalar z)
 }
 
 
-void InitCFDMeshValue(const GeneralMesh& cfdMesh)
-{
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++)
-	{
-		double x, y, z;
-		std::tie(x, y, z) = cfdMesh.GetMeshPointPtr(i)->CentralCoordinate();
-		double _x = x - 0.63;
-		double _y = y - 0.63;
-		double r = sqrt(_x * _x + _y * _y);
-		double value = r + z + _x / r;
-		cfdMesh.GetMeshPointPtr(i)->SetValue(value, ValueType::DENSITY);
-	}
-	return;
-}
-
-//this example was designed for test of
-//(1) reading a CFD mesh file
-//(2) creating a field and read variables from a vkt file
-void ReadCFDMeshAndFieldTest()
-{
-	WarningContinue("ReadCFDMeshAndFieldTest");
-	//open a mesh file
-	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
-	//create field and read from vtk file
-	Field<Scalar> T(pmesh, 0.0, "T");
-	Field<Scalar> rho(pmesh, 0.0, "Rho");
-	T.ReadVTK_Field("pinW.vtk");
-	rho.ReadVTK_Field("pinW.vtk");
-	T.WriteTecplotField("T.plt");
-	rho.WriteTecplotField("rho.plt");
-	return;
-}
-
-//this example was designed for test of
-//(1) creating mapping solvers for different regions
-//(2) conservation validation of H2O region
-void SolverCreatingTest()
-{
-	WarningContinue("SolverCreatingTest");
-	MOCMesh mocMesh("pin_c1.apl","pin_c1.inp",MeshKernelType::MHT_KERNEL);
-	//examples for writing tecplot files of each materials
-	//Note: these file can be viewed by Tecplot
-	mocMesh.WriteTecplotFile("H2O", "H2OMOCFile.plt");
-	mocMesh.WriteTecplotFile("Zr4", "Zr4MOCFile.plt");
-	mocMesh.WriteTecplotFile("UO2", "U2OMOCFile.plt");
-	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	//the following information should be given for a specified tube
-	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
-	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
-	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
-	mocIndex.circularCellNum = 8;
-	mocIndex.axialCellNum = 5;
-	mocIndex.axialCellSize = 1.0;
-	std::vector<Scalar> radiusList;
-	radiusList.push_back(0.1024);
-	radiusList.push_back(0.2048);
-	radiusList.push_back(0.3072);
-	radiusList.push_back(0.4096);
-	radiusList.push_back(0.475);
-	mocIndex.SetRadial(radiusList);
-	mocIndex.BuildUpIndex();
-	//mapper solvers are created for each zone (H2O, Zr4 and U2O) 
-	time_t start, end;
-	start = time(NULL);
-	//read cfd mesh
-	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh0 = &(FluentPtrCon->v_regionGrid[0]);
-	Mesh* pmesh1 = &(FluentPtrCon->v_regionGrid[1]);
-	Mesh* pmesh2 = &(FluentPtrCon->v_regionGrid[2]);
-	//read cfd mesh and create solver
-	CFDMesh H2OcfdMesh(pmesh0, MeshKernelType::MHT_KERNEL, int(Material::H2O));
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
-	H2OMapper.CheckMappingWeights();
-	//read cfd mesh and create solver
-	CFDMesh Zr4cfdMesh(pmesh1, MeshKernelType::MHT_KERNEL, int(Material::Zr4));
-	Solver Zr4Mapper(mocMesh, Zr4cfdMesh, mocIndex, "Zr4");
-	Zr4Mapper.CheckMappingWeights();
-	//read cfd mesh and create solver
-	CFDMesh U2OcfdMesh(pmesh2, MeshKernelType::MHT_KERNEL, int(Material::UO2));
-	Solver U2OMapper(mocMesh, U2OcfdMesh, mocIndex, "UO2");
-	U2OMapper.CheckMappingWeights();
-	end = time(NULL);
-	Logger::LogInfo(FormatStr("Time for caculatation: %d second", int(difftime(end, start))));
-	//Conservation Validation in H2O region
-	ConservationValidation(H2OcfdMesh, mocMesh, ValueType::DENSITY,"H2O");
-	return;
-}
-
-//this example was designed for test of
-//(1) creating a solver
-//(2) reading field from a vtk file
-//(3) interpolations of CFD to MOC and then MOC to CFD
-void SolverCreatingAndMappingTest()
-{
-	WarningContinue("SolverCreatingAndMappingTest");
-	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp",MeshKernelType::MHT_KERNEL);
-	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
-	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	//the following information should be given for a specified tube
-	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
-	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
-	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
-	mocIndex.circularCellNum = 8;
-	mocIndex.axialCellNum = 5;
-	mocIndex.axialCellSize = 1.0;
-	std::vector<Scalar> radiusList;
-	radiusList.push_back(0.1024);
-	radiusList.push_back(0.2048);
-	radiusList.push_back(0.3072);
-	radiusList.push_back(0.4096);
-	radiusList.push_back(0.475);
-	mocIndex.SetRadial(radiusList);
-	mocIndex.BuildUpIndex();
-	//create MHT mesh
-	UnGridFactory meshFactoryCon("pinW.msh", UnGridFactory::ugtFluent);
-	FluentMeshBlock* FluentPtrCon = dynamic_cast<FluentMeshBlock*>(meshFactoryCon.GetPtr());
-	RegionConnection Bridges;
-	FluentPtrCon->Decompose(Bridges);
-	Mesh* pmesh = &(FluentPtrCon->v_regionGrid[0]);
-	//create MHT field
-	Field<Scalar> rho(pmesh, 0.0, "Rho");
-	//read cfd mesh and create solver
-	CFDMesh H2OcfdMesh(pmesh, MeshKernelType::MHT_KERNEL, int(Material::H2O));
-	Solver H2OMapper(mocMesh, H2OcfdMesh, mocIndex, "H2O");
-	H2OMapper.CheckMappingWeights();
-	//read CFD Field From Field
-	rho.ReadVTK_Field("pinW.vtk");
-	H2OcfdMesh.SetValueVec(rho.elementField.v_value, ValueType::DENSITY);
-	H2OMapper.CFDtoMOCinterception(ValueType::DENSITY);
-	H2OMapper.MOCtoCFDinterception(ValueType::DENSITY);
-
-	mocMesh.OutputStatus("pin_cl.inp");
-	H2OcfdMesh.SetFieldValue(rho.elementField.v_value, ValueType::DENSITY);
-	rho.WriteTecplotField("rho.plt");
-	return;
-}
-
 //this example was designed for test of
 //(1) rewritting a apl file
 //(2) reading and writting of inp files
@@ -205,6 +60,7 @@ void MOC_APL_INP_FileTest()
 	//mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
+
 #include <vtkDelaunay3D.h>
 #include <vtkNew.h>
 #include <vtkSphereSource.h>
@@ -283,147 +139,115 @@ void VTKReaderTest()
 	
 	std::cout <<"success end"<<std::endl;
 }
-int main(int argc, char** argv)
+
+void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
 {
-	/*
-	六种输入格式,其它都非法
-	NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd  pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk 
-	NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp
-	NCCouple moctocfd renew pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk
-	NCCouple
-	NCCouple --help
-	*/
-	//get processor ID
-	g_iProcessID = (int)getpid();
-	if (argc != 1 && argc != 2  &&argc!= 6 && argc!=7 && argc != 8)
+	if (3 != fileNames.size())
 	{
-		Logger::LogError("Wrong parameter input");
-		exit(EXIT_FAILURE);
+		std::cout << "Please give 3 file names if you are intending to create solver, like this:" << std::endl;
+		std::cout << "NCCouple createmapper (MOCMesh) (MOCField) (CFDMesh)" << std::endl;
+		Logger::LogError("inccorrect number of file names");
 	}
-	if (argc == 1)
-	{
-		//ReadCFDMeshAndFieldTest();
-		//SolverCreatingTest();
-		//SolverCreatingAndMappingTest();
-		MOC_APL_INP_FileTest();
-		return 0;
+	CreateMapper(fileNames[0], fileNames[1], fileNames[2]);
+	return;
+}
 
-	}
-	if (argc == 2)
+void EntranceOfCFDToMOC(std::vector<std::string>& fileNames)
+{
+	if (4 != fileNames.size())
 	{
-		if (strcmp(argv[1], "--help") == 0)
-		{
-			std::cout << "Please input command like this:" << std::endl;
-			std::cout << "NCCouple cfdtomoc pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp" << std::endl;
-			std::cout << "NCCouple moctocfd  pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk " << std::endl;
-			std::cout << "NCCouple cfdtomoc renew pinW.msh pinW.vtk  pin_c1.apl pin_c1.inp" << std::endl;
-			std::cout << "NCCouple moctocfd renew pin_c1.apl pin_c1.inp heatPower.txt pinWR.msh pinWR.vtk" << std::endl;
-			std::cout << "NCCouple" << std::endl;
-		}
-		return 0;
+		std::cout << "Please give 4 file names if you are intending to map CFD to MOC solver, like this:" << std::endl;
+		std::cout << "NCCouple cfdtomoc (CFDMesh) (CFDField) (MOCMesh) (MOCField)" << std::endl;
+		Logger::LogError("inccorrect number of file names");
 	}
+	CFDFieldsToMOC(fileNames[0], fileNames[1], fileNames[2], fileNames[3]);
+	return;
+}
 
-	if (strcmp(argv[1],"cfdtomoc")==0)
+void EntranceOfMOCToCFD(std::vector<std::string>& fileNames)
+{
+	if (5 != fileNames.size())
 	{
-		if (strcmp(argv[2],"renew")==0)
-		{
-			if (argc != 7)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//根据已经保存的插值系数初始化
-			std::string argv3 = argv[3];
-			std::string argv4 = argv[4];
-			std::string argv5 = argv[5];
-			std::string argv6 = argv[6];
-			if (argv3.find(".msh") == std::string::npos || argv4.find(".txt") == std::string::npos
-				|| argv5.find(".apl") == std::string::npos || argv6.find(".inp") == std::string::npos)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//std::string strOutput_inpName = argv5.substr(0, argv5.find(".")) + ".inp";
-			CFDFieldsToMOC(argv3, argv4, argv5, argv6,true);
-		}
-		else
-		{
-			if (argc != 6)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//第一次插值，需要做插值计算
-			//MOCFieldsToCFD
-			std::string argv2 = argv[2];
-			std::string argv3 = argv[3];
-			std::string argv4 = argv[4];
-			std::string argv5 = argv[5];
-			if (argv2.find(".msh") == std::string::npos || argv3.find(".txt") == std::string::npos
-				|| argv4.find(".apl") == std::string::npos|| argv5.find(".inp") == std::string::npos)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//std::string strOutput_inpName = argv4.substr(0, argv4.find(".")) + ".inp";
-			CFDFieldsToMOC(argv2,argv3,argv4, argv5);
-		}
+		std::cout << "Please give 5 file names if you are intending to map MOC to CFD solver, like this:" << std::endl;
+		std::cout << "NCCouple moctocfd (MOCMesh) (MOCField) (MOCPower) (CFDMesh) (CFDField)" << std::endl;
+		Logger::LogError("inccorrect number of file names");
 	}
-	else if (strcmp(argv[1], "moctocfd") == 0 )
+	MOCFieldsToCFD(fileNames[0], fileNames[1], fileNames[2], fileNames[3], fileNames[4]);
+	return;
+}
+
+void RunWithParameters(std::vector<std::string>& parameters)
+{
+	if (0 == parameters.size())
 	{
-		if (strcmp(argv[2], "renew") == 0)
+		Logger::LogError("no parameter given in RunWithParameters()");
+	}
+	std::vector<std::string> filenames;
+	filenames.resize(parameters.size() - 1);
+	for (int i = 1;i < parameters.size();i++)
+	{
+		filenames[i - 1] = parameters[i];
+	}
+	if ("--help" == parameters[0])
+	{
+		if (0 != filenames.size())
 		{
-			if (argc != 8)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//根据已经保存的插值系数初始化
-			std::string argv3 = argv[3];
-			std::string argv4 = argv[4];
-			std::string argv5 = argv[5];
-			std::string argv6 = argv[6];
-			std::string argv7 = argv[7];
-			if (argv3.find(".apl") == std::string::npos || argv4.find(".inp") == std::string::npos
-				|| argv5.find(".txt") == std::string::npos
-				|| argv6.find(".msh") == std::string::npos || argv7.find(".vtk") == std::string::npos)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//std::string strOutput_vtkName = argv5.substr(0, argv5.find(".")) + ".vtk";
-			MOCFieldsToCFD(argv3, argv4, argv5, argv6, argv7, true);
+			Logger::LogError("no more parameter need to be given in --help");
 		}
-		else
+		DisplayHelpInfo();
+	}
+	else if ("clear" == parameters[0])
+	{
+		if (0 != filenames.size())
 		{
-			if(argc!=7)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//第一次插值，需要做插值计算
-			//MOCFieldsToCFD(std::string(argv[
-			std::string argv2 = argv[2];
-			std::string argv3 = argv[3];
-			std::string argv4 = argv[4];
-			std::string argv5 = argv[5];
-			std::string argv6 = argv[6];
-			if (argv2.find(".apl") == std::string::npos || argv3.find(".inp") == std::string::npos
-				|| argv4.find(".txt") == std::string::npos || argv5.find(".msh") == std::string::npos
-				|| argv6.find(".vtk") == std::string::npos)
-			{
-				Logger::LogError("wrong parameter input");
-				exit(EXIT_FAILURE);
-			}
-			//std::string strOutput_vtkName = argv4.substr(0, argv4.find(".")) + ".vtk";
-			MOCFieldsToCFD(argv2, argv3, argv4, argv5,argv6);
+			Logger::LogError("no more parameter need to be given in clear");
 		}
+		Logger::LogInfo("hello world");
+	}
+	else if ("createmapper" == parameters[0])
+	{
+		EntranceOfCreateMapper(filenames);
+	}
+	else if ("cfdtomoc" == parameters[0])
+	{
+		EntranceOfCFDToMOC(filenames);
+	}
+	else if ("moctocfd" == parameters[0])
+	{
+		EntranceOfMOCToCFD(filenames);
 	}
 	else
 	{
-		Logger::LogError("wrong parameter input");
-		exit(EXIT_FAILURE);
+		std::cout << "the following parameters are acceptabel: " << std::endl;
+		std::cout << "(1) cfdtomoc" << std::endl;
+		std::cout << "(2) clear" << std::endl;
+		std::cout << "(3) createmapper" << std::endl;
+		std::cout << "(4) moctocfd" << std::endl;
+		std::cout << "(5) --help" << std::endl;
+		Logger::LogError("invalid parameter given: " + parameters[0]);
+	}
+	return;
+}
+
+int main(int argc, char** argv)
+{
+	//get processor ID
+	g_iProcessID = (int)getpid();
+
+	if (argc == 1)
+	{
+		std::cout << "hello world" << std::endl;
+		return 0;
+	}
+	else
+	{
+		std::vector<std::string> parameterList;
+		parameterList.resize(argc - 1);
+		for (int i = 1;i < argc;i++)
+		{
+			parameterList[i - 1] = argv[i];
+		}
+		RunWithParameters(parameterList);
 	}
 	return 0;
 }

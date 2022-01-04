@@ -19,7 +19,6 @@ void Logger::LogError(std::string err) {
 	spdlog::error(err);
 	my_logger->info(err);
 	exit(1);
-
 	return;
 }
 

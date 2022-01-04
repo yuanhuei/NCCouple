@@ -17,31 +17,13 @@ CFDMesh::CFDMesh(Mesh* pmesh, MeshKernelType kernelType,int iMeshRegionZone)
 		exit(EXIT_FAILURE);
 	}
 	int cellNum = pmesh->n_elemNum;
+	std::string regionName = pmesh->st_meshName;
 	m_meshPointPtrVec.resize(cellNum);
-	Logger::LogInfo("reading CFD cells...");
+	Logger::LogInfo("reading CFD cells in region: " + regionName);
 	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
-
 	std::mutex mtx;
 	int currentConstructMeshNum = 0;
 	std::vector<std::future<void>> futureVec;
-	/*Write OFF streamstream for meshpoint
-	    OFF
-		8 6 0
-		0	0	0.05
-		- 1.44958e-026	0.042	0.05
-		0.0278931	0.0688267	0.0499999
-		0.0296465	0.0292642	0.0499997
-		0	0	0
-		0	0.042	0
-		0.0278886	0.0688195	0
-		0.0296111	0.0292265	0
-		4	3	2	1	0
-		4	1	2	6	5
-		4	7	3	0	4
-		4	6	2	3	7
-		4	5	6	7	4
-		4	0	1	5	4
-	*/
 	for (int i = 0; i < cellNum; i++)
 	{
 		int verticesNum = pmesh->v_elem[i].v_nodeID.size();

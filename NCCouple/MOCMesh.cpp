@@ -11,13 +11,13 @@ using namespace std;
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType) {
-	//meshHighZ = 0.5;                       //自己临时设置的网格高度，这个后面还要改
+MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType) 
+{
 	ofstream outFile("addID_" + meshFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
 	{
-		Logger::LogError("cannot find the moc data file:" + meshFileName);
+		Logger::LogError("cannot find the MOC mesh file:" + meshFileName);
 		exit(EXIT_FAILURE);
 	}
 	string line;
@@ -201,7 +201,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernel
 			}
 		}
 	}
-
 	InitMOCFromInputFile(inputFileName);
 }
 
@@ -594,8 +593,9 @@ void MOCMesh::reOrganaziIndex()
 
 void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	std::ifstream ifs(inputFileName);
-	if (!ifs.is_open()) {
-		Logger::LogError("cannot find the cfd data file:" + inputFileName);
+	if (!ifs.is_open()) 
+	{
+		Logger::LogError("cannot find the MOC data file:" + inputFileName);
 		exit(EXIT_FAILURE);
 	}
 	m_mediumMap.clear();
