@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
-#include "FileConvertor.h"
+#include "./FileConvertor.h"
 #include <string.h>
 #ifdef _WIN32
 #include <process.h>
