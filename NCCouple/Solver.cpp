@@ -161,7 +161,6 @@ Solver::Solver
 						}
 					};
 					if (MOCID == iMocIndex) continue;
-					//fun();
 					futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 				}
 			}
@@ -241,33 +240,6 @@ void Solver::CheckMappingWeights()
 	}
 	Logger::LogInfo(FormatStr("sum of MOC->CFD weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
 	Logger::LogInfo(FormatStr("%d CFD cells have no weights from MOC cells", sumOfZero));
-	/*
-	//指定被插值MOC编号，输出MOC网格权系数,
-	for (int j = 0; j < mocMesh.GetMeshPointNum(); j++) {
-		if (m_mocMeshPtr->GetMeshPointPtr(j)->PointID() == 3) {
-			double value = 0.0;
-			for (auto& iter : m_MOC_CFD_Map[j]) {
-				value += iter.second;
-
-				Logger::LogInfo(FormatStr("插值CFD网格编号:%d 插值权系数:%.6lf", m_cfdMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
-			}
-			Logger::LogInfo(FormatStr("被插值MOC网格编号:%d,插值权系数总和:%.6lf\n", m_mocMeshPtr->GetMeshPointPtr(j)->PointID(), value));
-			//std::cout << value << std::endl;
-		}
-	}
-	//指定被插值CFD编号，输出CFD网格权系数,
-	for (int i = 0; i < cfdMesh.GetMeshPointNum(); i++) {
-		if (m_cfdMeshPtr->GetMeshPointPtr(i)->PointID() == 2762)
-		{
-			double value = 0.0;
-			for (auto& iter : m_CFD_MOC_Map[i]) {
-				value += iter.second;
-				Logger::LogInfo(FormatStr("插值MOC网格编号:%d 插值权系数:%.6lf", m_mocMeshPtr->GetMeshPointPtr(iter.first)->PointID(), iter.second));
-			}
-			Logger::LogInfo(FormatStr("被插值CFD网格编号:%d,插值权系数总和:%.6lf\n", m_cfdMeshPtr->GetMeshPointPtr(i)->PointID(), value));
-		}
-	}
-	*/
 	return;
 }
 

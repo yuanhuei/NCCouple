@@ -12,6 +12,8 @@ enum class ValueType
 	DENSITY
 };
 
+std::string NameOfValueType(ValueType vt);
+
 enum class MeshKernelType
 {
 	CGAL_KERNEL,

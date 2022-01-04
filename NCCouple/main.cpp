@@ -59,63 +59,6 @@ void InitCFDMeshValue(const GeneralMesh& cfdMesh)
 	return;
 }
 
-void ConservationValidation
-(
-	const GeneralMesh& sourceMesh,
-	const GeneralMesh& targetMesh,
-	ValueType vt,
-	std::string strZoneName
-)
-{
-	double sourceIntegralValue = 0.0;
-	double targetIntegralValue = 0.0;
-	bool bSourceMoc = false;
-	std::string sourceMeshName, targetMeshName;
-	if (dynamic_cast<const CFDMesh*>(&sourceMesh)) {
-		sourceMeshName = "CFD Mesh";
-		targetMeshName = "MOC Mesh";
-	}
-	else {
-		bSourceMoc = true;
-		sourceMeshName = "MOC Mesh";
-		targetMeshName = "CFD Mesh";
-	}
-	// = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
-
-	for (int i = 0; i < sourceMesh.GetMeshPointNum(); i++) {
-		double sourceValue=0;
-		if (bSourceMoc)
-		{
-			const MOCMeshPoint&  mocPoint = dynamic_cast<const MOCMeshPoint&>(*sourceMesh.GetMeshPointPtr(i));
-			if(mocPoint.GetMaterialName()==strZoneName)
-				sourceValue = sourceMesh.GetMeshPointPtr(i)->GetValue(vt);
-		}
-		else
-			sourceValue = sourceMesh.GetMeshPointPtr(i)->GetValue(vt);
-		double pointVolume = sourceMesh.GetMeshPointPtr(i)->Volume();
-		sourceIntegralValue += sourceValue * pointVolume;
-	}
-
-	for (int i = 0; i < targetMesh.GetMeshPointNum(); i++) {
-		double targetValue = 0;
-		if (!bSourceMoc)
-		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*targetMesh.GetMeshPointPtr(i));
-			if (mocPoint.GetMaterialName() == strZoneName)
-				targetValue = targetMesh.GetMeshPointPtr(i)->GetValue(vt);
-		}
-		else
-			targetValue = targetMesh.GetMeshPointPtr(i)->GetValue(vt);
-		double pointVolume = targetMesh.GetMeshPointPtr(i)->Volume();
-		targetIntegralValue += targetValue * pointVolume;
-	}
-
-
-	Logger::LogInfo(FormatStr("The Integral Value of Source %s : %.6lf", sourceMeshName.c_str(), sourceIntegralValue));
-	Logger::LogInfo(FormatStr("The Integral Value of Target %s : %.6lf", targetMeshName.c_str(), targetIntegralValue));
-	return;
-}
-
 //this example was designed for test of
 //(1) reading a CFD mesh file
 //(2) creating a field and read variables from a vkt file

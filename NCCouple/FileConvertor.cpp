@@ -16,10 +16,60 @@
 #include "./MHT_IO/FieldIO.h"
 #include "./MHT_IO/VTKIO.h"
 
+//integration of a specified value over a specified region
+//Note: it can be used both for MOC and CFD
+Scalar Integration
+(
+	const GeneralMesh& mesh,
+	ValueType vt,
+	std::string strZoneName
+)
+{
+	bool bSourceMoc = true;
+	std::string sourceMeshName, targetMeshName;
+	if (dynamic_cast<const CFDMesh*>(&mesh))
+	{
+		bSourceMoc = false;
+	}
+	Scalar integration = 0.0;
+	for (int i = 0; i < mesh.GetMeshPointNum(); i++)
+	{
+		double sourceValue = 0;
+		if (bSourceMoc)
+		{
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mesh.GetMeshPointPtr(i));
+			if (mocPoint.GetMaterialName() != strZoneName) continue;
+			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+		}
+		else
+		{
+			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+		}
+		double pointVolume = mesh.GetMeshPointPtr(i)->Volume();
+		integration += sourceValue * pointVolume;
+	}
+	return integration;
+}
+
+void ConservationValidation
+(
+	const GeneralMesh& sourceMesh,
+	const GeneralMesh& targetMesh,
+	ValueType vt,
+	std::string strZoneName
+)
+{
+	std::string valueName = NameOfValueType(vt);
+	double sourceIntegralValue = Integration(sourceMesh, vt, strZoneName);
+	double targetIntegralValue = Integration(targetMesh, vt, strZoneName);
+	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName, strZoneName, sourceIntegralValue));
+	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName, strZoneName, targetIntegralValue));
+	return;
+}
 
 void MOCFieldsToCFD
 (
-	std::string  strInput_aplFileName,
+	std::string strInput_aplFileName,
 	std::string strInput_inpFileName,
 	std::string strInput_txtFileName,
 	std::string strInput_meshFileName,
@@ -27,10 +77,11 @@ void MOCFieldsToCFD
 	bool bRenew
 )
 {
-	WarningContinue("SolverCreatingAndMappingTest");
+	Logger::LogInfo("****** Mapping from MOC to CFD ******");
+	Logger::LogInfo("Reading MOC files: " + strInput_aplFileName + ", " + strInput_inpFileName);
 	MOCMesh mocMesh(strInput_aplFileName, strInput_inpFileName, MeshKernelType::MHT_KERNEL);
+	Logger::LogInfo("Reading MOC heat power file: " + strInput_txtFileName);
 	mocMesh.InitMOCHeatPower(strInput_txtFileName);
-
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
 	//the following information should be given for a specified tube
@@ -48,8 +99,9 @@ void MOCFieldsToCFD
 	radiusList.push_back(0.475);
 	mocIndex.SetRadial(radiusList);
 	mocIndex.BuildUpIndex();
-
-	MHTVTKReader reader(strInput_meshFileName);									//initialize with meshFile
+	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
+	//initialize with meshFile
+	MHTVTKReader reader(strInput_meshFileName);
 	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
 	{
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
@@ -59,9 +111,13 @@ void MOCFieldsToCFD
 		Solver solverMapper;
 		std::string strMocMeshName = strInput_aplFileName.substr(0, strInput_aplFileName.find(".")) + "_";
 		if (bRenew)
-			solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName,strMocMeshName);
+		{
+			solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName, strMocMeshName);
+		}
 		else
-			solverMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName,strMocMeshName);
+		{
+			solverMapper = Solver(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName, strMocMeshName);
+		}
 
 		solverMapper.CheckMappingWeights();
 
@@ -69,13 +125,11 @@ void MOCFieldsToCFD
 
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = strOutput_vtkFileName.substr(0, strOutput_vtkFileName.find(".")) + pmesh->st_meshName+ ".vtk";
-
+		Logger::LogInfo("Writing CFD vtk file: " + strOutput_inpName);
 		heatpower.WriteVTK_Field(strOutput_inpName);
-
-		ConservationValidation(cfdMesh, mocMesh, ValueType::HEATPOWER,pmesh->st_meshName);
 		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER,pmesh->st_meshName);
 	}
-
+	return;
 }
 
 void CFDFieldsToMOC
@@ -141,8 +195,6 @@ void CFDFieldsToMOC
 
 		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY,pmesh->st_meshName);
 		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE,pmesh->st_meshName);
-
-
 	}
 	std::string strOutput_inpName = strInput_inpFileName.substr(0, strInput_inpFileName.find(".")) + "_out.inp";
 	mocMesh.OutputStatus(strOutput_inpName);
