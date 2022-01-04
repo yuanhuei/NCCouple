@@ -33,6 +33,7 @@ public:
 			m_temperature = value;
 			break;
 		case ValueType::HEATPOWER:
+			m_heatPower = value;
 			break;
 		case ValueType::DENSITY:
 			m_density = value;
@@ -49,6 +50,7 @@ public:
 		case ValueType::TEMPERAURE:
 			return m_temperature;
 		case ValueType::HEATPOWER:
+			return m_heatPower;
 			break;
 		case ValueType::DENSITY:
 			return m_density;
@@ -70,6 +72,7 @@ private:
 	std::string m_temperatureName;
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
+	double m_heatPower = 0.0;
 };
 
 
@@ -87,7 +90,7 @@ public:
 		MeshPoint(pointID), MOCMeshPoint(materialName, temperatureName), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
-class Edge
+class MOCEdge
 {
 public:
 	std::vector <std::array<double, 3>> edgePoints;
@@ -97,8 +100,8 @@ public:
 	Vector arcCenter;
 	Vector arcAxisDir;
 public:
-	Edge();
-	Edge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
+	MOCEdge();
+	MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> beginEnd, std::vector<int> meshIDTransfer, int edgeIDTransfer, int edgeTypeTransfer);
 };
 
 class Surface
@@ -106,7 +109,7 @@ class Surface
 public:
 	std::vector <std::array<double, 3>> facePointPosition;
 	std::vector <int> facePointID;
-	std::vector<Edge>faceEdges;
+	std::vector<MOCEdge>faceEdges;
 	std::vector <int> curveInfo;
 	std::vector<Vector> curveFaceCenter;
 	std::vector<Vector> curveFaceAxisDir;
@@ -115,7 +118,7 @@ public:
 	std::string face_temperatureName;
 public:
 	Surface();
-	Surface(int faceID0, int nodeID, std::vector<Edge> allEdgesTransfer, std::string meshFaceTypeTransfer, std::string meshFaceTemperatureNameTransfer);
+	Surface(int faceID0, int nodeID, std::vector<MOCEdge> allEdgesTransfer, std::string meshFaceTypeTransfer, std::string meshFaceTemperatureNameTransfer);
 	void faceEdgeOrder(int nodeID);
 };
 
@@ -130,20 +133,21 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType);
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void reOrganaziIndex();
 	void WriteTecplotFile(std::string, std::string);
-	void InitMOCValue(std::string inputFileName);
+	void InitMOCHeatPower(std::string heatPowerFileName);
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void setAxialInformation(std::string line); //set mesh information
-	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<Edge>& allEdges, int nFineMesh);//set edge objects
-	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<Edge>& allEdges);  //set surface objects
+	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<MOCEdge>& allEdges, int nFineMesh);//set edge objects
+	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<MOCEdge>& allEdges);  //set surface objects
+	void InitMOCFromInputFile(std::string inputFileName);
 
 private:
 	std::vector<std::vector<int>> m_coarseMeshInfo;

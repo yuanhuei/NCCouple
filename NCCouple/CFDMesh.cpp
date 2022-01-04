@@ -141,11 +141,11 @@ void CFDMesh::WriteTecplotFile(std::string fileName, std::vector<int>& vMeshID)
 	return;
 }
 
-void CFDMesh::SetFieldValue(Field<Scalar>& field, ValueType vt)
+void CFDMesh::SetFieldValue(std::vector<double>& v_value, ValueType vt)
 {
 	for (int i = 0; i < m_meshPointPtrVec.size(); i++)
 	{
-		field.elementField.SetValue(i, m_meshPointPtrVec[i]->GetValue(vt));
+		v_value[i]=m_meshPointPtrVec[i]->GetValue(vt);
 	}
 	return;
 }

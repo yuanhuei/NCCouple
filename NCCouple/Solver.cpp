@@ -4,9 +4,10 @@
 #include <mutex>
 #include<algorithm>
 
+extern int g_iProcessID;
 
 #define INTERSECT_JUDGE_LIMIT 1e-10
-Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh,std::string strMocMeshName) : m_mocMeshPtr(&mocMesh), m_cfdMeshPtr(&cfdMesh) {
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
@@ -73,6 +74,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh) : m_mocMeshPtr(&mocMesh), m_c
 		}
 	}
 	*/
+	writeMapInfortoFile(strMocMeshName);
 }
 
 Solver::Solver
@@ -80,7 +82,8 @@ Solver::Solver
 	MOCMesh& mocMesh, 
 	CFDMesh& cfdMesh, 
 	MOCIndex& mocIndex, 
-	std::string mName
+	std::string mName,
+	std::string strMocMeshName
 )
 	:
 	m_mocMeshPtr(&mocMesh),
@@ -174,7 +177,7 @@ Solver::Solver
 	}
 
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
-
+	writeMapInfortoFile(strMocMeshName);
 }
 
 void Solver::CheckMappingWeights()
@@ -298,23 +301,76 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 	return;
 }
 
-void Solver::WriteTestTxtFile()
+void Solver::writeMapInfortoFile(std::string strMocMeshName)
 {
-	std::ofstream outFile("power.txt");
-	for (int j = 0; j < m_mocMeshPtr->GetMeshPointNum(); j++)
+	ofstream CFDtoMOC_MapFile(strMocMeshName+materialName+"_CFDtoMOC_MapFile");
+	ofstream MOCtoCFD_MapFile(strMocMeshName+materialName+"_MOCtoCFD_MapFile");
+
+	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{
-		const MHTMeshPoint& mocPoint = dynamic_cast<const MHTMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
-		Vector PointCenter = mocPoint.Center();
-		Vector axisCenter(0.63, 0.63, 0.0);
-		Vector axisNorm(0.0, 0.0, 1.0);
-		Vector OP = PointCenter - axisCenter;
-		Vector axicialLocation = (OP & axisNorm) * axisNorm;
-		Scalar radius = (OP - axicialLocation).Mag();
-		Scalar power = 10.0 / (radius + 0.1);
-		Scalar height = axicialLocation.Mag();
-		power = power * (5.0 - height) * height;
-		outFile << power << std::endl;
+		std::unordered_map<int, double>::iterator it;
+		for (it = m_CFD_MOC_Map[i].begin(); it != m_CFD_MOC_Map[i].end(); it++)
+			CFDtoMOC_MapFile << i << " " << it->first << " " << it->second << std::endl;
+
 	}
-	outFile.close();
-	return;
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	{
+		std::unordered_map<int, double>::iterator it;
+		for (it = m_MOC_CFD_Map[i].begin(); it != m_MOC_CFD_Map[i].end(); it++)
+			MOCtoCFD_MapFile << i << " " << it->first << " " << it->second << std::endl;
+
+	}
+	CFDtoMOC_MapFile.close();
+	MOCtoCFD_MapFile.close();
+
+}
+
+int Solver::readMapInfor(std::string strMocMeshName)
+{
+	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
+	m_MOC_CFD_Map.resize(m_mocMeshPtr->GetMeshPointNum());
+	ifstream infile(strMocMeshName+materialName+"_CFDtoMOC_MapFile");
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the CFDtoMOC_MapFile:" );
+		return -1;
+	}
+	std::string line;
+	while (getline(infile, line))
+	{
+		int i, j;
+		double k;
+		stringstream stringline(line);
+		stringline >> i >> j >> k;
+		m_CFD_MOC_Map[i][j] = k;
+
+	}
+	infile.close();
+
+	infile= ifstream(strMocMeshName+materialName+"_MOCtoCFD_MapFile");
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the MOCtoCFD_MapFile:");
+		return -1;
+	}
+	while (getline(infile, line))
+	{
+		int i, j;
+		double k;
+		stringstream stringline(line);
+		stringline >> i >> j >> k;
+		m_MOC_CFD_Map[i][j] = k;
+
+	}
+	infile.close();
+}
+
+
+Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName, std::string strMocMeshName)
+	:
+	m_mocMeshPtr(&mocMesh),
+	m_cfdMeshPtr(&cfdMesh),
+	materialName(mName)
+{
+	readMapInfor(strMocMeshName);
 }

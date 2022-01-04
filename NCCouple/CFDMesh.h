@@ -71,7 +71,7 @@ public:
 	CFDMesh(Mesh* pmesh, MeshKernelType kernelType, int iMeshRegionZone);
 	void WriteTecplotFile(std::string);
 	void WriteTecplotFile(std::string,std::vector<int>&);
-	void SetFieldValue(Field<Scalar>& field, ValueType vt);
+	void SetFieldValue(std::vector<double>& v_value, ValueType vt);
 };
 
 #endif
