@@ -37,6 +37,8 @@ MHTVTKReader::~MHTVTKReader()
 	std::vector < std::vector<Field<Scalar>>>().swap(vv_scalarFieldList);
 	std::vector<FieldIO>().swap(v_FieldIO);
 	std::vector<StandardMeshBlock>().swap(v_stdMesh);
+	std::vector<Mesh*>().swap(v_pmesh);
+	std::vector<int>().swap(v_meshID);
 }
 
 void MHTVTKReader::WriteDataFile(std::string DataFileName)
