@@ -18,7 +18,7 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string MshFileName,std::string vVTKFileName, std::vector<std::string>& vFiedNameList);
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList);
 
 	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList);
 
@@ -35,13 +35,14 @@ public:
 	Field<Scalar> GetField(int regionNum, int fieldNum) { return vv_scalarFieldList[regionNum][fieldNum]; }
 
 	void WriteDataFile(std::string DataFileName);
+	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);
 private:
 
 	std::vector < std::vector<Field<Scalar>>> vv_scalarFieldList;
 	std::vector<FieldIO> v_FieldIO;
 	std::vector<StandardMeshBlock> v_stdMesh;
 	std::vector<Mesh*> v_pmesh;
-	void ReadVTKFile(std::string VTKFileName, std::vector<std::string>& vFiedNameList);
+	
 	void ReadMSHFile(std::string MeshFileName);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);

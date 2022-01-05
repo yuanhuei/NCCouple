@@ -5,16 +5,15 @@ MHTVTKReader::MHTVTKReader()
 }
 
 
-MHTVTKReader::MHTVTKReader(std::string MshFileName, std::string VTKFileName,  std::vector<std::string>& vFiedNameList)
+MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string> vVTKFileName,  std::vector<std::string>& vFiedNameList)
 {
 
 
 	ReadMSHFile(MshFileName);
 
-//	ReadVTKFile(VTKFileName, vFiedNameList);
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 
-	ReadDataFile(VTKFileName, vFiedNameList);
+	ReadVTKFile(vVTKFileName, vFiedNameList);
 }
 
 MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList)
@@ -29,6 +28,8 @@ MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string>& vF
 MHTVTKReader::MHTVTKReader(std::string MshFileName)
 {
 	ReadMSHFile(MshFileName);
+
+	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
 MHTVTKReader::~MHTVTKReader()
@@ -60,10 +61,17 @@ void MHTVTKReader::WriteDataFile(std::string DataFileName)
 	}
 }
 
-void MHTVTKReader::ReadVTKFile(std::string vVTKFileName, std::vector<std::string>& vFiedNameList)
+void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vector<std::string>& vFiedNameList)
 {
 	std::cout << "start Read Field" << std::endl;
-/*
+
+	v_FieldIO.resize(v_pmesh.size());
+
+	if(vVTKFileName.size() != vv_scalarFieldList.size())
+	{
+		FatalError("mesh region number not same with vtk file number");
+	}
+
 	for (size_t i = 0; i < vVTKFileName.size(); i++)
 	{
 		vtkObject::GlobalWarningDisplayOff();
@@ -80,10 +88,10 @@ void MHTVTKReader::ReadVTKFile(std::string vVTKFileName, std::vector<std::string
 
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
-			Field<Scalar> thisField(&v_stdMesh[i], 0.0, vFiedNameList[j]);
-			v_scalarFieldList.push_back(std::move(thisField));
+			Field<Scalar> thisField(v_pmesh[i], 0.0, vFiedNameList[j]);
+			vv_scalarFieldList[i].push_back(std::move(thisField));
 
-			v_scalarFieldList[i * vFiedNameList.size() + j].ReadVTKGridField(Grid, vFiedNameList[j]);	
+			vv_scalarFieldList[i][j].ReadVTKGridField(Grid, vFiedNameList[j]);
 		}
 
 	}
@@ -91,10 +99,11 @@ void MHTVTKReader::ReadVTKFile(std::string vVTKFileName, std::vector<std::string
 	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
-			v_FieldIO[i].push_backScalarField(v_scalarFieldList[i * vFiedNameList.size() + j]);
+			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
 		}
-	}*/
+	}
 
+	std::cout<<"read file succeed" << std::endl;
 }
 
 void MHTVTKReader::ReadMSHFile(std::string MeshFileName)

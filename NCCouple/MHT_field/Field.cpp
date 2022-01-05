@@ -1301,14 +1301,25 @@ void Field<Scalar>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid,
 	if (vtkType == point)
 	{
 		ElementToNode();
+
+		if (uGrid->GetPointData()->GetArray(ArryName.c_str())->GetNumberOfTuples() != p_blockMesh->v_node.size())
+		{
+			FatalError("VTK file and mesh region are not build with same mesh");
+		}
+
 		for (size_t i = 0; i < uGrid->GetPointData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
 		{
 			nodeField.SetValue(i, uGrid->GetPointData()->GetArray(ArryName.c_str())->GetTuple1(i));
 		}
 		NodeToElement();
 	}
+
 	if (vtkType == cell)
 	{
+		if (uGrid->GetCellData()->GetArray(ArryName.c_str())->GetNumberOfTuples() != p_blockMesh->v_elem.size())
+		{
+			FatalError("VTK file and mesh region are not build with same mesh");
+		}
 		for (size_t i = 0; i < uGrid->GetCellData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
 		{
 			elementField.SetValue(i, uGrid->GetCellData()->GetArray(ArryName.c_str())->GetTuple1(i));

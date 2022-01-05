@@ -116,17 +116,22 @@ void VTKReaderTest()
 	std::vector<std::string> fieldName;
 
 
-	fieldName.push_back("T");
-	fieldName.push_back("Rho");
+	fieldName.push_back("Pressure");
+	fieldName.push_back("temperature");
+
+	std::vector<std::string> vVTKName;
+	vVTKName.push_back("pipe_solid.vtk");
+	vVTKName.push_back("pipe_fluid.vtk");
 
 
-	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);		//initialize with meshFile and VTKDataFile
+	MHTVTKReader reader("pipe.msh");		//initialize with meshFile and vVTKFile
+	reader.ReadVTKFile(vVTKName, fieldName);
 //	MHTVTKReader reader("pinWR.msh", fieldName);						//initialize with meshFile and EmptyField
 //	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
 
 	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
 	{
-		reader.GetFieldIO(i).WriteTecplotField("pinWR_" + std::to_string(i) + ".plt");
+		reader.GetFieldIO(i).WriteTecplotField("pipe_" + std::to_string(i) + ".plt");
 	}
 	reader.WriteDataFile("TestData.txt");
 
@@ -139,6 +144,7 @@ void VTKReaderTest()
 	
 	std::cout <<"success end"<<std::endl;
 }
+
 
 void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
 {
@@ -232,6 +238,7 @@ void RunWithParameters(std::vector<std::string>& parameters)
 int main(int argc, char** argv)
 {
 	//get processor ID
+
 	g_iProcessID = (int)getpid();
 
 	if (argc == 1)
@@ -249,5 +256,7 @@ int main(int argc, char** argv)
 		}
 		RunWithParameters(parameterList);
 	}
+
+//	VTKReaderTest();
 	return 0;
 }
