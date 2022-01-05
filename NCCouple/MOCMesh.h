@@ -138,7 +138,6 @@ public:
 
 public:
 	void OutputStatus(std::string outputFileName) const override;
-	void reOrganaziIndex();
 	void WriteTecplotFile(std::string, std::string);
 	void InitMOCHeatPower(std::string heatPowerFileName);
 
@@ -161,6 +160,4 @@ private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
 };
-int CalMeshIndex(double x, double y);
-int CalMeshIndexbyCFD(double x, double y);
 #endif

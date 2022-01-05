@@ -6,6 +6,12 @@ MOCIndex::MOCIndex(MOCMesh& mocMesh)
 {
 }
 
+//suppose we already have axis center and norm
+void MOCIndex::GetRadiusList()
+{
+	return;
+}
+
 void MOCIndex::BuildUpIndex()
 {
 	AllocateDim(this->v_MOCID, this->circularCellNum, this->v_radius.size(), this->axialCellNum);
@@ -21,8 +27,7 @@ void MOCIndex::BuildUpIndex()
 		double count2 = 0.0;
 		for (int j = 0; j < verticeNum; j++)
 		{
-			std::tuple<double, double, double> cor = mocPoint.VerticeCoordinate(j);
-			Vector P(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
+			Vector P = mocPoint.VerticeCoordinate(j);
 			Vector OP = P - this->axisPoint;
 			Vector axialProjection = (OP & this->axisNorm) * this->axisNorm;
 			Vector radialProjection = OP - axialProjection;
@@ -57,15 +62,7 @@ void MOCIndex::BuildUpIndex()
 		}
 		int IndexK = int(height / axialCellSize);
 		this->v_MOCID[IndexI][IndexJ][IndexK] = i;
-		//Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
 	}
-	/*
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 7; j++)
-		    std::cout << this->v_MOCID[i][j][0] << std::endl;
-    }
-	*/
 	return;
 }
 

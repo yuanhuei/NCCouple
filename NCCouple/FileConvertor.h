@@ -21,7 +21,6 @@ void ConservationValidation
 	std::string strZoneName
 );
 
-
 void CreateMapper
 (
 	std::string strInput_aplFileName,

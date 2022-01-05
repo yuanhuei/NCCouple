@@ -32,6 +32,8 @@ public:
 public:
 	//Constructor with a given MOC mesh
 	MOCIndex(MOCMesh&);
+	//get radius list from MOCMesh
+	void GetRadiusList();
 	//resize the index and write IDs according to MOC cell coordinates
 	void BuildUpIndex();
 	//specify the radius list

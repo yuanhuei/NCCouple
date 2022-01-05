@@ -30,10 +30,9 @@ public:
 public:
 	virtual double Volume() const = 0;
 	virtual Vector Center() const = 0;
-	virtual std::tuple<double, double, double> CentralCoordinate() const = 0;
 	virtual double IntersectedVolume(const MeshPoint& other) const = 0;
 	virtual int VerticesNum() const = 0;
-	virtual std::tuple<double, double, double> VerticeCoordinate(int verticeID) const = 0;
+	virtual Vector VerticeCoordinate(int verticeID) const = 0;
 
 public:
 	virtual void SetValue(double value, ValueType vt) = 0;
@@ -55,21 +54,19 @@ public:
 		return m_poly.GetVolume();
 	}
 
-	Vector Center() const override {
+	Vector Center() const override
+	{
 		return m_poly.GetCenter();
 	}
 
-	std::tuple<double, double, double> CentralCoordinate() const override {
-		Vector center = m_poly.GetCenter();
-		return std::make_tuple(center.x_, center.y_, center.z_);
-	}
 	double IntersectedVolume(const MeshPoint& other) const override;
 	int VerticesNum() const override {
 		return m_poly.v_point.size();
 	}
-	std::tuple<double, double, double> VerticeCoordinate(int verticeID) const override {
+
+	Vector VerticeCoordinate(int verticeID) const override {
 		Vector vertice = m_poly.v_point.at(verticeID);
-		return std::make_tuple(vertice.x_, vertice.y_, vertice.z_);
+		return vertice;
 	}
 	void WriteToTecplotFile(std::string fileName) const {
 		m_poly.WriteTecplotFile(fileName);
@@ -81,11 +78,6 @@ public:
 
 	void WriteTecplotZones(std::ofstream& ofile) const {
 		m_poly.WriteTecplotZones(ofile);
-	}
-
-	Vector GetCenter()
-	{
-		return m_poly.GetCenter();
 	}
 
 protected:

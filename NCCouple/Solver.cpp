@@ -60,16 +60,14 @@ Solver::Solver
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.GetMeshPointNum());
-	int iNum = 0;//计数完全被包含CFD网格的数量
+	int iNum = 0;
 	//the code below was written for test
 	int nCFDNum = cfdMesh.GetMeshPointNum();
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
-		double x = std::get<0>(m_cfdMeshPtr->GetMeshPointPtr(CFDID)->CentralCoordinate());
-		double y = std::get<1>(m_cfdMeshPtr->GetMeshPointPtr(CFDID)->CentralCoordinate());
-		double z = std::get<2>(m_cfdMeshPtr->GetMeshPointPtr(CFDID)->CentralCoordinate());
-		int iMocIndex = mocIndex.GetMOCIDWithPoint(x, y, z);
+		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
+		int iMocIndex = mocIndex.GetMOCIDWithPoint(P.x_, P.y_, P.z_);
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 		double cfdPointVolume = cfdPoint.Volume();
@@ -96,8 +94,8 @@ Solver::Solver
 		int verticeNum = cfdPoint.VerticesNum();
 		for (int j = 0; j < verticeNum; j++)
 		{
-			std::tuple<double, double, double> cor = cfdPoint.VerticeCoordinate(j);
-			std::tuple<int, int, int> structuredIJK = mocIndex.GetIJKWithPoint(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
+			Vector cor = cfdPoint.VerticeCoordinate(j);
+			std::tuple<int, int, int> structuredIJK = mocIndex.GetIJKWithPoint(cor.x_, cor.y_, cor.z_);
 			int nz = std::get<2>(structuredIJK);
 			nzMin = min(nz, nzMin);
 			nzMax = max(nz, nzMax);
