@@ -123,9 +123,13 @@ void VTKReaderTest()
 	vVTKName.push_back("pipe_solid.vtk");
 	vVTKName.push_back("pipe_fluid.vtk");
 
+	std::vector<int> vMeshID;
+	vMeshID.push_back(0);
+	vMeshID.push_back(1);
 
 	MHTVTKReader reader("pipe.msh");		//initialize with meshFile and vVTKFile
-	reader.ReadVTKFile(vVTKName, fieldName);
+//	reader.ReadVTKFile(vVTKName, fieldName);
+	reader.ReadVTKFile(vVTKName, vMeshID, fieldName);
 //	MHTVTKReader reader("pinWR.msh", fieldName);						//initialize with meshFile and EmptyField
 //	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
 
@@ -144,6 +148,7 @@ void VTKReaderTest()
 	
 	std::cout <<"success end"<<std::endl;
 }
+
 
 
 void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
@@ -239,6 +244,7 @@ int main(int argc, char** argv)
 {
 	//get processor ID
 
+
 	g_iProcessID = (int)getpid();
 
 	if (argc == 1)
@@ -257,6 +263,6 @@ int main(int argc, char** argv)
 		RunWithParameters(parameterList);
 	}
 
-//	VTKReaderTest();
+	VTKReaderTest();
 	return 0;
 }
