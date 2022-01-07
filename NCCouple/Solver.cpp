@@ -287,7 +287,7 @@ void Solver::readMapInfor()
 	}
 	infile.close();
 	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
-	infile = ifstream(fileName);
+	infile.open(fileName);
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the MOC to CFD map file:" + fileName);

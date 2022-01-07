@@ -134,5 +134,7 @@ public:
 
 	void ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName);
 };
+template<>
+void Field<Scalar>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName);
 
 #endif

@@ -64,8 +64,8 @@ void ConservationValidation
 	std::string valueName = NameOfValueType(vt);
 	double sourceIntegralValue = Integration(sourceMesh, vt, strZoneName);
 	double targetIntegralValue = Integration(targetMesh, vt, strZoneName);
-	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName, strZoneName, sourceIntegralValue));
-	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName, strZoneName, targetIntegralValue));
+	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
+	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
 	return;
 }
 
