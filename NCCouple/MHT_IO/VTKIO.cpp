@@ -159,57 +159,6 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector
 	std::cout << "read file succeed" << std::endl;
 }
 
-void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList)
-{
-	v_meshID = vMeshID;
-	std::cout << "start Read Field" << std::endl;
-
-	v_FieldIO.resize(v_pmesh.size());
-
-	if (vVTKFileName.size() != v_meshID.size())
-	{
-		FatalError("in MHTVTKReader::ReadVTKFile(), mesh ID number is not consistent with vtk file number");
-	}
-
-	for (size_t i = 0; i < v_meshID.size(); i++)
-	{
-		if (v_meshID[i] >= v_pmesh.size())
-		{
-			FatalError("in MHTVTKReader::ReadVTKFile(), mesh ID out of range");
-		}
-
-		vtkObject::GlobalWarningDisplayOff();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(vVTKFileName[i].c_str());
-		reader->SetReadAllColorScalars(true);
-		reader->SetReadAllFields(true);
-		reader->SetReadAllScalars(true);
-		reader->Update();
-
-		vtkSmartPointer<vtkUnstructuredGrid> Grid;
-		Grid = reader->GetOutput();
-
-
-		for (size_t j = 0; j < vFiedNameList.size(); j++)
-		{
-			Field<Scalar> thisField(v_pmesh[v_meshID[i]], 0.0, vFiedNameList[j]);
-			vv_scalarFieldList[v_meshID[i]].push_back(std::move(thisField));
-
-			vv_scalarFieldList[v_meshID[i]][j].ReadVTKGridField(Grid, vFiedNameList[j]);
-		}
-
-	}
-	for (size_t i = 0; i < v_meshID.size(); i++)
-	{
-		for (size_t j = 0; j < vFiedNameList.size(); j++)
-		{
-			v_FieldIO[v_meshID[i]].push_backScalarField(vv_scalarFieldList[v_meshID[i]][j]);
-		}
-	}
-
-	std::cout << "read file succeed" << std::endl;
-}
-
 void MHTVTKReader::ReadMSHFile(std::string MeshFileName)
 {
 	std::cout << "start Read Mesh" << std::endl;
