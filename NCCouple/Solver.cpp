@@ -267,7 +267,9 @@ void Solver::readMapInfor()
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
 	m_MOC_CFD_Map.resize(m_mocMeshPtr->GetMeshPointNum());
 	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC";
-	ifstream infile(fileName);
+	ifstream infile;
+	infile.clear();
+	infile.open(fileName);
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the CFD to MOC map file: "+ fileName);
@@ -287,7 +289,7 @@ void Solver::readMapInfor()
 	}
 	infile.close();
 	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
-	infile = ifstream(fileName);
+	infile.open(fileName);
 	if (!infile.is_open())
 	{
 		Logger::LogError("cannot find the MOC to CFD map file:" + fileName);
