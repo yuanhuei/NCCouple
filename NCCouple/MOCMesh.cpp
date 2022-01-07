@@ -11,9 +11,9 @@ using namespace std;
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernelType kernelType) 
+MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType) 
 {
-	ofstream outFile("addID_" + meshFileName);
+	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
 	{
@@ -201,7 +201,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string inputFileName, MeshKernel
 			}
 		}
 	}
-	InitMOCFromInputFile(inputFileName);
 }
 
 void MOCMesh::setMeshInformation(string line)

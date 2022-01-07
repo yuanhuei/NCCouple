@@ -44,7 +44,6 @@ Scalar initialRho(Scalar x, Scalar y, Scalar z)
 	return 1000.0 + add;
 }
 
-
 //this example was designed for test of
 //(1) rewritting a apl file
 //(2) reading and writting of inp files
@@ -55,89 +54,34 @@ void MOC_APL_INP_FileTest()
 	mocMesh.WriteTecplotFile("H2O", "h2O.plt");
 	mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	mocMesh.WriteTecplotFile("UO2", "u2o.plt");
-
 	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
 	//mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
 
-#include <vtkDelaunay3D.h>
-#include <vtkNew.h>
-#include <vtkSphereSource.h>
-#include <vtkXMLPUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkAppendFilter.h>
-#include <vtkMultiBlockDataSet.h>
-void VTK_Test()
-{
-	vtkObject::GlobalWarningDisplayOff();
-	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName("500_0.vtk");
-	reader->SetReadAllColorScalars(true);
-	reader->SetReadAllFields(true);
-	reader->SetReadAllScalars(true);
-	reader->Update();
-
-	vtkSmartPointer<vtkUnstructuredGrid> Grid;
-	Grid = reader->GetOutput();
-
-	vtkSmartPointer<vtkUnstructuredGridReader> reader_1 = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader_1->SetFileName("500_1.vtk");
-	reader_1->SetReadAllColorScalars(true);
-	reader_1->SetReadAllFields(true);
-	reader_1->SetReadAllScalars(true);
-	reader_1->Update();
-
-	vtkSmartPointer<vtkUnstructuredGrid> Grid_1;
-	Grid_1 = reader_1->GetOutput();
-
-	// create the append filter
-	vtkSmartPointer<vtkAppendFilter> append =
-		vtkSmartPointer<vtkAppendFilter>::New();
-
-	// add each data set
-	append->AddInputData(Grid);
-	append->AddInputData(Grid_1);
-	append->Update();
-
-
-	vtkSmartPointer<vtkUnstructuredGridWriter> writer = vtkSmartPointer<vtkUnstructuredGridWriter>::New();
-	writer->SetInputData(append->GetOutput());
-
-	writer->SetFileName("500_0_1.vtk");
-	writer->Update();
-}
-
 #include "./MHT_IO/VTKIO.h"
 #include <fstream>
+
 void VTKReaderTest()
 {
-
+	MHTVTKReader reader("pinWR.msh");
+	std::vector<std::string> fileName;
+	fileName.push_back("pinWR_0.vtk");
+	fileName.push_back("pinWR_2.vtk");
+	std::vector<int> IDList;
+	IDList.push_back(0);
+	IDList.push_back(2);
 	std::vector<std::string> fieldName;
-
-
 	fieldName.push_back("T");
 	fieldName.push_back("Rho");
-
-
-	MHTVTKReader reader("pinWR.msh", "Field_Data.txt", fieldName);		//initialize with meshFile and VTKDataFile
-//	MHTVTKReader reader("pinWR.msh", fieldName);						//initialize with meshFile and EmptyField
-//	MHTVTKReader reader("pinWR.msh");									//initialize with meshFile
-
-	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
+	reader.ReadVTKFile(fileName, IDList, fieldName);
+	for (size_t i = 0; i < IDList.size(); i++)
 	{
-		reader.GetFieldIO(i).WriteTecplotField("pinWR_" + std::to_string(i) + ".plt");
+		int regionID = IDList[i];
+		FieldIO result = reader.GetFieldIO(regionID);
+		result.WriteTecplotField(std::to_string(regionID) + ".plt");
 	}
-	reader.WriteDataFile("TestData.txt");
-
-
-//	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
-//	{
-//		reader.GetMeshListPtr()[i]->WriteTecplotMesh("pinWR_"+std::to_string(i)+".plt");
-//
-//	}
-	
-	std::cout <<"success end"<<std::endl;
+	return;
 }
 
 void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
@@ -154,25 +98,25 @@ void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
 
 void EntranceOfCFDToMOC(std::vector<std::string>& fileNames)
 {
-	if (4 != fileNames.size())
+	if (0 != fileNames.size())
 	{
-		std::cout << "Please give 4 file names if you are intending to map CFD to MOC solver, like this:" << std::endl;
-		std::cout << "NCCouple cfdtomoc (CFDMesh) (CFDField) (MOCMesh) (MOCField)" << std::endl;
+		std::cout << "Please do not give any file name if you are intending to map CFD to MOC solver, like this:" << std::endl;
+		std::cout << "NCCouple cfdtomoc" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	CFDFieldsToMOC(fileNames[0], fileNames[1], fileNames[2], fileNames[3]);
+	CFDFieldsToMOC();
 	return;
 }
 
 void EntranceOfMOCToCFD(std::vector<std::string>& fileNames)
 {
-	if (5 != fileNames.size())
+	if (0 != fileNames.size())
 	{
-		std::cout << "Please give 5 file names if you are intending to map MOC to CFD solver, like this:" << std::endl;
-		std::cout << "NCCouple moctocfd (MOCMesh) (MOCField) (MOCPower) (CFDMesh) (CFDField)" << std::endl;
+		std::cout << "Please do not give any file name if you are intending to map MOC to CFD solver, like this:" << std::endl;
+		std::cout << "NCCouple moctocfd" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	MOCFieldsToCFD(fileNames[0], fileNames[1], fileNames[2], fileNames[3], fileNames[4]);
+	MOCFieldsToCFD();
 	return;
 }
 
@@ -229,11 +173,11 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	return;
 }
 
+#include "./ConfigurationFile.h"
 int main(int argc, char** argv)
 {
 	//get processor ID
 	g_iProcessID = (int)getpid();
-
 	if (argc == 1)
 	{
 		std::cout << "hello world" << std::endl;
