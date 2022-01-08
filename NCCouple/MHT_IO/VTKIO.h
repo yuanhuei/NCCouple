@@ -9,6 +9,7 @@
 #include "../MHT_mesh/RegionConnection.h"
 #include "../MHT_common/SystemControl.h"
 #include <memory>
+#include <iomanip>
 class Mesh;
 
 template<class Type>
@@ -45,6 +46,7 @@ private:
 	void ReadMSHFile(std::string MeshFileName);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);
+	void ReadVTKMeshFormat(std::ifstream &inFile);
 };
 
 

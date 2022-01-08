@@ -731,18 +731,18 @@ void FieldIO::WriteVTKField(const std::string& outFileName)
 	}
 
 	// Write field 
-	outFile << "POINT_DATA " << p_blockMesh->n_nodeNum << std::endl;
+	outFile << "CELL_DATA " << p_blockMesh->v_elem.size() << std::endl;
 
 	for (unsigned int sField = 0 ; sField < (int)v_scalarField.size(); sField++)
 	{
-		outFile << "SCALARS"<< " "<< (*v_scalarField[sField]).st_name << " " << "float " << "1" << std::endl;
+		outFile << "SCALARS"<< " "<< (*v_scalarField[sField]).st_name << " " << "float " << std::endl;
 
 		outFile << "LOOKUP_TABLE " << "default" << std::endl;
 
-		for (int i = 0; i < (int)p_blockMesh->n_nodeNum; i++)
+		for (int i = 0; i < (int)p_blockMesh->v_elem.size(); i++)
 		{
 			outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) <<
-				(*v_scalarField[sField]).nodeField.GetValue(i) <<  std::endl;
+				(*v_scalarField[sField]).elementField.GetValue(i) <<  std::endl;
 
 		}
 	}

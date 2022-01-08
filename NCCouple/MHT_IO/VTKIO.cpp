@@ -65,45 +65,38 @@ void MHTVTKReader::WriteDataFile(std::string DataFileName)
 
 void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vector<std::string>& vFiedNameList)
 {
+
 	std::cout << "start Read Field" << std::endl;
 
 	v_FieldIO.resize(v_pmesh.size());
 
-	if (vVTKFileName.size() != vv_scalarFieldList.size())
+	if (vVTKFileName.size() != v_pmesh.size())
 	{
-		FatalError("mesh region number not same with vtk file number");
+		FatalError("mesh number not same with vtk file number");
 	}
 
-	for (size_t i = 0; i < vVTKFileName.size(); i++)
+	for (size_t i = 0; i < v_pmesh.size(); i++)
 	{
-		vtkObject::GlobalWarningDisplayOff();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(vVTKFileName[i].c_str());
-		reader->SetReadAllColorScalars(true);
-		reader->SetReadAllFields(true);
-		reader->SetReadAllScalars(true);
-		reader->Update();
-
-		vtkSmartPointer<vtkUnstructuredGrid> Grid;
-		Grid = reader->GetOutput();
-
-
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
+			std::ifstream inFile(vVTKFileName[i]);
+			ReadVTKMeshFormat(inFile);
 			Field<Scalar> thisField(v_pmesh[i], 0.0, vFiedNameList[j]);
 			vv_scalarFieldList[i].push_back(std::move(thisField));
-
-			vv_scalarFieldList[i][j].ReadVTKGridField(Grid, vFiedNameList[j]);
+			vv_scalarFieldList[i][j].ReadVTKGridField(inFile);
 		}
 
 	}
-	for (size_t i = 0; i < vVTKFileName.size(); i++)
+	std::cout << "succeed" << std::endl;
+
+	for (size_t i = 0; i < v_pmesh.size(); i++)
 	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
 			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
 		}
 	}
+
 
 	std::cout<<"read file succeed" << std::endl;
 }
@@ -127,27 +120,18 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector
 			FatalError("mesh ID out of range");
 		}
 
-		vtkObject::GlobalWarningDisplayOff();
-		vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-		reader->SetFileName(vVTKFileName[i].c_str());
-		reader->SetReadAllColorScalars(true);
-		reader->SetReadAllFields(true);
-		reader->SetReadAllScalars(true);
-		reader->Update();
-
-		vtkSmartPointer<vtkUnstructuredGrid> Grid;
-		Grid = reader->GetOutput();
-
-
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
+			std::ifstream inFile(vVTKFileName[i]);
+			ReadVTKMeshFormat(inFile);
 			Field<Scalar> thisField(v_pmesh[v_meshID[i]], 0.0, vFiedNameList[j]);
 			vv_scalarFieldList[v_meshID[i]].push_back(std::move(thisField));
-
-			vv_scalarFieldList[v_meshID[i]][j].ReadVTKGridField(Grid, vFiedNameList[j]);
+			vv_scalarFieldList[v_meshID[i]][j].ReadVTKGridField(inFile);
 		}
 
 	}
+	std::cout<<"succeed" << std::endl;
+
 	for (size_t i = 0; i < v_meshID.size(); i++)
 	{
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
@@ -242,6 +226,78 @@ void MHTVTKReader::InitializeEmptyField(std::vector<std::string>& vFiedNameList)
 		for (size_t j = 0; j < vFiedNameList.size(); j++)
 		{
 			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
+		}
+	}
+}
+
+void MHTVTKReader::ReadVTKMeshFormat(std::ifstream& inFile)
+{
+	std::string comment;
+	getline(inFile, comment);
+
+
+	std::string WriterName;
+	getline(inFile, WriterName);
+
+
+	std::string codingFormat;
+	inFile >> codingFormat;
+
+
+	std::string DataSet;
+	inFile >> DataSet;
+	inFile >> DataSet;
+
+
+	while (true)
+	{
+		std::string dataComment;
+		inFile >> dataComment;
+
+		if (dataComment == "POINTS")
+		{
+
+			int pointNum;
+			std::string  pointNumType;
+
+			inFile >> pointNum >> pointNumType;
+
+			for (size_t i = 0; i < pointNum; i++)
+			{
+				Scalar point_x, point_y, point_z;
+				inFile >> point_x>> point_y>> point_z;
+			}
+		}
+		else if (dataComment == "CELLS")
+		{
+
+			int nCellNum,nCellTotalNum;
+			inFile >> nCellNum >> nCellTotalNum;
+
+			for (size_t i = 0; i < nCellNum; i++)
+			{
+				int nCellNodeNum,nNodeID;
+				inFile >> nCellNodeNum;
+				for (size_t j = 0; j < nCellNodeNum; j++)
+				{
+					inFile >> nNodeID;
+				}
+			}
+		}
+		else if (dataComment == "CELL_TYPES")
+		{
+
+			int nCellTypeNum,nCellType;
+			inFile >> nCellTypeNum;
+			for (size_t i = 0; i < nCellTypeNum; i++)
+			{
+				inFile >> nCellType;
+			}
+			return;
+		}
+		else
+		{
+			break;
 		}
 	}
 }
