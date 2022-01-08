@@ -260,6 +260,7 @@ void MOCFieldsToCFD()
 		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = outputVtkList[i];
+		RenameFile(strOutput_inpName, GetFileNameOfPrevious(strOutput_inpName,"vtk"));
 		Logger::LogInfo("Writing CFD vtk file: " + strOutput_inpName);
 		heatpower.WriteVTK_Field(strOutput_inpName);
 		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER,pmesh->st_meshName);
@@ -344,6 +345,7 @@ void CFDFieldsToMOC()
 		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY,pmesh->st_meshName);
 		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE,pmesh->st_meshName);
 	}
+	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
 	return;
 }

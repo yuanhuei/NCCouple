@@ -2,8 +2,68 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <stdio.h>
+#include <fcntl.h>
 #include "./MHT_common/StringTools.h"
 #include "./Logger.h"
+
+std::string GetFileNameOfPrevious
+(
+	//original file name
+	std::string fileName,
+	//file type name (such as txt vtk apl inp)
+	std::string fileType
+)
+{
+	int nLength = fileName.size();
+	std::string fileTypeWithPoint = "." + fileType;
+	int nTypeName = fileTypeWithPoint.size();
+	//check the given file name
+	if (nLength <= nTypeName)
+	{
+		Logger::LogError(fileName + " is not a valid " + fileType + " file");
+	}
+	int clipLocation = nLength - nTypeName;
+	std::string fileTypePart = fileName.substr(clipLocation, nLength);
+	if (fileTypePart != fileTypeWithPoint)
+	{
+		Logger::LogError(fileName + " is not a valid " + fileType + " file");
+	}
+	//add _0 to the end of the file and append with file type name
+	std::string extenedName = fileName.substr(0, clipLocation) + "_0" + fileTypeWithPoint;
+	return extenedName;
+}
+
+void RenameFile
+(
+	std::string oldnameStr,
+	std::string newnameStr
+)
+{
+	const char* oldname = oldnameStr.data();
+	const char* newname = newnameStr.data();
+	//delete if the new-name file is existing
+	std::ifstream file(newnameStr);
+	if (file.is_open())
+	{
+		file.close();
+		if (0 == remove(newname))
+		{
+			Logger::LogInfo(newnameStr + " is removed");
+		}
+	}
+	//make sure the old file is existing
+	file.open(oldnameStr);
+	if (file.is_open())
+	{
+		file.close();
+		if (0 == rename(oldname, newname))
+		{
+			Logger::LogInfo(oldnameStr + " is renamed as " + newnameStr);
+		}
+	}
+	return;
+}
 
 void WriteConfigurationFile
 (

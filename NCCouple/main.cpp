@@ -8,6 +8,7 @@
 #include "MHT_polyhedron/PolyhedronSet.h"
 #include<time.h>
 #include "./FileConvertor.h"
+#include "./ConfigurationFile.h"
 #include <string>
 #include <sstream>
 #ifdef _WIN32
@@ -173,14 +174,13 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	return;
 }
 
-#include "./ConfigurationFile.h"
 int main(int argc, char** argv)
 {
 	//get processor ID
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		std::cout << "hello world" << std::endl;
+		RenameFile("lingkong.txt", "lingkongxxx.txt");
 		return 0;
 	}
 	else

@@ -4,6 +4,18 @@
 #include <vector>
 #include <string>
 
+std::string GetFileNameOfPrevious
+(
+	std::string fileName,
+	std::string fileType
+);
+
+void RenameFile
+(
+	std::string oldname,
+	std::string newname
+);
+
 void WriteConfigurationFile
 (
 	std::string configFile,
