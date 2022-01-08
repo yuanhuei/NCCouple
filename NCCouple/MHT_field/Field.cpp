@@ -1241,12 +1241,12 @@ void Field<Scalar>::WriteVTK_Field(const std::string& outMshFileName)
 	}
 
 	// Write field 
-    outFile << "POINT_DATA " << p_blockMesh->n_nodeNum << std::endl;
-    outFile << "SCALARS scalars " << "float " << "1" << std::endl;
+    outFile << "CELL_DATA " << p_blockMesh->v_elem.size() << std::endl;
+    outFile << "SCALARS " <<this->st_name  << " float " << std::endl;
     outFile << "LOOKUP_TABLE " << "default" << std::endl;
-	for (int i = 0; i < (int)p_blockMesh->n_nodeNum; i++)
+	for (int i = 0; i < (int)p_blockMesh->v_elem.size(); i++)
 	{
-        outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << this->nodeField.GetValue(i) << std::endl;
+        outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << this->elementField.GetValue(i) << std::endl;
 	}
 
 	outFile.close();
@@ -1254,77 +1254,122 @@ void Field<Scalar>::WriteVTK_Field(const std::string& outMshFileName)
 template<>
 void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 {
-	vtkObject::GlobalWarningDisplayOff();
-	vtkSmartPointer<vtkUnstructuredGridReader> reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-	reader->SetFileName(inVTKFileName.c_str());
-	reader->SetReadAllColorScalars(true);
-	reader->SetReadAllFields(true);
-	reader->SetReadAllScalars(true);
-	reader->Update();
+	std::cout << "start read vtk mesh data" << std::endl;
+	/****read vtk file mesh********/
+	std::ifstream inFile(inVTKFileName);
 
-	vtkSmartPointer<vtkUnstructuredGrid> Grid;
-	Grid = reader->GetOutput();
-	
-	ReadVTKGridField(Grid,this->st_name);
+	std::string comment;
+	getline(inFile, comment);
+
+
+	std::string WriterName;
+	getline(inFile, WriterName);
+
+
+	std::string codingFormat;
+	inFile >> codingFormat;
+
+	std::string DataSet;
+	inFile >> DataSet;
+	inFile >> DataSet;
+
+	while (true)
+	{
+		std::string dataComment;
+		inFile >> dataComment;
+
+		if (dataComment == "POINTS")
+		{
+			int pointNum;
+			std::string  pointNumType;
+
+			inFile >> pointNum >> pointNumType;
+
+			for (size_t i = 0; i < pointNum; i++)
+			{
+				Scalar point_x, point_y, point_z;
+				inFile >> point_x >> point_y >> point_z;
+			}
+		}
+		else if (dataComment == "CELLS")
+		{
+			int nCellNum, nCellTotalNum;
+			inFile >> nCellNum >> nCellTotalNum;
+
+			for (size_t i = 0; i < nCellNum; i++)
+			{
+				int nCellNodeNum, nNodeID;
+				inFile >> nCellNodeNum;
+				for (size_t j = 0; j < nCellNodeNum; j++)
+				{
+					inFile >> nNodeID;
+				}
+			}
+		}
+		else if (dataComment == "CELL_TYPES")
+		{
+			int nCellTypeNum, nCellType;
+			inFile >> nCellTypeNum;
+			for (size_t i = 0; i < nCellTypeNum; i++)
+			{
+				inFile >> nCellType;
+			}
+			break;
+		}
+		else
+		{
+			break;
+		}
+
+	}
+	/** **read field data*************************/
+	ReadVTKGridField(inFile);
 }
 
 
 template<>
-void Field<Scalar>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid,const std::string ArryName)
+void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile)
 {
-	vtkDataArray* fieldArray;
+	std::cout<<"start read vtk field data" << std::endl;
+	std::string comment;
+	inFile >> comment;
 
-	enum VTKFieldType
-	{
-		point = 0,
-		cell = 1,
-		field = 2
-	}vtkType;
+	int DataNumber;
+	inFile >> DataNumber;
 
-	fieldArray = uGrid->GetPointData()->GetArray(ArryName.c_str());
-	vtkType = point;
-	if (fieldArray == NULL)
+	while(!inFile.eof())
 	{
-		fieldArray = uGrid->GetCellData()->GetArray(ArryName.c_str());
-		vtkType = cell;
-		if (fieldArray == NULL)
+
+		std::string sDataType, sDataName, sFormatType;
+
+		inFile >> sDataType >> sDataName >> sFormatType;
+
+		std::string sLookuptable, sLookuptableModel;
+		inFile >> sLookuptable >> sLookuptableModel;
+
+		Scalar nData;
+		
+		if (sDataType == "SCALARS" && sDataName == this->st_name)
 		{
-			fieldArray = uGrid->GetFieldData()->GetArray(ArryName.c_str());
-			vtkType = field;
-			if (fieldArray == NULL)
+
+			for (size_t i = 0; i < DataNumber; i++)
 			{
-				FatalError("field name is wrong or haven't field in vtk file");
+				inFile >> nData;
+				elementField.SetValue(i, nData);
+			}
+			inFile.close();
+			return;
+		}
+		else
+		{
+			for (size_t i = 0; i < DataNumber; i++)
+			{
+				inFile >> nData;
 			}
 		}
 	}
-
-	if (vtkType == point)
-	{
-		ElementToNode();
-
-		if (uGrid->GetPointData()->GetArray(ArryName.c_str())->GetNumberOfTuples() != p_blockMesh->v_node.size())
-		{
-			FatalError("VTK file and mesh region are not build with same mesh");
-		}
-
-		for (size_t i = 0; i < uGrid->GetPointData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
-		{
-			nodeField.SetValue(i, uGrid->GetPointData()->GetArray(ArryName.c_str())->GetTuple1(i));
-		}
-		NodeToElement();
-	}
-
-	if (vtkType == cell)
-	{
-		if (uGrid->GetCellData()->GetArray(ArryName.c_str())->GetNumberOfTuples() != p_blockMesh->v_elem.size())
-		{
-			FatalError("VTK file and mesh region are not build with same mesh");
-		}
-		for (size_t i = 0; i < uGrid->GetCellData()->GetArray(ArryName.c_str())->GetNumberOfTuples(); i++)
-		{
-			elementField.SetValue(i, uGrid->GetCellData()->GetArray(ArryName.c_str())->GetTuple1(i));
-		}
-	}
+	
+	FatalError("this vtk file haven't field name like you setting");
 }
 
 
@@ -2555,7 +2600,7 @@ void Field<Vector>::ReadVTK_Field(const std::string& inVTKFileName)
 }
 
 template<>
-void Field<Vector>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName)
+void Field<Vector>::ReadVTKGridField(std::ifstream& inFile)
 {
 
 }

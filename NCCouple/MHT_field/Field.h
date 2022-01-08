@@ -13,14 +13,6 @@
 #include "../MHT_field/InteriorFaceZoneField.h"
 #include "../MHT_field/BoundaryFaceZoneField.h"
 
-#include <vtkUnstructuredGridReader.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkSmartPointer.h>
-#include <vtkPointData.h>
-#include <vtkCellData.h>
-#include <vtkFloatArray.h>
-#include <vtkDataArray.h>
-
 //Field on unstructured grid block
 template<class Type>
 class Field
@@ -132,9 +124,9 @@ public:
 
 	void ReadVTK_Field(const std::string& inVTKFileName);
 
-	void ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName);
+	void ReadVTKGridField(std::ifstream &inFile);
 };
 template<>
-void Field<Scalar>::ReadVTKGridField(vtkSmartPointer<vtkUnstructuredGrid> uGrid, const std::string ArryName);
+void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile);
 
 #endif
