@@ -154,11 +154,25 @@ void Solver::CheckMappingWeights()
 		totalMOCVolume += mocPoint.Volume();
 	}
 	double totalCFDVolume = 0.0;
+	Vector centerofcenter(0.63, 0.63, 2.5);
+	Vector nearestCellCenter(0.0, 0.0, 0.0);
+	double distance = 1e10;
+	int ID = 0;
 	for (int j = 0; j < m_cfdMeshPtr->GetMeshPointNum(); j++)
 	{
+		
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(j));
 		totalCFDVolume += cfdPoint.Volume();
+		Vector cellCenter = cfdPoint.Center();
+		Scalar thisDistance = (cellCenter - centerofcenter).Mag();
+		if (thisDistance < distance)
+		{
+			distance = thisDistance;
+			nearestCellCenter = cellCenter;
+			ID = j;
+		}
 	}
+	std::cout << "nearest point is " << ID << " at " << nearestCellCenter << std::endl;
 	Logger::LogInfo(FormatStr("Total volume of MOC is %.6lf", totalMOCVolume));
 	Logger::LogInfo(FormatStr("Total volume of CFD is %.6lf", totalCFDVolume));
 	//compute the maximum and the minimum of weights of CFD->MOC mapping
@@ -208,7 +222,13 @@ void Solver::CheckMappingWeights()
 	return;
 }
 
-void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt) {
+void Solver::Interception
+(
+	const GeneralMesh* sourceMesh, 
+	GeneralMesh* targetMesh, 
+	ValueType vt
+)
+{
 	std::vector<std::unordered_map<int, double>>* interMap = nullptr;
 	if (dynamic_cast<const CFDMesh*>(sourceMesh) && dynamic_cast<MOCMesh*>(targetMesh))
 		interMap = &m_MOC_CFD_Map;
@@ -220,10 +240,12 @@ void Solver::Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh
 	std::vector<double> targetValueField = targetMesh->GetValueVec(vt);
 	std::vector<double> sourceValueField = sourceMesh->GetValueVec(vt);
 
-	for (int i = 0; i < targetMesh->GetMeshPointNum(); i++) {
+	for (int i = 0; i < targetMesh->GetMeshPointNum(); i++) 
+	{
 		double interValue = 0.0;
 		double selfInterCoe = 1.0;
-		for (auto& pair : (*interMap)[i]) {
+		for (auto& pair : (*interMap)[i])
+		{
 			int MOCMeshPointID = pair.first;
 			double interCoe = pair.second;
 			interValue += interCoe * sourceValueField[MOCMeshPointID];

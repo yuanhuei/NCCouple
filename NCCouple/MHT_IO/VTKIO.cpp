@@ -124,10 +124,15 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector
 		for (size_t j = 0; j < fieldNameList.size(); j++)
 		{
 			std::ifstream inFile(vVTKFileName[i]);
+			if (!inFile.is_open())
+			{
+				FatalError(vVTKFileName[i] + " is not found");
+			}
 			ReadVTKMeshFormat(inFile);
 			Field<Scalar> thisField(v_pmesh[meshID], 0.0, fieldNameList[j]);
 			vv_scalarFieldList[meshID].push_back(std::move(thisField));
 			vv_scalarFieldList[meshID][j].ReadVTKGridField(inFile);
+			inFile.close();
 		}
 	}
 	std::cout<<"succeed" << std::endl;

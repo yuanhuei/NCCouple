@@ -112,10 +112,14 @@ public:
 		for (size_t i = 0; i < valueVec.size(); i++)
 			m_meshPointPtrVec[i]->SetValue(valueVec[i], vt);
 	}
-	std::vector<double> GetValueVec(ValueType vt) const {
+
+	std::vector<double> GetValueVec(ValueType vt) const
+	{
 		std::vector<double> res(m_meshPointPtrVec.size());
 		for (size_t i = 0; i < m_meshPointPtrVec.size(); i++)
+		{
 			res[i] = m_meshPointPtrVec[i]->GetValue(vt);
+		}
 		return res;
 	}
 

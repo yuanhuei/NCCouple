@@ -45,21 +45,6 @@ Scalar initialRho(Scalar x, Scalar y, Scalar z)
 	return 1000.0 + add;
 }
 
-//this example was designed for test of
-//(1) rewritting a apl file
-//(2) reading and writting of inp files
-void MOC_APL_INP_FileTest()
-{
-	WarningContinue("MOC_APL_INP_FileTest");
-	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp",MeshKernelType::MHT_KERNEL);
-	mocMesh.WriteTecplotFile("H2O", "h2O.plt");
-	mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
-	mocMesh.WriteTecplotFile("UO2", "u2o.plt");
-	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
-	//mocMesh.OutputStatus("pin_c1_out.inp");
-	return;
-}
-
 #include "./MHT_IO/VTKIO.h"
 #include <fstream>
 
@@ -67,17 +52,15 @@ void VTKReaderTest()
 {
 	MHTVTKReader reader("pinWR.msh");
 	std::vector<std::string> fileName;
-	fileName.push_back("outvtkH2O.vtk");
-	fileName.push_back("outvtkU2O.vtk");
+	fileName.push_back("outvtkUO2.vtk");
 	std::vector<int> IDList;
-	IDList.push_back(0);
 	IDList.push_back(2);
 	std::vector<std::string> fieldName;
 	fieldName.push_back("heatpower");
 	reader.ReadVTKFile(fileName, IDList, fieldName);
-	std::cout << "can you see me?" << std::endl;
-	reader.GetFieldIO(0).WriteTecplotField("heatpower_0.plt");
-	std::cout << "can you see me?" << std::endl;
+	const Field<Scalar>& phi = reader.GetField(2,0);
+	Scalar samplevalue = phi.elementField.GetValue(136450);
+	std::cout << "samplevalue = " << samplevalue << std::endl;
 	reader.GetFieldIO(2).WriteTecplotField("heatpower_2.plt");
 	return;
 }
@@ -144,7 +127,6 @@ void RunWithParameters(std::vector<std::string>& parameters)
 		{
 			Logger::LogError("no more parameter need to be given in clear");
 		}
-		Logger::LogInfo("hello world");
 	}
 	else if ("createmapper" == parameters[0])
 	{
@@ -174,12 +156,11 @@ void RunWithParameters(std::vector<std::string>& parameters)
 int main(int argc, char** argv)
 {
 	//get processor ID
-
-
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		VTKReaderTest();
+		MOCMesh mocMesh("pin_c1.apl", "pin_c1_out.apl", MeshKernelType::MHT_KERNEL);
+		mocMesh.InitMOCHeatPower("heatPower.txt");
 		return 0;
 	}
 	else

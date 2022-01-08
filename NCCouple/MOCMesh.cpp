@@ -662,21 +662,38 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	return;
 }
 
-void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) {
+void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
+{
 	std::ifstream ifs(heatPowerFileName);
-	if (!ifs.is_open()) {
+	if (!ifs.is_open()) 
+	{
 		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
 		exit(EXIT_FAILURE);
 	}
 	std::vector<double> powerInput;
-	while (!ifs.eof()) {
+	while (!ifs.eof())
+	{
 		std::string line;
 		std::getline(ifs, line);
 		if (line == "") continue;
 		powerInput.push_back(std::stod(line));
 	}
+	//written by lingkong for test
+	std::cout << "data in txt file" << std::endl;
+	for (int i = 113;i <= 118;i++)
+	{
+		std::cout << "heat power[" << i << "] = " << powerInput[i] * 1e6 << std::endl;
+	}
+	
 	for (auto p_meshPoint : m_meshPointPtrVec) {
 		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
+	}
+
+	//written by lingkong for test
+	std::cout << "data in MOC mesh" << std::endl;
+	for (int i = 113;i <= 118;i++)
+	{
+		std::cout << "heat power[" << i << "] = " << m_meshPointPtrVec[i]->GetValue(ValueType::HEATPOWER) << std::endl;
 	}
 	ifs.close();
 }

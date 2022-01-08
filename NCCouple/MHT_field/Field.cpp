@@ -1339,19 +1339,13 @@ void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile)
 
 	while(!inFile.eof())
 	{
-
 		std::string sDataType, sDataName, sFormatType;
-
 		inFile >> sDataType >> sDataName >> sFormatType;
-
 		std::string sLookuptable, sLookuptableModel;
 		inFile >> sLookuptable >> sLookuptableModel;
-
 		Scalar nData;
-		
 		if (sDataType == "SCALARS" && sDataName == this->st_name)
 		{
-
 			for (size_t i = 0; i < DataNumber; i++)
 			{
 				inFile >> nData;
@@ -1368,8 +1362,8 @@ void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile)
 			}
 		}
 	}
-	
 	FatalError("this vtk file has no field named " + this->st_name);
+	return;
 }
 
 
