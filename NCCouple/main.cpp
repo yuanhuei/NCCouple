@@ -65,33 +65,21 @@ void MOC_APL_INP_FileTest()
 
 void VTKReaderTest()
 {
-	MHTVTKReader reader("pipe.msh");
+	MHTVTKReader reader("pinWR.msh");
 	std::vector<std::string> fileName;
-	fileName.push_back("pipe_solid.vtk");
-	fileName.push_back("pipe_fluid.vtk");
+	fileName.push_back("pinWR_0.vtk");
+	fileName.push_back("pinWR_2.vtk");
 	std::vector<int> IDList;
 	IDList.push_back(0);
-	IDList.push_back(1);
+	IDList.push_back(2);
 	std::vector<std::string> fieldName;
-	fieldName.push_back("temperature");
-	fieldName.push_back("Pressure");
+	fieldName.push_back("T");
+	fieldName.push_back("Rho");
 	reader.ReadVTKFile(fileName, IDList, fieldName);
-	
-	for (size_t i = 0; i < reader.GetFieldIOList().size(); i++)
-	{
-		reader.GetFieldIO(i).WriteTecplotField("pipe_"+std::to_string(i)+".plt");
-		reader.GetFieldIO(i).WriteVTKField("pipe_" + std::to_string(i) + ".vtk");
-	}
-
-	Field<Scalar> temperatureField(reader.GetMeshListPtr()[0],0.0,"temperature");
-	temperatureField.ReadVTK_Field("pipe_solid.vtk");
-	temperatureField.WriteVTK_Field("test.vtk");
-//	for (size_t i = 0; i < IDList.size(); i++)
-//	{
-//		int regionID = IDList[i];
-//		FieldIO result = reader.GetFieldIO(regionID);
-//		result.WriteTecplotField(std::to_string(regionID) + ".plt");
-//	}
+	reader.GetFieldIO(0).WriteTecplotField("outpin_0.plt");
+	reader.GetFieldIO(0).WriteVTKField("outpin_0.vtk");
+	reader.GetFieldIO(2).WriteTecplotField("outpin_2.plt");
+	reader.GetFieldIO(2).WriteVTKField("outpin_2.vtk");
 	return;
 }
 
@@ -194,7 +182,7 @@ int main(int argc, char** argv)
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		RenameFile("lingkong.txt", "lingkongxxx.txt");
+		VTKReaderTest();
 		return 0;
 	}
 	else
@@ -207,7 +195,5 @@ int main(int argc, char** argv)
 		}
 		RunWithParameters(parameterList);
 	}
-
-	VTKReaderTest();
 	return 0;
 }
