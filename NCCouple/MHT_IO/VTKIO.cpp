@@ -101,42 +101,43 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string> vVTKFileName, std::vecto
 	std::cout<<"read file succeed" << std::endl;
 }
 
-void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList)
+void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector<int> vMeshID, std::vector<std::string>& fieldNameList)
 {
 	v_meshID = vMeshID;
-	std::cout << "start Read Field" << std::endl;
+	std::cout << "Reading Fields from vtk files" << std::endl;
 
 	v_FieldIO.resize(v_pmesh.size());
 
 	if (vVTKFileName.size() != v_meshID.size())
 	{
-		FatalError("mesh ID number not same with vtk file number");
+		FatalError("number of mesh IDs is not the same with that of vtk files");
 	}
 
 	for (size_t i = 0; i < v_meshID.size(); i++)
 	{
-		if (v_meshID[i]>=v_pmesh.size())
+		int meshID = v_meshID[i];
+		if (meshID >=v_pmesh.size())
 		{
-			FatalError("mesh ID out of range");
+			FatalError("mesh ID " + std::to_string(meshID) + " is out of range");
 		}
 
-		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		for (size_t j = 0; j < fieldNameList.size(); j++)
 		{
 			std::ifstream inFile(vVTKFileName[i]);
 			ReadVTKMeshFormat(inFile);
-			Field<Scalar> thisField(v_pmesh[v_meshID[i]], 0.0, vFiedNameList[j]);
-			vv_scalarFieldList[v_meshID[i]].push_back(std::move(thisField));
-			vv_scalarFieldList[v_meshID[i]][j].ReadVTKGridField(inFile);
+			Field<Scalar> thisField(v_pmesh[meshID], 0.0, fieldNameList[j]);
+			vv_scalarFieldList[meshID].push_back(std::move(thisField));
+			vv_scalarFieldList[meshID][j].ReadVTKGridField(inFile);
 		}
-
 	}
 	std::cout<<"succeed" << std::endl;
 
 	for (size_t i = 0; i < v_meshID.size(); i++)
 	{
-		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		int meshID = v_meshID[i];
+		for (size_t j = 0; j < fieldNameList.size(); j++)
 		{
-			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
+			v_FieldIO[meshID].push_backScalarField(vv_scalarFieldList[meshID][j]);
 		}
 	}
 

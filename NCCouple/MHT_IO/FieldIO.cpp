@@ -644,17 +644,12 @@ void FieldIO::FieldElementToNode()
 
 void FieldIO::WriteVTKField(const std::string& outFileName)
 {
-	this->FieldElementToNode();
-
 	std::ofstream outFile(outFileName.c_str());
-
 	outFile << "# vtk DataFile Version 2.0" << std::endl;
 	outFile << "Unstructured Grid VTK" << std::endl;
 	outFile << "ASCII" << std::endl;
 	outFile << "DATASET UNSTRUCTURED_GRID" << std::endl;
-
 	outFile << "POINTS " << p_blockMesh->n_nodeNum << " float" << std::endl;
-
 	// Write Points
 	for (unsigned int i = 0; (int)i < p_blockMesh->n_nodeNum; i++)
 	{

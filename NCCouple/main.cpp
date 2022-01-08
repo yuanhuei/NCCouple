@@ -67,23 +67,20 @@ void VTKReaderTest()
 {
 	MHTVTKReader reader("pinWR.msh");
 	std::vector<std::string> fileName;
-	fileName.push_back("pinWR_0.vtk");
-	fileName.push_back("pinWR_2.vtk");
+	fileName.push_back("outvtkH2O.vtk");
+	fileName.push_back("outvtkU2O.vtk");
 	std::vector<int> IDList;
 	IDList.push_back(0);
 	IDList.push_back(2);
 	std::vector<std::string> fieldName;
-	fieldName.push_back("T");
-	fieldName.push_back("Rho");
+	fieldName.push_back("heatpower");
 	reader.ReadVTKFile(fileName, IDList, fieldName);
-	reader.GetFieldIO(0).WriteTecplotField("outpin_0.plt");
-	reader.GetFieldIO(0).WriteVTKField("outpin_0.vtk");
-	reader.GetFieldIO(2).WriteTecplotField("outpin_2.plt");
-	reader.GetFieldIO(2).WriteVTKField("outpin_2.vtk");
+	std::cout << "can you see me?" << std::endl;
+	reader.GetFieldIO(0).WriteTecplotField("heatpower_0.plt");
+	std::cout << "can you see me?" << std::endl;
+	reader.GetFieldIO(2).WriteTecplotField("heatpower_2.plt");
 	return;
 }
-
-
 
 void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
 {

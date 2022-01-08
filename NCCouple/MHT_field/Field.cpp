@@ -1330,7 +1330,7 @@ void Field<Scalar>::ReadVTK_Field(const std::string& inVTKFileName)
 template<>
 void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile)
 {
-	std::cout<<"start read vtk field data" << std::endl;
+	std::cout<<"start reading field " << this->st_name << " from vtk file" << std::endl;
 	std::string comment;
 	inFile >> comment;
 
@@ -1369,7 +1369,7 @@ void Field<Scalar>::ReadVTKGridField(std::ifstream& inFile)
 		}
 	}
 	
-	FatalError("this vtk file haven't field name like you setting");
+	FatalError("this vtk file has no field named " + this->st_name);
 }
 
 
