@@ -201,6 +201,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 			}
 		}
 	}
+
+	std::sort(m_meshPointPtrVec.begin(), m_meshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
+		return a->PointID() < b->PointID();
+	});
 }
 
 void MOCMesh::setMeshInformation(string line)
