@@ -162,16 +162,14 @@ void MHTVTKReader::ReadMSHFile(std::string MeshFileName)
 		v_stdMesh[i] = std::move(FluentPtrCon->v_regionGrid[i]);
 		v_pmesh.push_back(&v_stdMesh[i]);
 	}
+	return;
 }
 
 void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList)
 {
 	std::cout << "start Read Data Field" << std::endl;
-
 	v_FieldIO.resize(v_pmesh.size());
-
 	std::ifstream inFile(DataFileName);
-
 	std::string sMeshName;
 	std::string sFieldName;
 	int nFieldNum;

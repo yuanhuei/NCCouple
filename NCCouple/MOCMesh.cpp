@@ -682,23 +682,12 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		if (line == "") continue;
 		powerInput.push_back(std::stod(line));
 	}
-	//written by lingkong for test
-	std::cout << "data in txt file" << std::endl;
-	for (int i = 113;i <= 118;i++)
+
+	for (auto p_meshPoint : m_meshPointPtrVec)
 	{
-		std::cout << "heat power[" << i << "] = " << powerInput[i] * 1e6 << std::endl;
-	}
-	
-	for (auto p_meshPoint : m_meshPointPtrVec) {
 		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
 	}
 
-	//written by lingkong for test
-	std::cout << "data in MOC mesh" << std::endl;
-	for (int i = 113;i <= 118;i++)
-	{
-		std::cout << "heat power[" << i << "] = " << m_meshPointPtrVec[i]->GetValue(ValueType::HEATPOWER) << std::endl;
-	}
 	ifs.close();
 }
 
@@ -717,6 +706,29 @@ void MOCMesh::WriteTecplotFile
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
 		if (mType != mocPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+	ofile.close();
+	return;
+}
+
+void MOCMesh::WriteHeatPowerTxtFile()
+{
+	std::ofstream ofile("heatPower.txt");
+	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_meshPointPtrVec[i]);
+		Vector PointCenter = mocPoint.Center();
+		Vector axisCenter(0.63, 0.63, 0.0);
+		Vector axisNorm(0.0, 0.0, 1.0);
+		Vector OP = PointCenter - axisCenter;
+		Vector axicialLocation = (OP & axisNorm) * axisNorm;
+		Scalar radius = (OP - axicialLocation).Mag();
+		Scalar sigma = 1.0;
+		Scalar hp = (1000.0 / sqrt(2.0 * PI) / sigma) * exp(-radius * radius / 2 / pow(sigma, 2));
+		Scalar z = PointCenter.z_;
+		hp = hp * z * (5.0 - z) / 6.25;
+		ofile << hp << std::endl;
 	}
 	ofile.close();
 	return;

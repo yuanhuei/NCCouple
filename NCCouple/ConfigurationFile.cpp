@@ -34,6 +34,25 @@ std::string GetFileNameOfPrevious
 	return extenedName;
 }
 
+void RemoveFile
+(
+	std::string nameStr
+)
+{
+	const char* nameChar = nameStr.data();
+	//delete if the new-name file is existing
+	std::ifstream file(nameStr);
+	if (file.is_open())
+	{
+		file.close();
+		if (0 == remove(nameChar))
+		{
+			Logger::LogInfo(nameStr + " is removed");
+		}
+	}
+	return;
+}
+
 void RenameFile
 (
 	std::string oldnameStr,

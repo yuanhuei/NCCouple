@@ -45,6 +45,20 @@ Scalar initialRho(Scalar x, Scalar y, Scalar z)
 	return 1000.0 + add;
 }
 
+Scalar initialHeatPower(Scalar x, Scalar y, Scalar z)
+{
+	Vector PointCenter(x, y, z);
+	Vector axisCenter(0.63, 0.63, 0.0);
+	Vector axisNorm(0.0, 0.0, 1.0);
+	Vector OP = PointCenter - axisCenter;
+	Vector axicialLocation = (OP & axisNorm) * axisNorm;
+	Scalar radius = (OP - axicialLocation).Mag();
+	Scalar sigma = 1.0;
+	Scalar hp = (1000.0 / sqrt(2.0 * PI) / sigma) * exp(-radius * radius / 2 / pow(sigma, 2));
+	hp = hp * z * (5.0 - z) / 6.25;
+	return hp;
+}
+
 #include "./MHT_IO/VTKIO.h"
 #include <fstream>
 
@@ -52,15 +66,18 @@ void VTKReaderTest()
 {
 	MHTVTKReader reader("pinWR.msh");
 	std::vector<std::string> fileName;
-	fileName.push_back("outvtkUO2.vtk");
+	fileName.push_back("UO2.vtk");
+	fileName.push_back("H2O.vtk");
+	fileName.push_back("Zr4.vtk");
 	std::vector<int> IDList;
 	IDList.push_back(2);
+	IDList.push_back(0);
+	IDList.push_back(1);
 	std::vector<std::string> fieldName;
 	fieldName.push_back("heatpower");
 	reader.ReadVTKFile(fileName, IDList, fieldName);
-	const Field<Scalar>& phi = reader.GetField(2,0);
-	Scalar samplevalue = phi.elementField.GetValue(136450);
-	std::cout << "samplevalue = " << samplevalue << std::endl;
+	reader.GetFieldIO(0).WriteTecplotField("heatpower_0.plt");
+	reader.GetFieldIO(1).WriteTecplotField("heatpower_1.plt");
 	reader.GetFieldIO(2).WriteTecplotField("heatpower_2.plt");
 	return;
 }
@@ -127,6 +144,7 @@ void RunWithParameters(std::vector<std::string>& parameters)
 		{
 			Logger::LogError("no more parameter need to be given in clear");
 		}
+		ClearMapFiles();
 	}
 	else if ("createmapper" == parameters[0])
 	{
@@ -159,8 +177,7 @@ int main(int argc, char** argv)
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		MOCMesh mocMesh("pin_c1.apl", "pin_c1_out.apl", MeshKernelType::MHT_KERNEL);
-		mocMesh.InitMOCHeatPower("heatPower.txt");
+		VTKReaderTest();
 		return 0;
 	}
 	else

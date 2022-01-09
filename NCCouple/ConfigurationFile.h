@@ -10,6 +10,11 @@ std::string GetFileNameOfPrevious
 	std::string fileType
 );
 
+void RemoveFile
+(
+	std::string nameStr
+);
+
 void RenameFile
 (
 	std::string oldname,

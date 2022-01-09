@@ -30,8 +30,8 @@ void CreateMapper
 
 void MOCFieldsToCFD();
 
-//vtk中提温度（K），密度（kg/m3）
-//inp中写取温度（K），核子密度（1/cm3）,流体区域密度会变，固体区域密度为常数（直接从原始的inp文件中抄）
 void CFDFieldsToMOC();
+
+void ClearMapFiles();
 
 #endif

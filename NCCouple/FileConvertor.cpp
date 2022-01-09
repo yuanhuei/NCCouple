@@ -349,3 +349,16 @@ void CFDFieldsToMOC()
 	mocMesh.OutputStatus(outMocFieldFile);
 	return;
 }
+
+void ClearMapFiles()
+{
+	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
+	std::vector<std::string> regionNameList = GetFileNameList(configFile, "regionName");
+	for (int i = 0;i < regionNameList.size();i++)
+	{
+		RemoveFile("MapFile_" + regionNameList[i] + "_CFDtoMOC");
+		RemoveFile("MapFile_" + regionNameList[i] + "_MOCtoCFD");
+	}
+	RemoveFile(configFile);
+	return;
+}

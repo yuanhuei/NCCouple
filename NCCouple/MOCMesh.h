@@ -141,6 +141,7 @@ public:
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string, std::string);
+	void WriteHeatPowerTxtFile();
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
