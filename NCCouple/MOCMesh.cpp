@@ -4,6 +4,7 @@
 #include <map>
 #include <tuple>
 #include <regex>
+#include <unordered_set>
 #include "Logger.h"
 using namespace std;
 
@@ -108,7 +109,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 								break;
 							}
 							meshMaterialNameTemperary.push_back(tokenMaterialType);
-							outFile << tokenMaterialType << "_" << ID_order << "  ";
+							if (tokenMaterialType == "H2O")
+								outFile << tokenMaterialType << "_" << ID_order << "  ";
+							else
+								outFile << tokenMaterialType << "  ";
 							ID_order++;
 						}
 						if (out0 != 0)
@@ -455,8 +459,8 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 
 	ofs << m_preContext.str();
 	ofs << std::endl << "\t\t*   material definition" << std::endl;
+	std::unordered_set<std::string> materialNameSet;
 	for (auto meshPointPtr : m_meshPointPtrVec) {
-		ofs << std::endl;
 		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
 		std::string materialName = p_mocMeshPoint->GetMaterialName();
 		const Medium* p_medium = nullptr;
@@ -465,7 +469,7 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 			p_medium = &(iter1->second);
 
 		std::smatch m;
-		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)")) && materialName == "H2O") {
 			materialName += "_" + std::to_string(p_mocMeshPoint->PointID());
 			if (!p_medium) {
 				auto iter2 = m_mediumMap.find(materialName);
@@ -473,17 +477,21 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 					p_medium = &(iter2->second);
 			}
 		}
-			
-		ofs << FormatStr("\t\t\t '%s' = MAT (  /", materialName.c_str());
-		for (size_t i = 0; i < p_medium->eleFlagVec.size(); i++) {
-			int eleFlag = p_medium->eleFlagVec[i];
-			double eleDensity = p_medium->eleDensCalcFunVec[i](p_mocMeshPoint->GetValue(ValueType::DENSITY));
-			ofs << eleFlag << "," << FormatStr("%.6f", eleDensity);
+		
+		if (!materialNameSet.count(materialName)) {
+			ofs << std::endl;
+			ofs << FormatStr("\t\t\t '%s' = MAT (  /", materialName.c_str());
+			for (size_t i = 0; i < p_medium->eleFlagVec.size(); i++) {
+				int eleFlag = p_medium->eleFlagVec[i];
+				double eleDensity = p_medium->eleDensCalcFunVec[i](p_mocMeshPoint->GetValue(ValueType::DENSITY));
+				ofs << eleFlag << "," << FormatStr("%.6f", eleDensity);
 
-			if (i != p_medium->eleFlagVec.size() - 1)
-				ofs << ";" << std::endl << "\t\t\t\t\t";
-			else
-				ofs << ")" << std::endl;
+				if (i != p_medium->eleFlagVec.size() - 1)
+					ofs << ";" << std::endl << "\t\t\t\t\t";
+				else
+					ofs << ")" << std::endl;
+			}
+			materialNameSet.insert(materialName);
 		}
 	}
 
