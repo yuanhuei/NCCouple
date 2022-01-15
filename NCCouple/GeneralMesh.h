@@ -30,6 +30,8 @@ public:
 public:
 	virtual double Volume() const = 0;
 	virtual Vector Center() const = 0;
+	virtual std::vector<Scalar> GetRadiusList() const = 0;
+	virtual std::pair<bool, Vector> AxisCenter() const = 0;
 	virtual double IntersectedVolume(const MeshPoint& other) const = 0;
 	virtual int VerticesNum() const = 0;
 	virtual Vector VerticeCoordinate(int verticeID) const = 0;
@@ -57,6 +59,16 @@ public:
 	Vector Center() const override
 	{
 		return m_poly.GetCenter();
+	}
+
+	std::vector<Scalar> GetRadiusList() const override
+	{
+		return m_poly.GetRaduisList();
+	}
+
+	std::pair<bool, Vector> AxisCenter() const override
+	{
+		return m_poly.GetAxisCenter();
 	}
 
 	double IntersectedVolume(const MeshPoint& other) const override;

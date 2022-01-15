@@ -31,7 +31,7 @@ public:
 	const std::vector < std::vector<Field<Scalar>>> GetFieldList() { return vv_scalarFieldList; }
 	Field<Scalar> GetField(int regionNum, int fieldNum) { return vv_scalarFieldList[regionNum][fieldNum]; }
 	std::vector<int> GetMeshID() { return v_meshID; }
-
+	int GetIDOfRegion(std::string regionName);
 	void WriteDataFile(std::string DataFileName);
 	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);		//read total region field
 	void ReadVTKFile(std::vector<std::string>, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList);		//read field by mesh ID

@@ -719,6 +719,17 @@ void MOCMesh::WriteTecplotFile
 	return;
 }
 
+std::pair<int,Scalar> MOCMesh::GetAxialInformation()
+{
+	Scalar totalHeight = 0.0;
+	int cellNum = this->axialInformation.size();
+	for (int i = 0;i < cellNum;i++)
+	{
+		totalHeight += this->axialInformation[i].second;
+	}
+	return std::pair<int, Scalar>(cellNum, totalHeight / Scalar(cellNum));
+}
+
 void MOCMesh::WriteHeatPowerTxtFile()
 {
 	std::ofstream ofile("heatPower.txt");

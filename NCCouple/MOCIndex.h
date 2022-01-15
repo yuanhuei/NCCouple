@@ -23,27 +23,36 @@ public:
 	Vector theetaStartNorm;
 	//number of cells in cicular direction
 	int circularCellNum;
-	//number of cells in axial direction
-	int axialCellNum;
 	//radius list in radial direction
 	std::vector<double> v_radius;
+	//number of cells in axial direction
+	int axialCellNum;
 	//cell size in axial direction
 	Scalar axialCellSize;
+	//tolerance for size
+	Scalar scaleTolerance;
 public:
 	//Constructor with a given MOC mesh
 	MOCIndex(MOCMesh&);
+	//extract information from MOC mesh
+	void Initialization();
+	//estimate a tolerance
+	void SetTolerance();
 	//get radius list from MOCMesh
 	void GetRadiusList();
+	//get axial cell number and size
+	void SetAxialInfo();
+	//set theetastartNorm and number in circular direction
+	void SetCircularInfo();
 	//resize the index and write IDs according to MOC cell coordinates
 	void BuildUpIndex();
-	//specify the radius list
-	void SetRadial(std::vector<Scalar>& radiusList);
 	//convert a Cartesian coordinate (x, y, z) to a Cylindrical coordinate (theeta, r, z)
 	std::tuple<Scalar, Scalar, Scalar> GetCylindricalCoordinate(Scalar x, Scalar y, Scalar z);
 	//get the i,j,k of v_MOCID from a given Cartesian coordinate
 	std::tuple<int, int, int> GetIJKWithPoint(Scalar x, Scalar y, Scalar z);
 	//get the ID of the MOC cell containing a given point
 	int GetMOCIDWithPoint(Scalar x, Scalar y, Scalar z);
+	void CheckIndex();
 	//a member function written for test
 	void Display()
 	{
@@ -53,6 +62,7 @@ public:
 		std::cout << "circularCellNum = " << circularCellNum << std::endl;
 		std::cout << "axialCellSize = " << axialCellSize << std::endl;
 		std::cout << "axialCellNum = " << axialCellNum << std::endl;
+		std::cout << "scaleTolerance = " << scaleTolerance << std::endl;
 		for (int i = 0;i < this->v_radius.size();i++)
 		{
 			std::cout << "v_radius[" << i << "] = " << v_radius[i] << std::endl;

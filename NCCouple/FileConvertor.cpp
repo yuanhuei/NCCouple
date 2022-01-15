@@ -75,9 +75,10 @@ void DisplayHelpInfo()
 	std::cout << "1. NCCouple" << std::endl;
 	std::cout << "2. NCCouple --help" << std::endl;
 	std::cout << "3. NCCouple clear" << std::endl;
-	std::cout << "4. NCCouple createmapper (MOCMesh) (MOCMesh) (CFDMesh)" << std::endl;
+	std::cout << "4. NCCouple createmapper" << std::endl;
 	std::cout << "5. NCCouple cfdtomoc" << std::endl;
 	std::cout << "6. NCCouple moctocfd" << std::endl;
+	std::cout << "7. NCCouple register (MOCMesh) (MOCMesh) (CFDMesh)" << std::endl;
 	return;
 }
 
@@ -99,7 +100,7 @@ void InsertWhenNotFound(std::vector<std::string>& nameList, std::string name)
 	return;
 }
 
-void CreateMapper
+void RegisterMapper
 (
 	std::string strInput_aplFileName,
 	std::string strOutput_aplFileName,
@@ -126,27 +127,13 @@ void CreateMapper
 	MOCMesh mocMesh(strInput_aplFileName, strOutput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
 	MOCIndex mocIndex(mocMesh);
-	//the following information should be given for a specified tube
-	mocIndex.axisNorm = Vector(0.0, 0.0, 1.0);
-	mocIndex.axisPoint = Vector(0.63, 0.63, 0.0);
-	mocIndex.theetaStartNorm = Vector(1.0, 0.0, 0.0);
-	mocIndex.circularCellNum = 8;
-	mocIndex.axialCellNum = 5;
-	mocIndex.axialCellSize = 1.0;
-	std::vector<Scalar> radiusList;
-	radiusList.push_back(0.1024);
-	radiusList.push_back(0.2048);
-	radiusList.push_back(0.3072);
-	radiusList.push_back(0.4096);
-	radiusList.push_back(0.475);
-	mocIndex.SetRadial(radiusList);
+	mocIndex.Initialization();
 	mocIndex.BuildUpIndex();
+	mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
 	MHTVTKReader reader(strInput_meshFileName);
 	std::vector<std::string> MOCRegionList;
 	std::vector<std::string> CFDRegionList;
-	std::vector<int> availableRegionID;
-	std::vector<std::string> availableRegionName;
 	//collect region names from MOC mesh
 	for (size_t i = 0;i < mocMesh.GetMeshPointNum();i++)
 	{
@@ -161,44 +148,47 @@ void CreateMapper
 		std::string thisName = pmesh->st_meshName;
 		CFDRegionList.push_back(thisName);
 	}
-	for (size_t i = 0;i < MOCRegionList.size();i++)
+	WriteConfigurationFile(configFile, strInput_meshFileName, strInput_aplFileName, strOutput_aplFileName, MOCRegionList, CFDRegionList);
+	WarningContinue("please fill the blanks in file " + configFile + " before createmapper");
+	return;
+}
+
+void CreateMapper()
+{
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::vector<std::string>& materialList = matches[0];
+	std::vector<std::string>& regionList = matches[1];
+	std::string mocMeshFile = GetFileName(configFile, "inputApl");
+	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
+	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
+	//checking file names
+	if (mocMeshFile.find(".apl") == std::string::npos)
 	{
-		for (size_t j = 0;j < CFDRegionList.size();j++)
-		{
-			if (MOCRegionList[i] == CFDRegionList[j])
-			{
-				availableRegionID.push_back(j);
-				availableRegionName.push_back(CFDRegionList[j]);
-				Logger::LogInfo("available region found: " + CFDRegionList[j]);
-			}
-		}
+		Logger::LogError("in MOCFieldsToCFD, " + mocMeshFile + " is not an .apl file");
 	}
-	if (0 == availableRegionID.size())
+	if (outMocMeshFile.find(".apl") == std::string::npos)
 	{
-		Logger::LogInfo("no available region found!");
-		std::cout << "In MOC, we have regions: " << std::endl;
-		for (size_t i = 0;i < MOCRegionList.size();i++)
-		{
-			std::cout << "(" << i+1 << ") " << MOCRegionList[i] << std::endl;
-		}
-		std::cout << "In CFD, we have regions: " << std::endl;
-		for (size_t i = 0;i < CFDRegionList.size();i++)
-		{
-			std::cout << "(" << i+1 << ") " << CFDRegionList[i] << std::endl;
-		}
-		exit(EXIT_FAILURE);
+		Logger::LogError("in MOCFieldsToCFD, " + outMocMeshFile + " is not an .apl file");
 	}
-	else
+	if (cfdMeshFile.find(".msh") == std::string::npos)
 	{
-		WriteConfigurationFile(configFile, strInput_meshFileName, strInput_aplFileName, strOutput_aplFileName, availableRegionID, availableRegionName);
+		Logger::LogError("in MOCFieldsToCFD, " + cfdMeshFile + " is not a .msh file");
 	}
-	for (size_t i = 0; i < availableRegionID.size(); i++)
+	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+	//create an index for fast searching
+	MOCIndex mocIndex(mocMesh);
+	mocIndex.Initialization();
+	mocIndex.BuildUpIndex();
+	mocIndex.CheckIndex();
+	Logger::LogInfo("Reading CFD mesh file: " + cfdMeshFile);
+	MHTVTKReader reader(cfdMeshFile);
+	for (size_t i = 0; i < matches.size(); i++)
 	{
-		int CFDMeshID = availableRegionID[i];
+		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
-		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
-		Solver solverMapper(mocMesh, cfdMesh, mocIndex, pmesh->st_meshName);
+		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
+		Solver solverMapper(mocMesh, cfdMesh, mocIndex, materialList[i]);
 		solverMapper.CheckMappingWeights();
 	}
 	return;
@@ -210,7 +200,10 @@ void MOCFieldsToCFD()
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 	std::string mocPowerFile = GetFileName(configFile, "mocPower");
 	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
-	std::vector<std::string> outputVtkList = GetFileNameList(configFile, "outputVtk");
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::vector<std::string>& materialList = matches[0];
+	std::vector<std::string>& regionList = matches[1];
+	std::vector<std::string>& outputVtkList = matches[3];
 	//checking file names
 	if (mocMeshFile.find(".apl") == std::string::npos)
 	{
@@ -235,44 +228,44 @@ void MOCFieldsToCFD()
 			Logger::LogError("in MOCFieldsToCFD, " + outputVtkList[i] + " is not given as .vtk file");
 		}
 	}
-	//reading available region IDs
-	std::vector<int> avaiableRegionIDList = GetRegionIDList(configFile);
-	if (avaiableRegionIDList.size() != outputVtkList.size())
-	{
-		std::cout << "In previously generated mapper, " << avaiableRegionIDList.size() << " regions are available, ";
-		std::cout << "but you specified " << outputVtkList.size() << " vtk files as output" << std::endl;
-		Logger::LogError("numbers of vtk files and avaiable regions are not consistent");
-	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	mocMesh.InitMOCHeatPower(mocPowerFile);
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
-	//read interpolation weights only in available regions
-	for (size_t i = 0; i < avaiableRegionIDList.size(); i++)
+	//reading available region IDs
+	std::vector<int> regionIDList;
+	regionIDList.resize(regionList.size());
+	for (size_t i = 0;i < regionList.size();i++)
 	{
-		int RegionID = avaiableRegionIDList[i];
+		regionIDList[i] = reader.GetIDOfRegion(regionList[i]);
+	}
+	//read interpolation weights only in available regions
+	for (size_t i = 0; i < regionIDList.size(); i++)
+	{
+		int RegionID = regionIDList[i];
 		Mesh* pmesh = reader.GetMeshListPtr()[RegionID];
 		Field<Scalar> heatpower(pmesh, 0.0, "heatpower");
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, RegionID);
-		Solver solverMapper;
-		solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName);
+		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
 		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = outputVtkList[i];
 		RenameFile(strOutput_inpName, GetFileNameOfPrevious(strOutput_inpName,"vtk"));
 		Logger::LogInfo("Writing CFD vtk file: " + strOutput_inpName);
 		heatpower.WriteVTK_Field(strOutput_inpName);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER,pmesh->st_meshName);
+		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER, materialList[i]);
 	}
 	return;
 }
 
 void CFDFieldsToMOC()
 {
-
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::vector<std::string>& materialList = matches[0];
+	std::vector<std::string>& regionList = matches[1];
+	std::vector<std::string>& vtkFileName = matches[2];
 	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
-	std::vector<std::string> vtkFileName = GetFileNameList(configFile, "inputVtk");
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 	std::string mocFieldFile = GetFileName(configFile, "inputInp");
@@ -302,14 +295,6 @@ void CFDFieldsToMOC()
 	{
 		Logger::LogError("in CFDFieldsToMOC, " + outMocFieldFile + " is not an .inp file");
 	}
-	//reading available region IDs
-	std::vector<int> avaiableRegionIDList = GetRegionIDList(configFile);
-	if (avaiableRegionIDList.size() != vtkFileName.size())
-	{
-		std::cout << "In previously generated mapper, " << avaiableRegionIDList.size() << " regions are available, ";
-		std::cout << "but you specified " << vtkFileName.size() << " vtk files as input" << std::endl;
-		Logger::LogError("numbers of vtk files and avaiable regions are not consistent");
-	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;
@@ -317,12 +302,19 @@ void CFDFieldsToMOC()
 	fieldName.push_back("Rho");
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
-	//read CFD field with given ID list
-	reader.ReadVTKFile(vtkFileName, avaiableRegionIDList, fieldName);
-	//read interpolation weights only in available regions
-	for (size_t i = 0; i < avaiableRegionIDList.size(); i++)
+	//reading available region IDs
+	std::vector<int> regionIDList;
+	regionIDList.resize(regionList.size());
+	for (size_t i = 0;i < regionList.size();i++)
 	{
-		int RegionID = avaiableRegionIDList[i];
+		regionIDList[i] = reader.GetIDOfRegion(regionList[i]);
+	}
+	//read CFD field with given ID list
+	reader.ReadVTKFile(vtkFileName, regionIDList, fieldName);
+	//read interpolation weights only in available regions
+	for (size_t i = 0; i < regionIDList.size(); i++)
+	{
+		int RegionID = regionIDList[i];
 		Mesh* pmesh = reader.GetMeshListPtr()[RegionID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, RegionID);
@@ -338,12 +330,11 @@ void CFDFieldsToMOC()
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::DENSITY);
 			}
 		}
-		Solver solverMapper;
-		solverMapper = Solver(mocMesh, cfdMesh, pmesh->st_meshName);
+		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
 		solverMapper.CFDtoMOCinterception(ValueType::DENSITY);
 		solverMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY,pmesh->st_meshName);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE,pmesh->st_meshName);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i]);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i]);
 	}
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
@@ -352,12 +343,12 @@ void CFDFieldsToMOC()
 
 void ClearMapFiles()
 {
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
-	std::vector<std::string> regionNameList = GetFileNameList(configFile, "regionName");
-	for (int i = 0;i < regionNameList.size();i++)
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::vector<std::string>& materialList = matches[0];
+	for (int i = 0;i < materialList.size();i++)
 	{
-		RemoveFile("MapFile_" + regionNameList[i] + "_CFDtoMOC");
-		RemoveFile("MapFile_" + regionNameList[i] + "_MOCtoCFD");
+		RemoveFile("MapFile_" + materialList[i] + "_CFDtoMOC");
+		RemoveFile("MapFile_" + materialList[i] + "_MOCtoCFD");
 	}
 	RemoveFile(configFile);
 	return;

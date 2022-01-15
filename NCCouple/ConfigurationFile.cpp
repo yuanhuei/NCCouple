@@ -90,60 +90,58 @@ void WriteConfigurationFile
 	std::string& mshFile,
 	std::string& aplFile,
 	std::string& outAplFile,
-	std::vector<int>& IDList,
-	std::vector<std::string>& regionNameList
+	std::vector<std::string>& MOCMaterials,
+	std::vector<std::string>& CFDRegions
 )
 {
-	if (IDList.size() != regionNameList.size())
-	{
-		Logger::LogError("in WriteConfigurationFile(), numbers of region IDs and region names are not consistent");
-	}
 	std::ofstream config(configFile);
 	//write msh file name
 	config << "------inputMsh------" << std::endl;
 	config << "(" << mshFile << ")" << std::endl << std::endl;
-	config << "------regionID------" << std::endl;
+
+	config << "******MOC materials******" << std::endl;
 	config << "(" << std::endl;
-	for (size_t i = 0;i < IDList.size();i++)
+	for (size_t i = 0;i < MOCMaterials.size();i++)
 	{
-		config << "\t" << IDList[i] << std::endl;
+		config << MOCMaterials[i] << std::endl;
 	}
 	config << ")" << std::endl << std::endl;
-	config << "------regionName------" << std::endl;
+
+	config << "******CFD Regions******" << std::endl;
 	config << "(" << std::endl;
-	for (size_t i = 0;i < IDList.size();i++)
+	for (size_t i = 0;i < CFDRegions.size();i++)
 	{
-		config << regionNameList[i] << std::endl;
+		config << CFDRegions[i] << std::endl;
+	}
+	config << ")" << std::endl << std::endl;
+
+
+	//write material-region match list
+	config << "------matchList------" << std::endl;
+	config << "(" << std::endl;
+	for (size_t i = 0;i < MOCMaterials.size();i++)
+	{
+		config << "(" << std::endl;
+		config << "\t" << MOCMaterials[i] << std::endl;
+		config << "\t[write CFD region]" << std::endl;
+		config << "\t[write input file].vtk" << std::endl;
+		config << "\t[write output file].vtk" << std::endl;
+		config << ")" << std::endl << std::endl;
 	}
 	config << ")" << std::endl << std::endl;
 	//write apl file infomation
 	config << "------inputApl------" << std::endl;
-	config << "("<< aplFile << ")" << std::endl << std::endl;
+	config << "(" << aplFile << ")" << std::endl << std::endl;
 	config << "------outputApl------" << std::endl;
 	config << "(" << outAplFile << ")" << std::endl << std::endl;
-	//write inp file information
+	//write inp file infomation
 	config << "------inputInp------" << std::endl;
-	config << "(***.inp)" << std::endl << std::endl;
+	config << "([write MOC input data file].inp)" << std::endl << std::endl;
 	config << "------outputInp------" << std::endl;
-	config << "(***.inp)" << std::endl << std::endl;
+	config << "([write MOC output data file].inp)" << std::endl << std::endl;
 	//write moc heat power file information
 	config << "------mocPower------" << std::endl;
-	config << "(***.txt)" << std::endl << std::endl;
-	//write vtk
-	config << "------inputVtk------" << std::endl;
-	config << "(" << std::endl;
-	for (size_t i = 0;i < IDList.size();i++)
-	{
-		config << "\t" << "***.vtk" << std::endl;
-	}
-	config << ")" << std::endl << std::endl;
-	config << "------outputVtk------" << std::endl;
-	config << "(" << std::endl;
-	for (size_t i = 0;i < IDList.size();i++)
-	{
-		config << "\t" << "***.vtk" << std::endl;
-	}
-	config << ")" << std::endl << std::endl;
+	config << "([write MOC heat power file].txt)" << std::endl << std::endl;
 	config.close();
 	return;
 }
@@ -230,17 +228,67 @@ std::vector<std::string> GetFileNameList
 	return nameList;
 }
 
-std::vector<int> GetRegionIDList
+std::vector<std::vector<std::string> > GetMatchList
 (
 	std::string configFile
 )
 {
-	std::vector<int> IDList;
-	std::vector<std::string> nameList;
-	nameList = GetFileNameList(configFile, "regionID");
-	for (size_t i = 0;i < nameList.size();i++)
+	std::vector<std::vector<std::string> > matchList;
+	//1. MOC material, 2. CFD region, 3. input vtk, 4. output vtk
+	matchList.resize(4);
+	std::ifstream file(configFile);
+	if (!file.is_open())
 	{
-		IDList.push_back(std::stoi(nameList[i]));
+		Logger::LogError("configuration file MapFile_FileNames is not existing");
 	}
-	return IDList;
+	bool found = false;
+	std::string result;
+	while (!file.eof())
+	{
+		std::getline(file, result);
+		if (std::string::npos != result.find("matchList"))
+		{
+			found = true;
+			break;
+		}
+	}
+	if (found == true)
+	{
+		std::stringstream fullList;
+		//extract all match lists along with brackets
+		GetBySymbol(file, fullList, '(', ')');
+		while (!fullList.eof())
+		{
+			std::stringstream oneMatch;
+			//extract one match with no brackets
+			GetBySymbol(fullList, oneMatch, '(', ')');
+			//members of one match shoule be 1. MOC material, 2. CFD region, 3. input vtk, 4. output vtk
+			std::vector<std::string> strList;
+			while (!oneMatch.eof())
+			{
+				std::string memberOfMatch;
+				oneMatch >> memberOfMatch;
+				if (!memberOfMatch.empty())
+				{
+					strList.push_back(memberOfMatch);
+				}
+			}
+			if (0 == strList.size()) continue;
+			if (4 != strList.size())
+			{
+				Logger::LogError("incorrect match list: " + oneMatch.str());
+			}
+			for (int i = 0;i < 4;i++)
+			{
+				matchList[i].push_back(strList[i]);
+			}
+		}
+		file.close();
+	}
+	else
+	{
+		file.close();
+		Logger::LogError("in GetFileNameList(), symbol matchList is not found");
+	}
+	return matchList;
 }

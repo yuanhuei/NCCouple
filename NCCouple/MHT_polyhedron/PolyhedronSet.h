@@ -39,6 +39,10 @@ public:
 
 	Scalar IntersectionVolumeWithPolyhedronSet(const PolyhedronSet&) const;
 
+	std::vector<Scalar> GetRaduisList() const;
+
+	std::pair<bool, Vector> GetAxisCenter() const;
+
 	void WriteTecplotFile(std::string) const;
 
 	void WriteTecplotFile(ofstream&) const;

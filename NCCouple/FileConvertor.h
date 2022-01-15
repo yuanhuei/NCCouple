@@ -21,12 +21,14 @@ void ConservationValidation
 	std::string strZoneName
 );
 
-void CreateMapper
+void RegisterMapper
 (
 	std::string strInput_aplFileName,
 	std::string strInput_inpFileName,
 	std::string strInput_meshFileName
 );
+
+void CreateMapper();
 
 void MOCFieldsToCFD();
 

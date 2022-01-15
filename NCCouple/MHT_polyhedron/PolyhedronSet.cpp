@@ -548,6 +548,36 @@ Scalar PolyhedronSet::IntersectionVolumeWithPolyhedronSet(const PolyhedronSet& a
 	return totalVolume;
 }
 
+std::vector<Scalar> PolyhedronSet::GetRaduisList() const
+{
+	std::vector<Scalar> radiusList;
+	for (size_t i = 0;i < this->v_curvedFace.size();i++)
+	{
+		if (this->v_curvedFace[i].first == 1)
+		{
+			radiusList.push_back(this->v_curvedFace[i].second);
+		}
+	}
+	return radiusList;
+}
+
+std::pair<bool, Vector> PolyhedronSet::GetAxisCenter() const
+{
+	std::pair<bool, Vector> info;
+	info.second = this->axisCenter;
+	bool hasCurvdFace = false;
+	for (size_t i = 0;i < this->v_curvedFace.size();i++)
+	{
+		if (1 == this->v_curvedFace[i].first)
+		{
+			hasCurvdFace = true;
+			break;
+		}
+	}
+	info.first = hasCurvdFace;
+	return info;
+}
+
 void PolyhedronSet::WriteTecplotFile(std::string filename) const
 {
 	if (false == this->clipped)

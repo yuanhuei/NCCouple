@@ -82,15 +82,27 @@ void VTKReaderTest()
 	return;
 }
 
-void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
+void EntranceOfRegister(std::vector<std::string>& fileNames)
 {
 	if (3 != fileNames.size())
 	{
-		std::cout << "Please give 3 file names if you are intending to create solver, like this:" << std::endl;
-		std::cout << "NCCouple createmapper (MOCMesh) (MOCField) (CFDMesh)" << std::endl;
+		std::cout << "Please give 3 file names if you are intending to register solver, like this:" << std::endl;
+		std::cout << "NCCouple register (MOCMesh) (MOCField) (CFDMesh)" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	CreateMapper(fileNames[0], fileNames[1], fileNames[2]);
+	RegisterMapper(fileNames[0], fileNames[1], fileNames[2]);
+	return;
+}
+
+void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
+{
+	if (0 != fileNames.size())
+	{
+		std::cout << "Please do not give any file name if you are intending to create mapper, like this:" << std::endl;
+		std::cout << "NCCouple createmapper" << std::endl;
+		Logger::LogError("inccorrect number of file names");
+	}
+	CreateMapper();
 	return;
 }
 
@@ -146,6 +158,10 @@ void RunWithParameters(std::vector<std::string>& parameters)
 		}
 		ClearMapFiles();
 	}
+	else if ("register" == parameters[0])
+	{
+		EntranceOfRegister(filenames);
+	}
 	else if ("createmapper" == parameters[0])
 	{
 		EntranceOfCreateMapper(filenames);
@@ -165,7 +181,8 @@ void RunWithParameters(std::vector<std::string>& parameters)
 		std::cout << "(2) clear" << std::endl;
 		std::cout << "(3) createmapper" << std::endl;
 		std::cout << "(4) moctocfd" << std::endl;
-		std::cout << "(5) --help" << std::endl;
+		std::cout << "(5) register" << std::endl;
+		std::cout << "(6) --help" << std::endl;
 		Logger::LogError("invalid parameter given: " + parameters[0]);
 	}
 	return;
@@ -177,7 +194,7 @@ int main(int argc, char** argv)
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		VTKReaderTest();
+		std::cout << "hello world"<<std::endl;
 		return 0;
 	}
 	else

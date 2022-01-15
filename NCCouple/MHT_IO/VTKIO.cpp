@@ -41,6 +41,24 @@ MHTVTKReader::~MHTVTKReader()
 	std::vector<int>().swap(v_meshID);
 }
 
+int MHTVTKReader::GetIDOfRegion(std::string regionName)
+{
+	int ID = -1;
+	for (size_t i = 0;i < this->v_pmesh.size();i++)
+	{
+		if (v_pmesh[i]->st_meshName == regionName)
+		{
+			ID = i;
+			break;
+		}
+	}
+	if (-1 == ID)
+	{
+		FatalError("region name " + regionName + " not found in CFD mesh");
+	}
+	return ID;
+}
+
 void MHTVTKReader::WriteDataFile(std::string DataFileName)
 {
 
