@@ -15,6 +15,16 @@ public:
 	MOCMesh* pMOCMesh = nullptr;
 	//index for MOC IDs written in an array
 	std::vector<std::vector<std::vector<int> > > v_MOCID;
+
+	//四维数组：栅元mesh id 和xIndex,yIndex,zIndex获取网格ID
+	std::vector<std::vector<std::vector<std::vector<int> > >> v_MOC_Mesh_ID;
+	//四维数组：燃料堆 stackXindex,stackYindex,栅元meshxIndex,meshyIndex,获取栅元ID
+	std::vector<std::vector<std::vector<std::vector<int>>>> v_Stack_Mesh_index;
+	//堆的map,记录堆的索引到堆的坐标和宽度，N*N的大小
+	std::map<std::pair<int, int>, std::tuple<Vector , double , int >> m_stackMap;
+	//整个区域的信息
+	std::tuple<Vector, double, int> m_Zone;
+
 	//axis center of the tube
 	Vector axisPoint;
 	//axis normal of the tube
@@ -52,6 +62,12 @@ public:
 	std::tuple<int, int, int> GetIJKWithPoint(Scalar x, Scalar y, Scalar z);
 	//get the ID of the MOC cell containing a given point
 	int GetMOCIDWithPoint(Scalar x, Scalar y, Scalar z);
+	
+	//new added
+	std::pair<int, int> MOCIndex::getIndex(std::tuple<Vector, double, int> tup_Zone, Vector vMeshpoint);
+	std::pair<int,int> GetMOCIDWithPoint_(Scalar x, Scalar y, Scalar z);
+	void BuildUpIndex_(Vector vLeftDown, int N_N, double iLength);
+
 	void CheckIndex();
 	//a member function written for test
 	void Display()

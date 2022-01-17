@@ -25,6 +25,20 @@
 
 int g_iProcessID = 0;
 
+//this example was designed for test of
+//(1) rewritting a apl file
+//(2) reading and writting of inp files
+void MOC_APL_INP_FileTest()
+{
+	WarningContinue("MOC_APL_INP_FileTest");
+	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL);
+	mocMesh.WriteTecplotFile("H2O", "h2O.plt");
+	mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
+	mocMesh.WriteTecplotFile("UO2", "u2o.plt");
+	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
+	//mocMesh.OutputStatus("pin_c1_out.inp");
+	return;
+}
 
 Scalar initialT(Scalar x, Scalar y, Scalar z)
 {
@@ -195,6 +209,7 @@ int main(int argc, char** argv)
 	if (argc == 1)
 	{
 		std::cout << "hello world"<<std::endl;
+		MOC_APL_INP_FileTest();
 		return 0;
 	}
 	else
