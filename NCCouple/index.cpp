@@ -7,7 +7,7 @@ int getindex(double x, std::vector<double>v_X)
 	int i = 0;
 	for (; i < v_X.size() - 1; i++)
 	{
-		if (x >= v_X[i] && x < v_X[i + 1])
+		if (x >= v_X[i] && x <= v_X[i + 1])
 			break;
 	}
 	return i;
@@ -20,13 +20,32 @@ void AssemblyIndex::buildIndex()
 {
 	std::vector<Assembly>& v_Assembly = pMOCMesh->m_meshAssembly;
 	//初始化m_x,m_y
+	std::set<double> set_X, set_Y;
 	for (int i == ; i < v_Assembly.size(); i++)
 	{
-
 		//遍历堆，获取左下角坐标x,y，加入一个set，最后将set中的x,y放入m_x,m_y vector中
-
+		set_X.insert(v_Assembly[i].vAssembly_LeftDownPoint.x_);
+		set_X.insert(v_Assembly[i].vAssembly_RightUpPoint.x_);
+		set_Y.insert(v_Assembly[i].vAssembly_LeftDownPoint.y_);
+		set_Y.insert(v_Assembly[i].vAssembly_RightUpPoint.y_);
 	}
-	//m_assemblyIndex初始化
+	m_x.resize(set_X.size());
+	m_y.resize(set_Y.size());
+	int i = 0;
+	for (std::set(double)::iterator it = set_X.begin(); it != set_X.end(); it++)
+	{
+		m_x[i] = *it;
+		i++;
+	}
+	i = 0;
+	for (std::set(double)::iterator it = set_Y.begin(); it != set_Y.end(); it++)
+	{
+		m_y[i] = *it;
+		i++;
+	}
+
+
+	//m_assemblyIndex初始化为-1,代表无燃料组件在里面
 	m_assemblyIndex.resize(m_x.size());
 	int ySize = m_y.size();
 	for (int i = 0; i < m_x.size(); i++)
@@ -39,6 +58,9 @@ void AssemblyIndex::buildIndex()
 
 		//遍历堆，根据堆的左下角和右上角坐标x获取x>=m_x[i],且x<m_x[i+1],同样获取y，
 		//根据获得的I,J给m_assemblyIndex赋值
+		int xIndex = getindex(v_Assembly[i].vAssembly_LeftDownPoint.x_, m_x);
+		int yIndex= getindex(v_Assembly[i].vAssembly_LeftDownPoint.y_, m_y);
+		m_assemblyIndex[xIndex][yIndex] = i;
 
 	}
 	//调用v_CellIndex buildindex
