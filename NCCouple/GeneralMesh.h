@@ -11,28 +11,8 @@ enum class ValueType
 	HEATPOWER,
 	DENSITY
 };
-struct meshPoint
-{
-	std::vector<std::shared_ptr<MeshPoint>> meshPointPtrVec; //栅元网格信息
-	Vector vPoint;// vLeftDownPoint, vRightUpPoint; //栅元中心坐标,左下角右上角坐标
-	Vector vStack_LeftDownPoint, vStack_RightUpPoint; //燃料堆的左下，右上坐标
-	int iN_N;
 
 
-};
-
-typedef struct 
-{
-	std::vector<Cell> v_Cell;
-	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
-}Assembly;
-
-typedef struct
-{
-	std::vector<std::shared_ptr<MeshPoint>> meshPointPtrVec; //栅元网格信息
-	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
-
-}Cell;
 
 std::string NameOfValueType(ValueType vt);
 
@@ -139,9 +119,6 @@ public:
 	int GetMeshPointNum() const {
 		return m_meshPointPtrVec.size();
 	}
-	int GetMeshNum() const {
-		return m_meshPoint.size();
-	}
 	MeshPoint* GetMeshPointPtr(int pointID) const {
 		return m_meshPointPtrVec.at(pointID).get();
 	}
@@ -166,11 +143,7 @@ protected:
 
 protected:
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec;
-public:
 
-	std::vector<meshPoint> m_meshPoint;
-
-	std::vector<Assembly> m_meshAssembly;
 };
 
 #endif

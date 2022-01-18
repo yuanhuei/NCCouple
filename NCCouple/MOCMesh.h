@@ -17,6 +17,18 @@ extern int g_iProcessID;
 //	Zr4,
 //	UNKNOWN
 //};
+typedef struct
+{
+	std::vector<std::shared_ptr<MeshPoint>> meshPointPtrVec; //栅元网格信息
+	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
+
+}Cell;
+typedef struct
+{
+	std::vector<Cell> v_Cell;
+	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
+}Assembly;
+
 
 class MOCMeshPoint : virtual public MeshPoint
 {
@@ -184,5 +196,8 @@ private:
 private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
+public:
+	std::vector<Assembly> m_meshAssembly;
+
 };
 #endif

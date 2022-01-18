@@ -93,12 +93,31 @@ void CellIndex::buildIndex()
 {
 	std::vector<Cell>& v_Cell = pAssembly->v_Cell;
 	//初始化m_x,m_y
+	std::set<double> set_X, set_Y;
 	for (int i == ; i < v_Cell.size(); i++)
 	{
-
 		//遍历堆中的栅元，获取左下角，右上角坐标x,y，加入一个set，最后将set中的x,y放入m_x,m_y vector中
+		set_X.insert(v_Cell[i].vCell_LeftDownPoint.x_);
+		set_X.insert(v_Cell[i].vCell_RightUpPoint.x_);
+		set_Y.insert(v_Cell[i].vCell_LeftDownPoint.y_);
+		set_Y.insert(v_Cell[i].vCell_RightUpPoint.y_);
 
 	}
+	m_x.resize(set_X.size());
+	m_y.resize(set_Y.size());
+	int i = 0;
+	for (std::set(double)::iterator it = set_X.begin(); it != set_X.end(); it++)
+	{
+		m_x[i] = *it;
+		i++;
+	}
+	i = 0;
+	for (std::set(double)::iterator it = set_Y.begin(); it != set_Y.end(); it++)
+	{
+		m_y[i] = *it;
+		i++;
+	}
+
 	//m_assemblyIndex初始化
 	m_cellIndex.resize(m_x.size());
 	int ySize = m_y.size();
@@ -112,6 +131,10 @@ void CellIndex::buildIndex()
 
 		//遍历堆中栅元，根据栅元的左下角坐标x获取索引 满足x>=m_x[i],且x<m_x[i+1],同样获取y，
 		//根据获得的I,J给m_cellIndex赋值
+		int xIndex = getindex(v_Cell[i].vCell_LeftDownPoint.x_, m_x);
+		int yIndex = getindex(v_Cell[i].vCell_RightUpPoint.y_, m_y);
+		m_cellIndex[xIndex][yIndex] = i;
+
 
 	}
 	//调用v_MocIndex buildindex
