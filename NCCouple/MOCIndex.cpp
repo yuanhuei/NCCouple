@@ -18,9 +18,11 @@ void MOCIndex::Initialization()
 void MOCIndex::BuildUpIndex()
 {
 	AllocateDim(this->v_MOCID, this->circularCellNum, this->v_radius.size(), this->axialCellNum);
-	for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	//for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	for (int i = 0; i < (*pVMeshPoint).size(); i++)
+
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*(*pVMeshPoint)[i]);
 		int verticeNum = mocPoint.VerticesNum();
 		double RSum = 0.0;
 		double ZSum = 0.0;
@@ -68,94 +70,6 @@ void MOCIndex::BuildUpIndex()
 	}
 	return;
 }
-//根据燃料堆左下角坐标，栅元中心坐标返回x和y向索引
-std::pair<int,int> MOCIndex::getIndex(std::tuple<Vector, double, int> tup_Zone,Vector vMeshpoint)
-{
-
-	Vector vStack_LeftDownPoint = std::get<0>(tup_Zone);
-	int N_N= std::get<2>(tup_Zone);
-	int iLength = std::get<1>(tup_Zone);;
-	double xLength = vMeshpoint.x_ - vStack_LeftDownPoint.x_;
-	double yLength = vMeshpoint.y_ - vStack_LeftDownPoint.y_;
-	int xIndex = xLength / (iLength / N_N);
-	int yIndex = yLength / (iLength / N_N);
-	return std::pair<int, int>(xIndex,yIndex);
-
-}
-//输入区域左下角左边，
-void MOCIndex::BuildUpIndex_(Vector vLeftDown, int N_N,double iLength)
-{
-
-	m_Zone = std::make_tuple(vLeftDown, iLength, N_N);
-	v_MOC_Mesh_ID.resize(pMOCMesh->GetMeshNum());
-	for(int k = 0; k < pMOCMesh->GetMeshNum(); k++)
-	{ 
-		AllocateDim(this->v_MOC_Mesh_ID[k], this->circularCellNum, this->v_radius.size(), this->axialCellNum);
-
-		meshPoint& mesh = pMOCMesh->m_meshPoint[k];
-
-		//堆所在位置索引
-		std::pair<int, int> iStackIndex = getIndex(std::make_tuple(vLeftDown, iLength,N_N), (mesh.vStack_LeftDownPoint + mesh.vStack_RightUpPoint) / 2);
-
-        //栅元所在燃料堆中索引
-		std::pair<int, int> iMeshIndex = getIndex(std::make_tuple(mesh.vStack_LeftDownPoint,
-			(mesh.vStack_RightUpPoint.x_-mesh.vStack_LeftDownPoint.x_), mesh.iN_N),mesh.vPoint);
-
-		v_Stack_Mesh_index[iStackIndex.first][iStackIndex.second][iMeshIndex.first][iMeshIndex.second] = k;
-
-		m_stackMap[std::make_pair(iStackIndex.first, iStackIndex.second)] = std::make_tuple(mesh.vStack_LeftDownPoint, (mesh.vStack_RightUpPoint.x_ - mesh.vStack_LeftDownPoint.x_) / 2, mesh.iN_N);
-		for (int i = 0; i < mesh.meshPointPtrVec.size(); i++)
-		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->m_meshPoint[k].meshPointPtrVec[i]);
-			int verticeNum = mocPoint.VerticesNum();
-			double RSum = 0.0;
-			double ZSum = 0.0;
-			double COSTheetaSum = 0.0;
-			Vector OPSum(0.0, 0.0, 0.0);
-			double count1 = 0.0;
-			double count2 = 0.0;
-			for (int j = 0; j < verticeNum; j++)
-			{
-				Vector P = mocPoint.VerticeCoordinate(j);
-				Vector OP = P - this->axisPoint;
-				Vector axialProjection = (OP & this->axisNorm) * this->axisNorm;
-				Vector radialProjection = OP - axialProjection;
-				RSum += radialProjection.Mag();
-				ZSum += axialProjection.Mag();
-				OPSum = OPSum + OP;
-				count1 += 1.0;
-				if (radialProjection.Mag() > scaleTolerance)
-				{
-					COSTheetaSum += radialProjection.GetNormal() & this->theetaStartNorm;
-					count2 += 1.0;
-				}
-			}
-			Scalar radius = RSum / count1;
-			Scalar height = ZSum / count1;
-			Scalar cosTheeta = COSTheetaSum / count2;
-			Scalar theeta = acos(cosTheeta);
-			Vector OP = OPSum / count1;
-			if (((theetaStartNorm ^ OP) & axisNorm) < 0.0)
-			{
-				theeta = 2.0 * PI - theeta;
-			}
-			int IndexI = int((double)circularCellNum * theeta / (2.0 * PI));
-			int IndexJ = 0;
-			for (int j = 0; j < this->v_radius.size(); j++)
-			{
-				if (v_radius[j] > radius)
-				{
-					break;
-				}
-				IndexJ = j;
-			}
-			int IndexK = int(height / axialCellSize);
-			this->v_MOC_Mesh_ID[k][IndexI][IndexJ][IndexK] = i;
-		}
-	}
-	return;
-}
-
 
 //find the largest radius to estimate a tolerance
 void MOCIndex::SetTolerance()
@@ -325,26 +239,6 @@ int MOCIndex::GetMOCIDWithPoint
 	return this->v_MOCID[i][j][k];
 }
 
-std::pair<int, int> MOCIndex::GetMOCIDWithPoint_(Scalar x, Scalar y, Scalar z)
-{
-	
-	//输入点所在的堆的位置索引
-	std::pair<int, int> iStackIndex = getIndex(m_Zone, Vector(x,y,z));
-
-	//m_stackMap[iStackIndex]
-	//栅元所在燃料堆中索引
-	std::pair<int, int> iMeshIndex = getIndex(m_stackMap[iStackIndex], Vector(x, y, z));
-	//栅元ID
-	int index=v_Stack_Mesh_index[iStackIndex.first][iStackIndex.second][iMeshIndex.first][iMeshIndex.second];
-
-	std::tuple<int, int, int> indexes = GetIJKWithPoint(x, y, z);
-	int i = std::get<0>(indexes);
-	int j = std::get<1>(indexes);
-	int k = std::get<2>(indexes);
-	return std::make_pair(index,this->v_MOC_Mesh_ID[index][i][j][k]);
-
-
-}
 
 void MOCIndex::CheckIndex()
 {

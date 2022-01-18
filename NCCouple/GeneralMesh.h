@@ -21,6 +21,19 @@ struct meshPoint
 
 };
 
+typedef struct 
+{
+	std::vector<Cell> v_Cell;
+	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
+}Assembly;
+
+typedef struct
+{
+	std::vector<std::shared_ptr<MeshPoint>> meshPointPtrVec; //栅元网格信息
+	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
+
+}Cell;
+
 std::string NameOfValueType(ValueType vt);
 
 enum class MeshKernelType
@@ -156,6 +169,8 @@ protected:
 public:
 
 	std::vector<meshPoint> m_meshPoint;
+
+	std::vector<Assembly> m_meshAssembly;
 };
 
 #endif
