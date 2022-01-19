@@ -6,13 +6,14 @@
 #include <regex>
 #include <unordered_set>
 #include "Logger.h"
+#include "index.h"
 using namespace std;
 
 #define PI 3.14159265358979323846
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType) 
+MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
 	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
@@ -22,15 +23,12 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		exit(EXIT_FAILURE);
 	}
 	string line;
-	vector<string> meshMaterialNameTemperary;
-	vector<string> meshTemperatureNameTemperary;
-	vector<string> meshFaceTypeTemperary;
-	vector<string> meshFaceTemperatureNameTemperary;
-	vector<string> fileNameTemperary;
-	vector<int> meshIDTemperary;
-	int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
-	std::vector<Surface>allMeshFaces;   //all face objects
-	std::vector<MOCEdge>allEdges;    //all edge objects
+	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
+
+	int xDirection_Number = 0, yDirection_Number = 0;//x,y方向上的组件个数
+	int iNt_Assembly_index = 0;
+	std::streampos strpos, assembly_pos;
+	bool bNextAssembly = false;
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -53,162 +51,454 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					getline(infile, line);
 					outFile << line << endl;
 					setAxialInformation(line);
+
+					m_vAssemblyType.resize(1);
+					m_vAssemblyType[0].iAssemblyType = 1;
+					m_vAssembly.resize(1);
+					m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					m_vAssembly[0].iAssemblyType = 1;
+
 					break;
 				}
 				if (token == "EDGE")
 				{
-					stringline >> token;
-					int edgeIDTemperary = stod(token);
-					string lineType;
-					string linePosition;
-					getline(infile, lineType);
-					outFile << lineType << endl;
+					//strpos = infile.tellg();
+					infile.seekg(strpos);
+					goto loop;
+				}
+			}
+			if (token == "*Core_General")
+			{
+				m_bSingleCell = false;
+				getline(infile, line);
+				outFile << line << endl;
+				stringstream stringline(line);
+				string token;
+				stringline >> token;
+				stringline >> token;
+				xDirection_Number = std::stod(token);
+				stringline >> token;
+				yDirection_Number = std::stod(token);
+				m_vAssembly.resize(xDirection_Number * yDirection_Number);
+				break;
+			}
+			if (token == "*Core_Nt_Axial_Mesh")
+			{
+				getline(infile, line);
+				outFile << line << endl;
+				setAxialInformation(line);
+				break;
+			}
+			if (token == "*Assembly_Positon_Index")
+			{
+				//
+				break;
+			}
+			if (token == "*Nt_Assembly_Layout")
+			{
+				int k = 0;
+				m_pAssemblyIndex->m_assemblyIndex.resize(xDirection_Number);
+				for (int i = 0; i < xDirection_Number; i++)
+					m_pAssemblyIndex->m_assemblyIndex[i].resize(yDirection_Number);
+				for (int i = 0; i < yDirection_Number; i++)
+				{
 					getline(infile, line);
 					outFile << line << endl;
-					getline(infile, linePosition);
-					outFile << linePosition << endl;
-					setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
-					break;
-				}
-				if (token == "Mesh_no_of_each_coarse_mesh")
-				{
-					string tokenMeshId = "";
-					int out0 = 1;
-					while (out0 != 0)
+					stringstream stringnumline(line);
+					string tokennum;
+
+					for (int j = 0; j < xDirection_Number; j++)
 					{
+						stringnumline >> tokennum;
+						m_vAssembly[k].iAssemblyType = std::stod(tokennum);
+						m_pAssemblyIndex->m_assemblyIndex[j][yDirection_Number - i - 1] = k;
+						k++;
+					}
+				}
+				break;
+			}
+			if (token == "*Nt_Assembly_Cat_Num")
+			{
+				getline(infile, line);
+				outFile << line << endl;
+				stringstream stringline(line);
+				string token;
+				stringline >> token;
+				m_vAssemblyType.resize(std::stod(token));
+				break;
+			}
+			if (token == "*Nt_Assembly")
+			{
+			loop:
+				bNextAssembly = false;
+				vector<string> meshMaterialNameTemperary;
+				vector<string> meshTemperatureNameTemperary;
+				//vector<string> meshFaceTypeTemperary;
+				//vector<string> meshFaceTemperatureNameTemperary;
+				vector<string> fileNameTemperary;
+				vector< std::stringstream> vStreamTemperay;
+				vector<int> meshIDTemperary;
+				int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
+				std::vector<Surface>allMeshFaces;   //all face objects
+				std::vector<MOCEdge>allEdges;    //all edge objects
+				std::vector<int> vNumber_of_each_coarse_mesh;
+
+				if (!m_bSingleCell)
+				{
+					getline(infile, line);
+					outFile << line << endl;
+					stringstream stringline(line);
+					string token;
+					stringline >> token;
+					m_vAssemblyType[iNt_Assembly_index].iAssemblyType = std::stod(token);
+				}
+				else
+				{
+					vNumber_of_each_coarse_mesh.resize(1);
+					vNumber_of_each_coarse_mesh[0] = layerMeshNum;
+				}
+
+				while (getline(infile, line))
+				{
+					stringstream stringline(line);
+					string token;
+					stringline >> token;
+					if (token == "*RECTANGULAR")
+					{
+						stringline >> token;
+						stringline >> token;
+						m_vAssemblyType[iNt_Assembly_index].xLength = std::stod(token);
+						stringline >> token;
+						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token);
+
+					}
+					if (token == "*Mesh_number_of_each_coarse_mesh")//多棒需要解析，单棒不需要
+					{
+						std::streampos pos;
+						while (getline(infile, line))
+						{
+							if (line.find("*") == std::string::npos)
+							{
+								stringstream stringline(line);
+								string token;
+								while (stringline >> token)
+								{
+									vNumber_of_each_coarse_mesh.push_back(stod(token));
+								}
+							}
+							else
+							{
+								//infile.seekg(pos);
+								break;
+							}
+							//pos = infile.tellg();
+						}
+					}
+					if (line.find("Mesh_no_of_each_coarse_mesh") != std::string::npos)
+					{
+						string tokenMeshId = "";
+						int out0 = 1;
+						std::streampos pos;
+						while (out0 != 0)
+						{
+							pos = infile.tellg();
+							getline(infile, line);
+							outFile << line << endl;
+							stringstream stringlineMeshID(line);
+							while (stringlineMeshID >> tokenMeshId)
+							{
+								if (tokenMeshId.find("*") != std::string::npos)
+								{
+									out0 = 0;
+									stringlineMeshID >> token;
+									//infile.seekg(pos);
+									break;
+								}
+								meshIDTemperary.push_back(stod(tokenMeshId));
+							}
+						}
+					}
+
+					if (line.find("EDGE") != std::string::npos && line.find("*EDGE_") == std::string::npos)
+					{
+						if (m_bSingleCell)
+						{
+							stringline >> token;
+							stringline >> token;
+						}
+						else
+						{
+							stringline >> token;
+						}
+						int edgeIDTemperary = stod(token);
+						string lineType;
+						string linePosition;
+						getline(infile, lineType);
+						outFile << lineType << endl;
 						getline(infile, line);
 						outFile << line << endl;
-						stringstream stringlineMeshID(line);
-						while (stringlineMeshID >> tokenMeshId)
-						{
-							if (tokenMeshId == "*")
-							{
-								out0 = 0;
-								stringlineMeshID >> token;
-								break;
-							}
-							meshIDTemperary.push_back(stod(tokenMeshId));
-						}
+						getline(infile, linePosition);
+						outFile << linePosition << endl;
+						setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
+						continue;
 					}
-				}
-				if (token == "Material_name_of_each_mesh")
-				{
-					int ID_order = 1;
-					string tokenMaterialType = "";
-					int out0 = 1;
-					while (out0 != 0)
+					if (line.find("Material_name_of_each_mesh") != std::string::npos)
 					{
-						getline(infile, line);
-						stringstream stringlineMaterialType(line);
-						while (stringlineMaterialType >> tokenMaterialType)
+						int ID_order = 1;
+						string tokenMaterialType = "";
+						int out0 = 1;
+						while (out0 != 0)
 						{
-							if (tokenMaterialType == "*")
+							std::streampos Material_pos;
+							//Material_pos = infile.tellg();
+							getline(infile, line);
+							stringstream stringlineMaterialType(line);
+							while (stringlineMaterialType >> tokenMaterialType)
 							{
-								out0 = 0;
-								stringlineMaterialType >> token;
-								break;
+								if (tokenMaterialType.find("*") != std::string::npos)
+								{
+									out0 = 0;
+									stringlineMaterialType >> token;
+									//infile.seekg(Material_pos);
+									break;
+								}
+								meshMaterialNameTemperary.push_back(tokenMaterialType);
+								if (tokenMaterialType == "H2O")
+									outFile << tokenMaterialType << "_" << ID_order << "  ";
+								else
+									outFile << tokenMaterialType << "  ";
+								ID_order++;
 							}
-							meshMaterialNameTemperary.push_back(tokenMaterialType);
-							if (tokenMaterialType == "H2O")
-								outFile << tokenMaterialType << "_" << ID_order << "  ";
+							if (out0 != 0)
+							{
+								outFile << endl;
+							}
 							else
-								outFile << tokenMaterialType << "  ";
-							ID_order++;
-						}
-						if (out0 != 0)
-						{
-							outFile << endl;
-						}
-						else
-						{
-							outFile << line << endl;
-						}
-					}
-				}
-				if (token == "Temperature_name_of_each_mesh")
-				{
-					int ID_order = 1;
-					string tokenTemperatureName = "";
-					int out0 = 1;
-					while (out0 != 0)
-					{
-						getline(infile, line);
-						stringstream stringlineTemperatureName(line);
-						while (stringlineTemperatureName >> tokenTemperatureName)
-						{
-							if (tokenTemperatureName == "*")
 							{
-								out0 = 0;
-								stringlineTemperatureName >> token;
-								break;
+								outFile << line << endl;
 							}
-							meshTemperatureNameTemperary.push_back(tokenTemperatureName);
-							outFile << tokenTemperatureName << "_" << ID_order << "  ";
-							ID_order++;
-						}
-						if (out0 != 0)
-						{
-							outFile << endl;
-						}
-						else
-						{
-							outFile << line << endl;
 						}
 					}
+					if (line.find("Temperature_name_of_each_mesh") != std::string::npos)
+					{
+						int ID_order = 1;
+						string tokenTemperatureName = "";
+						int out0 = 1;
+						while (out0 != 0)
+						{
+							assembly_pos = infile.tellg();
+							getline(infile, line);
+							stringstream stringlineTemperatureName(line);
+							while (stringlineTemperatureName >> tokenTemperatureName)
+							{
+								if (tokenTemperatureName.find("*") != std::string::npos)
+								{
+									out0 = 0;
+									stringlineTemperatureName >> token;
+									break;
+								}
+								meshTemperatureNameTemperary.push_back(tokenTemperatureName);
+								outFile << tokenTemperatureName << "_" << ID_order << "  ";
+								ID_order++;
+							}
+							if (out0 != 0)
+							{
+								outFile << endl;
+							}
+							else
+							{
+								outFile << line << endl;
+							}
+						}
+					}
+					if (line.find("*Nt_Assembly") != std::string::npos)
+					{
+						//infile.seekg(assembly_pos);
+						bNextAssembly = true;
+						break;
+					}
+					assembly_pos = infile.tellg();
+
 				}
+
+				//生成每一个组件类型的网格
+				
+				int iTotalMeshNum = 0;
+				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
+				{
+					iTotalMeshNum = iTotalMeshNum + vNumber_of_each_coarse_mesh[i];
+				}
+				layerMeshNum = iTotalMeshNum;
+				
+				for (int j = 0; j < axialNum; j++)
+				{
+					for (int i = 0; i < layerMeshNum; i++)
+					{
+						int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
+						//meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+						//meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
+					}
+				}
+				vStreamTemperay.resize(layerMeshNum* axialNum);
+				setMeshFaceInformation(meshIDTemperary, meshMaterialNameTemperary, meshTemperatureNameTemperary, allMeshFaces, allEdges);
+				//ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
+				ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshMaterialNameTemperary, nFineMesh);
+
+				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
+				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
+				//按照栅元组织生成meshpoint
+				int iMeshID_index = 0;
+				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
+				{
+					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec.resize(axialNum * vNumber_of_each_coarse_mesh[k]);
+					int iMeshpointIndex = 0;
+					for (int j = 0; j < axialNum; j++)
+					{
+						for (int i = 0; i < vNumber_of_each_coarse_mesh[k]; i++)
+						{
+							int meshIDtemp_ = meshIDTemperary[iMeshID_index + i] + j * layerMeshNum;
+							//int iMeshpointIndex = i + j * vNumber_of_each_coarse_mesh[k];
+							int index = iMeshID_index + i + j * layerMeshNum;
+
+							if (kernelType == MeshKernelType::MHT_KERNEL) {
+								Vector point, norm;
+								for (auto& edge : allMeshFaces[iMeshID_index].faceEdges) {
+									if (edge.edgeType == 3) {
+										point = edge.arcCenter;
+										norm = edge.arcAxisDir;
+										break;
+									}
+								}
+								//std::ifstream ifs(fileNameTemperary[index]);
+								std::stringstream& ifs = vStreamTemperay[index];
+								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
+									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
+									meshMaterialNameTemperary[index], meshTemperatureNameTemperary[index]);
+							}
+							/*
+							const char* removeFile = fileNameTemperary[index].data();
+							if (remove(removeFile)) //delete file
+							{
+								cout << "delete file fail" << endl;
+							}*/
+						}
+					}
+					iMeshID_index = iMeshID_index + vNumber_of_each_coarse_mesh[k];
+				}
+				
+				iNt_Assembly_index++;
+				if (bNextAssembly)
+					goto loop;
 			}
 			break;
 		}
+		strpos = infile.tellg();
 	}
 	outFile.close();
+	InitAssembly();
+	m_pAssemblyIndex->buildIndex();
+}
 
-	for (int j = 0; j < axialNum; j++)
+void MOCMesh::InitAssembly()
+{
+//计算组件类型左下角右上角坐标，坐标系为数据文件中读取出来的原始坐标系
+	for(int i=0;i<m_vAssemblyType.size();i++)
 	{
-		for (int i = 0; i < layerMeshNum; i++)
+		double xAssembly_Min = 10000, yAssembly_Min = 10000,xAssembly_Max = -10000, yAssembly_Max = -10000;
+		for (int j=0;j < m_vAssemblyType[i].v_Cell.size(); j++)
 		{
-			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
-			meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
-			meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
-		}
-	}
-
-	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
-	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
-	m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-	for (int j = 0; j < axialNum; j++)
-	{
-		for (int i = 0; i < layerMeshNum; i++)
-		{
-			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum;
-			int index = i + j * layerMeshNum;
-
-			if (kernelType == MeshKernelType::MHT_KERNEL) {
-				Vector point, norm;
-				for (auto& edge : allMeshFaces[i].faceEdges) {
-					if (edge.edgeType == 3) {
-						point = edge.arcCenter;
-						norm = edge.arcAxisDir;
-						break;
-					}
-				}
-				std::ifstream ifs(fileNameTemperary[index]);
-				m_meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
-					meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
-					meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
-			}
-
-
-			const char* removeFile = fileNameTemperary[index].data();
-			if (remove(removeFile)) //delete file
+			double xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000;
+			for (int k = 0; k < m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
-				cout << "delete file fail" << endl;
+				const MeshPoint& mocPoint = *m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec[k];
+
+				for (int m = 0; m < mocPoint.VerticesNum(); m++)
+				{
+					xMin = min(xMin, mocPoint.VerticeCoordinate(m).x_);
+					yMin = min(yMin, mocPoint.VerticeCoordinate(m).y_);
+					xMax = max(xMax, mocPoint.VerticeCoordinate(m).x_);
+					yMax = max(yMax, mocPoint.VerticeCoordinate(m).y_);
+				}
+			}
+			//栅元左下角右上角坐标
+			m_vAssemblyType[i].v_Cell[j].vCell_LeftDownPoint = Vector(xMin, yMin,0);
+			m_vAssemblyType[i].v_Cell[j].vCell_RightUpPoint = Vector(xMax, yMax, 0);
+
+			xAssembly_Min = min(xAssembly_Min, xMin);
+			yAssembly_Min = min(yAssembly_Min,yMin);
+			xAssembly_Max = max(xAssembly_Max, xMax);
+			yAssembly_Max = max(yAssembly_Max, yMax);
+		}
+		m_vAssemblyType[i].vAssemblyType_LeftDownPoint = Vector(xAssembly_Min, yAssembly_Min, 0);
+		m_vAssemblyType[i].vAssemblyType_RightUpPoint = Vector(xAssembly_Max, yAssembly_Max, 0);
+	}
+	//初始化组件指针
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		m_vAssembly[i].pAssembly_type = GetAssemblyTypePointer(m_vAssembly[i].iAssemblyType);
+	}
+	//计算组件左下角坐标和右上角坐标，坐标系为以组件矩阵左下角为原点的坐标系
+	if (m_bSingleCell)
+	{
+			double xLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.x_ -
+			m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.x_;
+			double yLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.y_ -
+				m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.y_;
+			m_vAssembly[0].vAssembly_RightUpPoint.x_ = xLength;
+			m_vAssembly[0].vAssembly_RightUpPoint.y_ = yLength;
+	}
+	else
+	{
+		for (int xIndex = 0; xIndex < m_pAssemblyIndex->m_assemblyIndex.size(); xIndex++)
+		{
+			for (int yIndex = 0; yIndex < m_pAssemblyIndex->m_assemblyIndex[xIndex].size(); yIndex++)
+			{
+				int iAssemblyIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex);
+				if (xIndex == 0 && yIndex == 0)
+				{
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+				}
+				else if(xIndex == 0 && yIndex != 0)
+				{
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = 0;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ 
+						+ m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+
+				}
+				else if(xIndex != 0 && yIndex == 0)
+				{
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = 0;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ 
+						+ m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+				}
+				else
+				{
+					int iLeftPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex - 1, yIndex);
+					int iDownPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex - 1);
+
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = m_vAssembly[iLeftPreIndex].vAssembly_LeftDownPoint.x_ +
+						m_vAssembly[iLeftPreIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = m_vAssembly[iDownPreIndex].vAssembly_LeftDownPoint.y_ +
+						m_vAssembly[iDownPreIndex].pAssembly_type->yLength;
+
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ + m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ + m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+				}
 			}
 		}
 	}
-
-	std::sort(m_meshPointPtrVec.begin(), m_meshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
-		return a->PointID() < b->PointID();
-	});
+	//meshpoint 按照poinid排序
+	
+	for (int i = 0;i < m_vAssemblyType.size();i++)
+	{
+		for (int j=0;j< m_vAssemblyType[i].v_Cell.size(); j++)
+		{
+			std::sort(m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.begin(), m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
+				return a->PointID() < b->PointID();
+				});
+		}
+	}
+	
 }
 
 void MOCMesh::setMeshInformation(string line)
@@ -338,7 +628,7 @@ void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> 
 	}
 }
 
-void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
+void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
 {
 	string filename = "";
 	int H0 = 0, H1 = 0;
@@ -357,6 +647,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 		}
 		for (int i = 0; i < layerMeshNum; i++)
 		{
+			std::stringstream& outFile= vStreamTemperay[index0];
 			stringstream ssID;
 			stringstream ssaxialID;
 			string sID;
@@ -372,8 +663,8 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
 			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
 			
-			fileNameTransfer.push_back(filename);
-			ofstream outFile(filename);
+			//fileNameTransfer.push_back(filename);
+			//fstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
 			int ArcNumber = 0;
 			for (int j = 0; j < allMeshFaces[i].faceEdges.size(); j++)
@@ -449,7 +740,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					allMeshFaces[i].curveFaceAxisDir.push_back(allMeshFaces[i].faceEdges[j].arcAxisDir);
 				}
 			}
-			outFile.close();  //close iostream
+			//outFile.close();  //close iostream
 		}
 	}
 }
@@ -685,10 +976,9 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 	std::vector<double> powerInput;
 	while (!ifs.eof())
 	{
-		std::string line;
-		std::getline(ifs, line);
-		if (line == "") continue;
-		powerInput.push_back(std::stod(line));
+		double thisHeatPower = 0.0;
+		ifs >> thisHeatPower;
+		powerInput.push_back(thisHeatPower);
 	}
 
 	for (auto p_meshPoint : m_meshPointPtrVec)
@@ -708,6 +998,31 @@ void MOCMesh::WriteTecplotFile
 	std::ofstream ofile(fileName);
 	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
 	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		//if (i != 0)
+			//break;
+		//平移坐标,x y为组件左下角坐标，网格的坐标需要平移x y
+		double x = m_vAssembly[i].vAssembly_LeftDownPoint.x_;
+		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				if (mType != mocPoint.GetMaterialName()) continue;
+				//处理平移
+
+				//
+				mhtPolyhedron.WriteTecplotZones(ofile);
+			}
+		}
+	}
+	
+	/*
 	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
 	{
 		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
@@ -715,6 +1030,7 @@ void MOCMesh::WriteTecplotFile
 		if (mType != mocPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
 	}
+	*/
 	ofile.close();
 	return;
 }
@@ -751,6 +1067,19 @@ void MOCMesh::WriteHeatPowerTxtFile()
 	}
 	ofile.close();
 	return;
+}
+Assembly_Type* MOCMesh::GetAssemblyTypePointer(int iAssemblyType)
+{
+	for (int i = 0; i < m_vAssemblyType.size(); i++)
+	{
+		if (iAssemblyType == m_vAssemblyType[i].iAssemblyType)
+			return &m_vAssemblyType[i];
+	}
+	return nullptr;
+}
+std::tuple<int, int, int> MOCMesh::getIndex(Vector vPoint)
+{
+	return m_pAssemblyIndex->getIndex(vPoint);
 }
 
 Surface::Surface()
@@ -832,6 +1161,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 	}
 	//Sort other edges and points anticlockwise
 
+	double RoundingError0 = 1.0e-6;
 	MOCEdge presentEdge = mostLeftEdge;
 	for (int i = 1; i < face_edge_num; i++)
 	{
@@ -841,7 +1171,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 			{
 				continue;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[1];
@@ -859,7 +1189,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 				faceEdgesTemporary.erase(faceEdgesTemporary.begin() + j);
 				break;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[0];
@@ -886,7 +1216,6 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 		faceEdges[i] = edgeTemperary[i];
 	}
 }
-
 MOCEdge::MOCEdge()
 {
 	edgePoints.clear();
@@ -908,3 +1237,5 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 		sideMeshID.push_back(meshIDTransfer[i]);
 	}
 }
+
+
