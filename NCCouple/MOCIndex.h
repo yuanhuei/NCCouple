@@ -38,6 +38,7 @@ public:
 	//Constructor with a given MOC mesh
 	MOCIndex(MOCMesh&);
 	MOCIndex(std::vector<std::shared_ptr<MeshPoint>>&vMesh) :pVMeshPoint(&vMesh){};
+	MOCIndex() {};
 	//extract information from MOC mesh
 	void Initialization();
 	//estimate a tolerance

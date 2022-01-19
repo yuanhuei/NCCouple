@@ -3,7 +3,28 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include <set>
 #include "MHT_common/Vector.h"
+#include "MOCIndex.h"
+
+class CellIndex {
+
+public:
+	CellIndex(Assembly& mocAssembly) :pAssembly(&mocAssembly) {};
+	CellIndex() {};
+	~CellIndex() {};
+
+	std::vector<double> m_x;
+	std::vector<double> m_y;
+	std::vector<std::vector<int>> m_cellIndex;
+	Assembly* pAssembly = nullptr;
+	std::vector<MOCIndex> v_MocIndex;
+
+	void buildIndex();
+	int getCellIndex(Vector vPoint);
+
+
+};
 
 class AssemblyIndex {
 
@@ -23,20 +44,3 @@ public:
 	std::tuple<int, int, int> getIndex(Vector vPoint);
 };
 
-class CellIndex {
-
-public:
-	CellIndex(Assembly& mocAssembly) :pAssembly(&mocAssembly) {};
-	~CellIndex() {};
-
-	std::vector<double> m_x;
-	std::vector<double> m_y;
-	std::vector<std::vector<int>> m_cellIndex;
-	Assembly* pAssembly = nullptr;
-	std::vector<MOCIndex> v_MocIndex;
-
-	void buildIndex();
-	int getCellIndex(Vector vPoint);
-
-
-};
