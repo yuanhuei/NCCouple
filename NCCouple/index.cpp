@@ -94,7 +94,7 @@ std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 {
 	int iAssembly = getAssemblyIndex(vPoint);
 	int iCell=v_CellIndex[iAssembly].getCellIndex(vPoint);
-	int iMesh = v_CellIndex[iAssembly].v_MocIndex[iCell].GetMOCIDWithPoint(vPoint.x_, vPoint.y_, vPoint.z_);
+	int iMesh = v_CellIndex[iAssembly].getMeshID(iCell,vPoint);
 	return std::make_tuple(iAssembly, iCell, iMesh);
 }
 
