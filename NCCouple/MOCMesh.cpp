@@ -685,10 +685,9 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 	std::vector<double> powerInput;
 	while (!ifs.eof())
 	{
-		std::string line;
-		std::getline(ifs, line);
-		if (line == "") continue;
-		powerInput.push_back(std::stod(line));
+		double thisHeatPower = 0.0;
+		ifs >> thisHeatPower;
+		powerInput.push_back(thisHeatPower);
 	}
 
 	for (auto p_meshPoint : m_meshPointPtrVec)

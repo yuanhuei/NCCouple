@@ -80,11 +80,9 @@ void VTKReaderTest()
 {
 	MHTVTKReader reader("pinWR.msh");
 	std::vector<std::string> fileName;
-	fileName.push_back("UO2.vtk");
 	fileName.push_back("H2O.vtk");
 	fileName.push_back("Zr4.vtk");
 	std::vector<int> IDList;
-	IDList.push_back(2);
 	IDList.push_back(0);
 	IDList.push_back(1);
 	std::vector<std::string> fieldName;
@@ -92,7 +90,6 @@ void VTKReaderTest()
 	reader.ReadVTKFile(fileName, IDList, fieldName);
 	reader.GetFieldIO(0).WriteTecplotField("heatpower_0.plt");
 	reader.GetFieldIO(1).WriteTecplotField("heatpower_1.plt");
-	reader.GetFieldIO(2).WriteTecplotField("heatpower_2.plt");
 	return;
 }
 
