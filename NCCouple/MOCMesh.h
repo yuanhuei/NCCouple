@@ -6,7 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include <functional>
-
+#include "index.h"
 //#define nFineMesh 4
 
 extern int g_iProcessID;
@@ -26,8 +26,19 @@ typedef struct
 typedef struct
 {
 	std::vector<Cell> v_Cell;
+	int iAssemblyType;//组件类型
+	double xLength, yLength;
+}Assembly_Type;//组件结构体
+typedef struct
+{
+	Assembly_Type* pAssembly_type;
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
-}Assembly;
+	int iAssemblyID;//数据文件中的ID号
+	int iAssemblyType;//组件类型
+    //std:vector<std::vector<field>> v_field;//记录场值
+}Assembly;//组件结构体
+
+
 
 
 class MOCMeshPoint : virtual public MeshPoint
@@ -197,7 +208,10 @@ private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
 public:
-	std::vector<Assembly> m_meshAssembly;
+
+	std::vector<Assembly_Type> m_vAssemblyType;//组件类型vector 
+	std::vector<Assembly> m_vAssembly;//组件vector，
+	AssemblyIndex m_Assemblyindex;//组件索引 
 
 };
 #endif

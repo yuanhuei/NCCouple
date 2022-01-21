@@ -12,7 +12,7 @@ using namespace std;
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType) 
+MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType):m_Assemblyindex(*this)
 {
 	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
@@ -22,15 +22,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		exit(EXIT_FAILURE);
 	}
 	string line;
-	vector<string> meshMaterialNameTemperary;
-	vector<string> meshTemperatureNameTemperary;
-	vector<string> meshFaceTypeTemperary;
-	vector<string> meshFaceTemperatureNameTemperary;
-	vector<string> fileNameTemperary;
-	vector<int> meshIDTemperary;
-	int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
-	std::vector<Surface>allMeshFaces;   //all face objects
-	std::vector<MOCEdge>allEdges;    //all edge objects
+
+
+	int xDirection_Number=0, yDirection_Number=0;//x,y方向上的组件个数
+	int iNt_Assembly_index = 0;
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -55,156 +50,284 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					setAxialInformation(line);
 					break;
 				}
-				if (token == "EDGE")
+			}
+			if (token == "*Core_General ")
+			{
+				getline(infile, line);
+				outFile << line << endl;
+				stringstream stringline(line);
+				string token;
+				stringline >> token;
+				stringline >> token;
+				xDirection_Number = std::stod(token);
+				stringline >> token;
+				yDirection_Number = std::stod(token);
+				m_vAssembly.resize(xDirection_Number * yDirection_Number);
+				break;
+			}
+			if (token == "*Core_Nt_Axial_Mesh")
+			{
+				getline(infile, line);
+				outFile << line << endl;
+				setAxialInformation(line);
+				break;
+			}
+			if (token == "*Assembly_Positon_Index")
+			{
+				//
+				break;
+			}
+			if (token == "*Nt_Assembly_Layout")
+			{
+				int k = 0;
+				for (int i = 0; i < yDirection_Number; i++)
 				{
-					stringline >> token;
-					int edgeIDTemperary = stod(token);
-					string lineType;
-					string linePosition;
-					getline(infile, lineType);
-					outFile << lineType << endl;
 					getline(infile, line);
 					outFile << line << endl;
-					getline(infile, linePosition);
-					outFile << linePosition << endl;
-					setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
-					break;
-				}
-				if (token == "Mesh_no_of_each_coarse_mesh")
-				{
-					string tokenMeshId = "";
-					int out0 = 1;
-					while (out0 != 0)
+					stringstream stringline(line);
+					string token;
+					for (int j = 0; j < xDirection_Number; j++)
 					{
+						stringline >> token;
+						m_vAssembly[k++].iAssemblyType = std::stod(token);
+					}
+				}
+				break;
+			}
+			if (token == "*Nt_Assembly_Cat_Num")
+			{
+				getline(infile, line);
+				outFile << line << endl;
+				stringstream stringline(line);
+				string token;
+				stringline >> token;
+				m_vAssemblyType.resize(std::stod(token));
+				break;
+			}
+			if (token == "*Nt_Assembly")
+			{
+
+				vector<string> meshMaterialNameTemperary;
+				vector<string> meshTemperatureNameTemperary;
+				vector<string> meshFaceTypeTemperary;
+				vector<string> meshFaceTemperatureNameTemperary;
+				vector<string> fileNameTemperary;
+				vector<int> meshIDTemperary;
+				int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
+				std::vector<Surface>allMeshFaces;   //all face objects
+				std::vector<MOCEdge>allEdges;    //all edge objects
+
+				getline(infile, line);
+				outFile << line << endl;
+				stringstream stringline(line);
+				string token;
+				stringline >> token;
+				m_vAssemblyType[iNt_Assembly_index].iAssemblyType = std::stod(token);
+				std::vector<int> vNumber_of_each_coarse_mesh;
+				while (getline(infile, line))
+				{
+					stringstream stringline(line);
+					string token;
+					stringline >> token;
+					if (token == "*RECTANGULAR")
+					{
+						stringline >> token;
+						m_vAssemblyType[iNt_Assembly_index].xLength = std::stod(token);
+						stringline >> token;
+						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token);
+
+					}
+					if (token == "*Mesh_number_of_each_coarse_mesh")
+					{
+						std::streampos pos ;
+						while (getline(infile, line))
+						{
+							if (line.find("*") == std::string::npos)
+							{
+								stringstream stringline(line);
+								string token;
+								while (stringline >> token)
+								{
+									vNumber_of_each_coarse_mesh.push_back(stod(token));
+								}
+							}
+							else
+							{
+								infile.seekg(pos);
+								break;
+							}
+							pos = infile.tellg();
+						}
+					}
+					if (line.find("Mesh_no_of_each_coarse_mesh")!=std::string::npos)
+					{
+						string tokenMeshId = "";
+						int out0 = 1;
+						while (out0 != 0)
+						{
+							getline(infile, line);
+							outFile << line << endl;
+							stringstream stringlineMeshID(line);
+							while (stringlineMeshID >> tokenMeshId)
+							{
+								if (tokenMeshId == "*")
+								{
+									out0 = 0;
+									stringlineMeshID >> token;
+									break;
+								}
+								meshIDTemperary.push_back(stod(tokenMeshId));
+							}
+						}
+					}
+
+					if (line.find("EDGE")!=std::string::npos && line.find("*EDGE_")==std::string::npos)
+					{
+						stringline >> token;
+						int edgeIDTemperary = stod(token);
+						string lineType;
+						string linePosition;
+						getline(infile, lineType);
+						outFile << lineType << endl;
 						getline(infile, line);
 						outFile << line << endl;
-						stringstream stringlineMeshID(line);
-						while (stringlineMeshID >> tokenMeshId)
-						{
-							if (tokenMeshId == "*")
-							{
-								out0 = 0;
-								stringlineMeshID >> token;
-								break;
-							}
-							meshIDTemperary.push_back(stod(tokenMeshId));
-						}
+						getline(infile, linePosition);
+						outFile << linePosition << endl;
+						setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
+						break;
 					}
-				}
-				if (token == "Material_name_of_each_mesh")
-				{
-					int ID_order = 1;
-					string tokenMaterialType = "";
-					int out0 = 1;
-					while (out0 != 0)
+					if (line.find("Material_name_of_each_mesh")!=std::string::npos)
 					{
-						getline(infile, line);
-						stringstream stringlineMaterialType(line);
-						while (stringlineMaterialType >> tokenMaterialType)
+						int ID_order = 1;
+						string tokenMaterialType = "";
+						int out0 = 1;
+						while (out0 != 0)
 						{
-							if (tokenMaterialType == "*")
+							getline(infile, line);
+							stringstream stringlineMaterialType(line);
+							while (stringlineMaterialType >> tokenMaterialType)
 							{
-								out0 = 0;
-								stringlineMaterialType >> token;
-								break;
+								if (tokenMaterialType == "*")
+								{
+									out0 = 0;
+									stringlineMaterialType >> token;
+									break;
+								}
+								meshMaterialNameTemperary.push_back(tokenMaterialType);
+								if (tokenMaterialType == "H2O")
+									outFile << tokenMaterialType << "_" << ID_order << "  ";
+								else
+									outFile << tokenMaterialType << "  ";
+								ID_order++;
 							}
-							meshMaterialNameTemperary.push_back(tokenMaterialType);
-							if (tokenMaterialType == "H2O")
-								outFile << tokenMaterialType << "_" << ID_order << "  ";
+							if (out0 != 0)
+							{
+								outFile << endl;
+							}
 							else
-								outFile << tokenMaterialType << "  ";
-							ID_order++;
-						}
-						if (out0 != 0)
-						{
-							outFile << endl;
-						}
-						else
-						{
-							outFile << line << endl;
-						}
-					}
-				}
-				if (token == "Temperature_name_of_each_mesh")
-				{
-					int ID_order = 1;
-					string tokenTemperatureName = "";
-					int out0 = 1;
-					while (out0 != 0)
-					{
-						getline(infile, line);
-						stringstream stringlineTemperatureName(line);
-						while (stringlineTemperatureName >> tokenTemperatureName)
-						{
-							if (tokenTemperatureName == "*")
 							{
-								out0 = 0;
-								stringlineTemperatureName >> token;
-								break;
+								outFile << line << endl;
 							}
-							meshTemperatureNameTemperary.push_back(tokenTemperatureName);
-							outFile << tokenTemperatureName << "_" << ID_order << "  ";
-							ID_order++;
-						}
-						if (out0 != 0)
-						{
-							outFile << endl;
-						}
-						else
-						{
-							outFile << line << endl;
 						}
 					}
+					if (line.find("Temperature_name_of_each_mesh")!=std::string::npos)
+					{
+						int ID_order = 1;
+						string tokenTemperatureName = "";
+						int out0 = 1;
+						while (out0 != 0)
+						{
+							getline(infile, line);
+							stringstream stringlineTemperatureName(line);
+							while (stringlineTemperatureName >> tokenTemperatureName)
+							{
+								if (tokenTemperatureName == "*")
+								{
+									out0 = 0;
+									stringlineTemperatureName >> token;
+									break;
+								}
+								meshTemperatureNameTemperary.push_back(tokenTemperatureName);
+								outFile << tokenTemperatureName << "_" << ID_order << "  ";
+								ID_order++;
+							}
+							if (out0 != 0)
+							{
+								outFile << endl;
+							}
+							else
+							{
+								outFile << line << endl;
+							}
+						}
+					}
+
 				}
-			}
+				for (int j = 0; j < axialNum; j++)
+				{
+					for (int i = 0; i < layerMeshNum; i++)
+					{
+						int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
+						meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+						meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
+					}
+				}
+
+				setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
+				ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
+				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
+
+				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
+				iNt_Assembly_index++;
+				int iTotalMeshNum = 0;
+				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
+				{
+					iTotalMeshNum = iTotalMeshNum + vNumber_of_each_coarse_mesh[i];
+				}
+
+				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
+				{
+					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].meshPointPtrVec.resize(axialNum* vNumber_of_each_coarse_mesh[k]);
+					for (int j = 0; j < axialNum; j++)
+					{
+						for (int i = 0; i < vNumber_of_each_coarse_mesh[k]; i++)
+						{
+							int meshIDtemp_ = meshIDTemperary[i] + j * iTotalMeshNum;
+							int index = i + j * vNumber_of_each_coarse_mesh[k];
+
+							if (kernelType == MeshKernelType::MHT_KERNEL) {
+								Vector point, norm;
+								for (auto& edge : allMeshFaces[i].faceEdges) {
+									if (edge.edgeType == 3) {
+										point = edge.arcCenter;
+										norm = edge.arcAxisDir;
+										break;
+									}
+								}
+								std::ifstream ifs(fileNameTemperary[index]);
+								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
+									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
+									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
+							}
+
+
+							const char* removeFile = fileNameTemperary[index].data();
+							if (remove(removeFile)) //delete file
+							{
+								cout << "delete file fail" << endl;
+							}
+						}
+					}
+
+				}
+
+
+			}	
 			break;
 		}
 	}
 	outFile.close();
 
-	for (int j = 0; j < axialNum; j++)
-	{
-		for (int i = 0; i < layerMeshNum; i++)
-		{
-			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
-			meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
-			meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
-		}
-	}
-
-	setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
-	ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
-	m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-	for (int j = 0; j < axialNum; j++)
-	{
-		for (int i = 0; i < layerMeshNum; i++)
-		{
-			int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum;
-			int index = i + j * layerMeshNum;
-
-			if (kernelType == MeshKernelType::MHT_KERNEL) {
-				Vector point, norm;
-				for (auto& edge : allMeshFaces[i].faceEdges) {
-					if (edge.edgeType == 3) {
-						point = edge.arcCenter;
-						norm = edge.arcAxisDir;
-						break;
-					}
-				}
-				std::ifstream ifs(fileNameTemperary[index]);
-				m_meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
-					meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
-					meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
-			}
-
-
-			const char* removeFile = fileNameTemperary[index].data();
-			if (remove(removeFile)) //delete file
-			{
-				cout << "delete file fail" << endl;
-			}
-		}
-	}
 
 	std::sort(m_meshPointPtrVec.begin(), m_meshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
 		return a->PointID() < b->PointID();

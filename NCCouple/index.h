@@ -38,10 +38,11 @@ public:
 private:
 	std::vector<double> m_x;
 	std::vector<double> m_y;
-	std::vector<std::vector<int>> m_assemblyIndex;
+	
 	MOCMesh* pMOCMesh = nullptr;
 	std::vector<CellIndex> v_CellIndex;
 public:
+	std::vector<std::vector<int>> m_assemblyIndex;
 	void buildIndex();
 	int getAssemblyIndex(Vector vPoint);
 	//根据坐标获取燃料组件，栅元，以及网格的id
