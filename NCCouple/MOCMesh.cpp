@@ -28,7 +28,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 	int xDirection_Number=0, yDirection_Number=0;//x,y方向上的组件个数
 	int iNt_Assembly_index = 0;
-	std::streampos strpos;
+	std::streampos strpos, assembly_pos;
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -97,12 +97,16 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 			if (token == "*Nt_Assembly_Layout")
 			{
 				int k = 0;
+				m_pAssemblyIndex->m_assemblyIndex.resize(xDirection_Number);
+				for (int i = 0; i < xDirection_Number; i++)
+					m_pAssemblyIndex->m_assemblyIndex[i].resize(yDirection_Number);
 				for (int i = 0; i < yDirection_Number; i++)
 				{
 					getline(infile, line);
 					outFile << line << endl;
 					stringstream stringnumline(line);
 					string tokennum;
+					
 					for (int j = 0; j < xDirection_Number; j++)
 					{
 						stringnumline >> tokennum;
@@ -160,6 +164,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					if (token == "*RECTANGULAR")
 					{
 						stringline >> token;
+						stringline >> token;
 						m_vAssemblyType[iNt_Assembly_index].xLength = std::stod(token);
 						stringline >> token;
 						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token);
@@ -181,27 +186,30 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 							}
 							else
 							{
-								infile.seekg(pos);
+								//infile.seekg(pos);
 								break;
 							}
-							pos = infile.tellg();
+							//pos = infile.tellg();
 						}
 					}
 					if (line.find("Mesh_no_of_each_coarse_mesh")!=std::string::npos)
 					{
 						string tokenMeshId = "";
 						int out0 = 1;
+						std::streampos pos;
 						while (out0 != 0)
 						{
+							pos = infile.tellg();
 							getline(infile, line);
 							outFile << line << endl;
 							stringstream stringlineMeshID(line);
 							while (stringlineMeshID >> tokenMeshId)
 							{
-								if (tokenMeshId == "*")
+								if (tokenMeshId.find("*") != std::string::npos)
 								{
 									out0 = 0;
 									stringlineMeshID >> token;
+									infile.seekg(pos);
 									break;
 								}
 								meshIDTemperary.push_back(stod(tokenMeshId));
@@ -239,14 +247,17 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						int out0 = 1;
 						while (out0 != 0)
 						{
+							std::streampos Material_pos;
+							Material_pos = infile.tellg();
 							getline(infile, line);
 							stringstream stringlineMaterialType(line);
 							while (stringlineMaterialType >> tokenMaterialType)
 							{
-								if (tokenMaterialType == "*")
+								if (tokenMaterialType.find("*") != std::string::npos)
 								{
 									out0 = 0;
 									stringlineMaterialType >> token;
+									infile.seekg(Material_pos);
 									break;
 								}
 								meshMaterialNameTemperary.push_back(tokenMaterialType);
@@ -277,7 +288,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 							stringstream stringlineTemperatureName(line);
 							while (stringlineTemperatureName >> tokenTemperatureName)
 							{
-								if (tokenTemperatureName == "*")
+								if (tokenTemperatureName.find("*") !=std::string::npos)
 								{
 									out0 = 0;
 									stringlineTemperatureName >> token;
@@ -297,8 +308,20 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 							}
 						}
 					}
+					if (line.find("*Nt_Assembly") != std::string::npos)
+					{
+						infile.seekg(assembly_pos);
+						break;
+					}
+					assembly_pos = infile.tellg();
 
 				}
+				int iTotalMeshNum = 0;
+				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
+				{
+					iTotalMeshNum = iTotalMeshNum + vNumber_of_each_coarse_mesh[i];
+				}
+				layerMeshNum = iTotalMeshNum;
 				for (int j = 0; j < axialNum; j++)
 				{
 					for (int i = 0; i < layerMeshNum; i++)
@@ -314,11 +337,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-				int iTotalMeshNum = 0;
-				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
-				{
-					iTotalMeshNum = iTotalMeshNum + vNumber_of_each_coarse_mesh[i];
-				}
+
 
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
 				{
