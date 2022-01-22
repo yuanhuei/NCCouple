@@ -2,6 +2,8 @@
 #include<iterator>
 #include "Logger.h"
 #include "./MHT_common/SystemControl.h"
+#include "MOCMesh.h"
+#include "MOCIndex.h"
 //get  index in x vector according to x
 int getindex(double x, std::vector<double>&v_X)
 {
@@ -47,7 +49,9 @@ AssemblyIndex::AssemblyIndex(MOCMesh& mocMesh):pMOCMesh(&mocMesh)
 
 void AssemblyIndex::buildIndex()
 {
-	std::vector<Assembly>& v_Assembly = pMOCMesh->m_meshAssembly;
+	
+	std::vector<Assembly>& v_Assembly = pMOCMesh->m_vAssembly;
+	
 	//initialize m_x,m_y
 	std::vector<Vector> vLeftDownPoint, vRightUpPoint;
 	vLeftDownPoint.resize(v_Assembly.size());
@@ -58,7 +62,7 @@ void AssemblyIndex::buildIndex()
 		vRightUpPoint[i] = v_Assembly[i].vAssembly_RightUpPoint;		
 	}
 	getOrderXY(vLeftDownPoint, vRightUpPoint, m_x, m_y);
-
+	/*
 
 	//m_assemblyIndex初始化为-1,代表无燃料组件在里面
 	m_assemblyIndex.resize(m_x.size());
@@ -75,6 +79,7 @@ void AssemblyIndex::buildIndex()
 		m_assemblyIndex[xIndex][yIndex] = i;
 
 	}
+	*/
 	//call v_CellIndex buildindex
 	v_CellIndex.resize(v_Assembly.size());
 	for (int i =0 ; i < v_Assembly.size(); i++)
@@ -101,7 +106,7 @@ std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 
 void CellIndex::buildIndex()
 {
-	std::vector<Cell>& v_Cell = pAssembly->v_Cell;
+	std::vector<Cell>& v_Cell = pAssembly->pAssembly_type->v_Cell;
 	std::vector<Vector> vLeftDownPoint, vRightUpPoint;
 	vLeftDownPoint.resize(v_Cell.size());
 	vRightUpPoint.resize(v_Cell.size());
@@ -132,8 +137,7 @@ void CellIndex::buildIndex()
 	v_MocIndex.resize(v_Cell.size());
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{
-
-		v_MocIndex[i] = MOCIndex(v_Cell[i].meshPointPtrVec);
+		v_MocIndex[i] = MOCIndex(v_Cell[i].vMeshPointPtrVec);
 		v_MocIndex[i].BuildUpIndex();
 	}
 }
@@ -143,4 +147,9 @@ int CellIndex::getCellIndex(Vector vPoint)
 	int yIndex = getindex(vPoint.y_, m_y);
 	return m_cellIndex[xIndex][yIndex];
 
+}
+
+int CellIndex::getMeshID(int iCellID, Vector vPoint)
+{
+	return v_MocIndex[iCellID].GetMOCIDWithPoint(vPoint.x_, vPoint.y_, vPoint.z_);
 }

@@ -6,14 +6,16 @@
 #include <regex>
 #include <unordered_set>
 #include "Logger.h"
+#include "index.h"
 using namespace std;
 
 #define PI 3.14159265358979323846
 #define NA 6.022e23
 #define BARN 1.0e-24
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType):m_Assemblyindex(*this)
+MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
+	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
 	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
@@ -26,6 +28,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 	int xDirection_Number=0, yDirection_Number=0;//x,y方向上的组件个数
 	int iNt_Assembly_index = 0;
+	std::streampos strpos;
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -48,11 +51,25 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					getline(infile, line);
 					outFile << line << endl;
 					setAxialInformation(line);
+
+					m_vAssemblyType.resize(1);
+					m_vAssemblyType[0].iAssemblyType = 1;
+					m_vAssembly.resize(1);
+					m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					m_vAssembly[0].iAssemblyType = 1;
+
 					break;
 				}
+				if (token == "EDGE")
+				{
+					//strpos = infile.tellg();
+					infile.seekg(strpos);
+					goto loop;
+				}
 			}
-			if (token == "*Core_General ")
+			if (token == "*Core_General")
 			{
+				m_bSingleCell = false;
 				getline(infile, line);
 				outFile << line << endl;
 				stringstream stringline(line);
@@ -84,12 +101,14 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				{
 					getline(infile, line);
 					outFile << line << endl;
-					stringstream stringline(line);
-					string token;
+					stringstream stringnumline(line);
+					string tokennum;
 					for (int j = 0; j < xDirection_Number; j++)
 					{
-						stringline >> token;
-						m_vAssembly[k++].iAssemblyType = std::stod(token);
+						stringnumline >> tokennum;
+						m_vAssembly[k].iAssemblyType = std::stod(tokennum);
+						m_pAssemblyIndex->m_assemblyIndex[j][yDirection_Number-i-1] = k;
+						k++;
 					}
 				}
 				break;
@@ -106,7 +125,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 			}
 			if (token == "*Nt_Assembly")
 			{
-
+				loop:
 				vector<string> meshMaterialNameTemperary;
 				vector<string> meshTemperatureNameTemperary;
 				vector<string> meshFaceTypeTemperary;
@@ -116,14 +135,23 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
 				std::vector<Surface>allMeshFaces;   //all face objects
 				std::vector<MOCEdge>allEdges;    //all edge objects
-
-				getline(infile, line);
-				outFile << line << endl;
-				stringstream stringline(line);
-				string token;
-				stringline >> token;
-				m_vAssemblyType[iNt_Assembly_index].iAssemblyType = std::stod(token);
 				std::vector<int> vNumber_of_each_coarse_mesh;
+
+				if (!m_bSingleCell)
+				{
+					getline(infile, line);
+					outFile << line << endl;
+					stringstream stringline(line);
+					string token;
+					stringline >> token;
+					m_vAssemblyType[iNt_Assembly_index].iAssemblyType = std::stod(token);
+				}
+				else
+				{
+					vNumber_of_each_coarse_mesh.resize(1);
+					vNumber_of_each_coarse_mesh[0] = layerMeshNum;
+				}
+
 				while (getline(infile, line))
 				{
 					stringstream stringline(line);
@@ -137,7 +165,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token);
 
 					}
-					if (token == "*Mesh_number_of_each_coarse_mesh")
+					if (token == "*Mesh_number_of_each_coarse_mesh")//多棒需要解析，单棒不需要
 					{
 						std::streampos pos ;
 						while (getline(infile, line))
@@ -183,7 +211,15 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 					if (line.find("EDGE")!=std::string::npos && line.find("*EDGE_")==std::string::npos)
 					{
-						stringline >> token;
+						if (m_bSingleCell)
+						{
+							stringline >> token;
+							stringline >> token;
+						}
+						else
+						{
+							stringline >> token;
+						}
 						int edgeIDTemperary = stod(token);
 						string lineType;
 						string linePosition;
@@ -194,7 +230,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						getline(infile, linePosition);
 						outFile << linePosition << endl;
 						setEdgeInformation(lineType, linePosition, edgeIDTemperary, allEdges, nFineMesh);
-						break;
+						continue;
 					}
 					if (line.find("Material_name_of_each_mesh")!=std::string::npos)
 					{
@@ -278,7 +314,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-				iNt_Assembly_index++;
 				int iTotalMeshNum = 0;
 				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
 				{
@@ -287,7 +322,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
 				{
-					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].meshPointPtrVec.resize(axialNum* vNumber_of_each_coarse_mesh[k]);
+					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec.resize(axialNum* vNumber_of_each_coarse_mesh[k]);
 					for (int j = 0; j < axialNum; j++)
 					{
 						for (int i = 0; i < vNumber_of_each_coarse_mesh[k]; i++)
@@ -305,7 +340,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									}
 								}
 								std::ifstream ifs(fileNameTemperary[index]);
-								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].meshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
+								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
 									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
 							}
@@ -321,17 +356,102 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				}
 
-
+				iNt_Assembly_index++;
 			}	
 			break;
 		}
+		strpos = infile.tellg();
 	}
 	outFile.close();
+	//计算组件类型左下角坐标
+	for(int i=0;i<m_vAssemblyType.size();i++)
+	{
+		double xAssembly_Min = 10000, yAssembly_Min = 10000;// xAssembly_Max = -10000, yAssembly_Max = -10000;
+		for (int j=0;j < m_vAssemblyType[i].v_Cell.size(); j++)
+		{
+			double xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000;
+			for (int k = 0; k < m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				const MeshPoint& mocPoint = *m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec[k];
 
+				for (int m = 0; m < mocPoint.VerticesNum(); m++)
+				{
+					xMin = min(xMin, mocPoint.VerticeCoordinate(m).x_);
+					yMin = min(yMin, mocPoint.VerticeCoordinate(m).y_);
+					xMax = max(xMax, mocPoint.VerticeCoordinate(m).x_);
+					yMax = max(yMax, mocPoint.VerticeCoordinate(m).y_);
 
-	std::sort(m_meshPointPtrVec.begin(), m_meshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
-		return a->PointID() < b->PointID();
-	});
+				}
+			}
+			m_vAssemblyType[i].v_Cell[j].vCell_LeftDownPoint = Vector(xMin, yMin,0);
+			m_vAssemblyType[i].v_Cell[j].vCell_RightUpPoint = Vector(xMax, yMax, 0);
+
+			xAssembly_Min = min(xAssembly_Min, xMin);
+			yAssembly_Min = min(yAssembly_Min,yMin);
+			//xAssembly_Max = max(xAssembly_Max, xMax);
+			//yAssembly_Max = max(yAssembly_Max, yMax);
+		}
+		m_vAssemblyType[i].xMin = yAssembly_Min;
+		m_vAssemblyType[i].yMin = yAssembly_Min;
+	}
+	//初始化指针
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		m_vAssembly[i].pAssembly_type = GetAssemblyTypePointer(m_vAssembly[i].iAssemblyType);
+	}
+	//计算组件左下角坐标和右上角坐标
+	if (m_bSingleCell)
+	{
+			double xLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.x_ -
+			m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.x_;
+			double yLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.y_ -
+				m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.y_;
+			m_vAssembly[0].vAssembly_RightUpPoint.x_ = xLength;
+			m_vAssembly[0].vAssembly_RightUpPoint.y_ = yLength;
+
+	}
+	else
+	{
+		for (int xIndex = 0; xIndex < m_pAssemblyIndex->m_assemblyIndex.size(); xIndex++)
+		{
+
+			for (int yIndex = 0; yIndex < m_pAssemblyIndex->m_assemblyIndex[xIndex].size(); yIndex++)
+			{
+				int iAssemblyIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex);
+				if (xIndex == 0 && yIndex == 0)
+				{
+
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+				}
+				else
+				{
+					int iLeftPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex - 1, yIndex);
+					int iDownPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex - 1);
+
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = m_vAssembly[iLeftPreIndex].vAssembly_LeftDownPoint.x_ +
+						m_vAssembly[iLeftPreIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = m_vAssembly[iDownPreIndex].vAssembly_LeftDownPoint.y_ +
+						m_vAssembly[iDownPreIndex].pAssembly_type->yLength;
+
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ + m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ + m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+				}
+			}
+		}
+
+	}
+	//按照poinid排序
+	
+	for (int i = 0;i < m_vAssemblyType.size();i++)
+	{
+		for (int j=0;j< m_vAssemblyType[i].v_Cell.size(); j++)
+		{
+			std::sort(m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.begin(), m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.end(), [](std::shared_ptr<MeshPoint> a, std::shared_ptr<MeshPoint> b) {
+				return a->PointID() < b->PointID();
+				});
+		}
+	}
+	
 }
 
 void MOCMesh::setMeshInformation(string line)
@@ -830,6 +950,33 @@ void MOCMesh::WriteTecplotFile
 	std::ofstream ofile(fileName);
 	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
 	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		if (i != 0)
+			break;
+		//平移坐标,x y为组件左下角坐标，网格的坐标需要平移x y
+		double x = m_vAssembly[i].vAssembly_LeftDownPoint.x_;
+		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			if (j != 0)
+				break;
+			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				if (mType != mocPoint.GetMaterialName()) continue;
+				//处理平移
+
+				//
+				mhtPolyhedron.WriteTecplotZones(ofile);
+			}
+		}
+	}
+	
+	/*
 	for (int i = 0; i < this->m_meshPointPtrVec.size(); i++)
 	{
 		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_meshPointPtrVec[i]);
@@ -837,6 +984,7 @@ void MOCMesh::WriteTecplotFile
 		if (mType != mocPoint.GetMaterialName()) continue;
 		mhtPolyhedron.WriteTecplotZones(ofile);
 	}
+	*/
 	ofile.close();
 	return;
 }
@@ -874,7 +1022,15 @@ void MOCMesh::WriteHeatPowerTxtFile()
 	ofile.close();
 	return;
 }
-
+Assembly_Type* MOCMesh::GetAssemblyTypePointer(int iAssemblyType)
+{
+	for (int i = 0; i < m_vAssemblyType.size(); i++)
+	{
+		if (iAssemblyType == m_vAssemblyType[i].iAssemblyType)
+			return &m_vAssemblyType[i];
+	}
+	return nullptr;
+}
 Surface::Surface()
 {
 	facePointPosition.clear();
@@ -1030,3 +1186,4 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 		sideMeshID.push_back(meshIDTransfer[i]);
 	}
 }
+

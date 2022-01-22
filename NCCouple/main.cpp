@@ -31,7 +31,9 @@ int g_iProcessID = 0;
 void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
-	MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh("c5g72l.apl", "c5g7.inp", MeshKernelType::MHT_KERNEL);
+
+	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
 	mocMesh.WriteTecplotFile("H2O", "h2O.plt");
 	mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	mocMesh.WriteTecplotFile("UO2", "u2o.plt");

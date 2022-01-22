@@ -1,12 +1,13 @@
 #ifndef MOCINDEX_HEADER
 #define MOCINDEX_HEADER
 
-#include "MOCMesh.h"
 #include <vector>
 #include <tuple>
 #include <string>
 #include "MHT_common/Vector.h"
-
+//#include "MOCMesh.h"
+class MOCMesh;
+class MeshPoint;
 //An index build up for fast seaching when building up Solver
 class MOCIndex
 {

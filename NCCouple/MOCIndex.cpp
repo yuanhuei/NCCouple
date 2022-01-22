@@ -1,6 +1,7 @@
 #include "MOCIndex.h"
 #include "Logger.h"
 #include "./MHT_common/SystemControl.h"
+#include "MOCMesh.h"
 
 MOCIndex::MOCIndex(MOCMesh& mocMesh)
 	:pMOCMesh(&mocMesh)

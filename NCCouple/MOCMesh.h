@@ -6,9 +6,9 @@
 #include <array>
 #include <unordered_map>
 #include <functional>
-#include "index.h"
+//#include "index.h"
 //#define nFineMesh 4
-
+class AssemblyIndex;
 extern int g_iProcessID;
 //enum class MaterialType {
 //	H2O,
@@ -17,26 +17,29 @@ extern int g_iProcessID;
 //	Zr4,
 //	UNKNOWN
 //};
-typedef struct
-{
-	std::vector<std::shared_ptr<MeshPoint>> meshPointPtrVec; //栅元网格信息
-	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
 
-}Cell;
-typedef struct
+struct Cell
+{
+	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //栅元网格信息
+	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
+};
+ struct Assembly_Type
 {
 	std::vector<Cell> v_Cell;
 	int iAssemblyType;//组件类型
-	double xLength, yLength;
-}Assembly_Type;//组件结构体
-typedef struct
+	double xLength, yLength;//长宽
+	double xMin, yMin;//左下角坐标
+	//Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
+
+};//组件类型结构体
+struct Assembly
 {
 	Assembly_Type* pAssembly_type;
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
 	int iAssemblyID;//数据文件中的ID号
 	int iAssemblyType;//组件类型
     //std:vector<std::vector<field>> v_field;//记录场值
-}Assembly;//组件结构体
+};//组件结构体
 
 
 
@@ -158,6 +161,7 @@ public:
 public:
 	MOCMesh() = delete;
 	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType);
+
 	void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void InitMOCFromInputFile(std::string inputFileName);
 	void InitMOCHeatPower(std::string heatPowerFileName);
@@ -207,11 +211,16 @@ private:
 private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
-public:
 
+public:
 	std::vector<Assembly_Type> m_vAssemblyType;//组件类型vector 
 	std::vector<Assembly> m_vAssembly;//组件vector，
-	AssemblyIndex m_Assemblyindex;//组件索引 
+	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//组件索引 
+	bool m_bSingleCell = true;//单棒
+
+private:
+	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
+
 
 };
 #endif
