@@ -248,7 +248,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						while (out0 != 0)
 						{
 							std::streampos Material_pos;
-							Material_pos = infile.tellg();
+							//Material_pos = infile.tellg();
 							getline(infile, line);
 							stringstream stringlineMaterialType(line);
 							while (stringlineMaterialType >> tokenMaterialType)
@@ -257,7 +257,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 								{
 									out0 = 0;
 									stringlineMaterialType >> token;
-									infile.seekg(Material_pos);
+									//infile.seekg(Material_pos);
 									break;
 								}
 								meshMaterialNameTemperary.push_back(tokenMaterialType);
@@ -334,11 +334,11 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
 				ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
-				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 
+				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
 
-
+				//按照栅元组织生成meshpoint
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
 				{
 					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec.resize(axialNum* vNumber_of_each_coarse_mesh[k]);
