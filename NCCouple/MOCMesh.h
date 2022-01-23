@@ -28,8 +28,7 @@ struct Cell
 	std::vector<Cell> v_Cell;
 	int iAssemblyType;//组件类型
 	double xLength, yLength;//长宽
-	double xMin, yMin;//左下角坐标
-	//Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
+	Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
 
 };//组件类型结构体
 struct Assembly
@@ -220,6 +219,7 @@ public:
 
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
+	void InitAssembly();
 
 
 };

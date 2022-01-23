@@ -22,7 +22,7 @@ private:
 
 	std::vector<std::vector<int>> m_cellIndex;
 	Assembly* pAssembly = nullptr;
-	std::vector<MOCIndex> v_MocIndex;
+	std::vector<std::shared_ptr<MOCIndex>> v_MocIndex;
 
 public:
 	void buildIndex();
@@ -39,7 +39,7 @@ public:
 private:
 
 	MOCMesh* pMOCMesh = nullptr;
-	std::vector<CellIndex> v_CellIndex;
+	std::vector<std::shared_ptr<CellIndex>> v_CellIndex;
 public:
 	std::vector<double> m_x;
 	std::vector<double> m_y;

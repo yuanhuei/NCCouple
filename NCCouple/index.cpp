@@ -84,8 +84,8 @@ void AssemblyIndex::buildIndex()
 	v_CellIndex.resize(v_Assembly.size());
 	for (int i =0 ; i < v_Assembly.size(); i++)
 	{
-		v_CellIndex[i] = CellIndex(v_Assembly[i]);
-		v_CellIndex[i].buildIndex();
+		v_CellIndex[i] = std::make_shared<CellIndex>(v_Assembly[i]);
+		v_CellIndex[i]->buildIndex();
 	}
 }
 
@@ -98,8 +98,11 @@ int AssemblyIndex::getAssemblyIndex(Vector vPoint)
 std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 {
 	int iAssembly = getAssemblyIndex(vPoint);
-	int iCell=v_CellIndex[iAssembly].getCellIndex(vPoint);
-	int iMesh = v_CellIndex[iAssembly].getMeshID(iCell,vPoint);
+	//坐标需要经过两次转换
+	Vector vPoin_on_Assembly = vPoint - pMOCMesh->m_vAssembly[iAssembly].vAssembly_LeftDownPoint
+		+pMOCMesh->m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint;
+	int iCell=v_CellIndex[iAssembly]->getCellIndex(vPoin_on_Assembly);
+	int iMesh = v_CellIndex[iAssembly]->getMeshID(iCell, vPoin_on_Assembly);
 	return std::make_tuple(iAssembly, iCell, iMesh);
 }
 
@@ -137,8 +140,8 @@ void CellIndex::buildIndex()
 	v_MocIndex.resize(v_Cell.size());
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{
-		v_MocIndex[i] = MOCIndex(v_Cell[i].vMeshPointPtrVec);
-		v_MocIndex[i].BuildUpIndex();
+		v_MocIndex[i] = std::make_shared<MOCIndex>(v_Cell[i].vMeshPointPtrVec);
+		v_MocIndex[i]->BuildUpIndex();
 	}
 }
 int CellIndex::getCellIndex(Vector vPoint)
@@ -151,5 +154,5 @@ int CellIndex::getCellIndex(Vector vPoint)
 
 int CellIndex::getMeshID(int iCellID, Vector vPoint)
 {
-	return v_MocIndex[iCellID].GetMOCIDWithPoint(vPoint.x_, vPoint.y_, vPoint.z_);
+	return v_MocIndex[iCellID]->GetMOCIDWithPoint(vPoint.x_, vPoint.y_, vPoint.z_);
 }
