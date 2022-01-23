@@ -339,15 +339,18 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
 
 				//按照栅元组织生成meshpoint
+				int iMeshID_index = 0;
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
 				{
 					m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec.resize(axialNum* vNumber_of_each_coarse_mesh[k]);
+					int iMeshpointIndex = 0;
 					for (int j = 0; j < axialNum; j++)
 					{
 						for (int i = 0; i < vNumber_of_each_coarse_mesh[k]; i++)
 						{
-							int meshIDtemp_ = meshIDTemperary[i] + j * iTotalMeshNum;
-							int index = i + j * vNumber_of_each_coarse_mesh[k];
+							int meshIDtemp_ = meshIDTemperary[iMeshID_index+i] + j * layerMeshNum;
+							//int iMeshpointIndex = i + j * vNumber_of_each_coarse_mesh[k];
+							int index = iMeshID_index+i+ j * layerMeshNum;
 
 							if (kernelType == MeshKernelType::MHT_KERNEL) {
 								Vector point, norm;
@@ -359,7 +362,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									}
 								}
 								std::ifstream ifs(fileNameTemperary[index]);
-								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[index] = std::make_shared<MHTMocMeshPoint>(
+								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
 									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
 							}
@@ -372,9 +375,8 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 							}
 						}
 					}
-
+					iMeshID_index = iMeshID_index + vNumber_of_each_coarse_mesh[k];
 				}
-
 				iNt_Assembly_index++;
 			}	
 			break;
