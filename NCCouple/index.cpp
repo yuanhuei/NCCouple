@@ -49,8 +49,8 @@ AssemblyIndex::AssemblyIndex(MOCMesh& mocMesh):pMOCMesh(&mocMesh)
 
 void AssemblyIndex::buildIndex()
 {
-	
 	std::vector<Assembly>& v_Assembly = pMOCMesh->m_vAssembly;
+	std::vector<Assembly_Type>& v_AssemblyType = pMOCMesh->m_vAssemblyType;
 	
 	//initialize m_x,m_y
 	std::vector<Vector> vLeftDownPoint, vRightUpPoint;
@@ -81,10 +81,10 @@ void AssemblyIndex::buildIndex()
 	}
 	*/
 	//call v_CellIndex buildindex
-	v_CellIndex.resize(v_Assembly.size());
-	for (int i =0 ; i < v_Assembly.size(); i++)
+	v_CellIndex.resize(v_AssemblyType.size());
+	for (int i =0 ; i < v_AssemblyType.size(); i++)
 	{
-		v_CellIndex[i] = std::make_shared<CellIndex>(v_Assembly[i]);
+		v_CellIndex[i] = std::make_shared<CellIndex>(v_AssemblyType[i], pMOCMesh);
 		v_CellIndex[i]->buildIndex();
 	}
 }
@@ -97,19 +97,33 @@ int AssemblyIndex::getAssemblyIndex(Vector vPoint)
 }
 std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 {
-	int iAssembly = getAssemblyIndex(vPoint);
+	int iAssemblyIndex = getAssemblyIndex(vPoint);
+	int iAsssemblyTypeIndex;
+	for (int i = 0; i < v_CellIndex.size(); i++)
+	{
+		if (v_CellIndex[i]->iAssembly_type == pMOCMesh->m_vAssembly[iAssemblyIndex].iAssemblyType)
+		{
+			iAsssemblyTypeIndex = i;
+			break;
+		}
+		else
+		{
+			Logger::LogError("wrong iAssemblyType ");
+			exit(EXIT_FAILURE);
+		}
+	}
 	//坐标需要经过两次转换
-	Vector vPoin_on_Assembly = vPoint - pMOCMesh->m_vAssembly[iAssembly].vAssembly_LeftDownPoint
-		+pMOCMesh->m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint;
-	int iCell=v_CellIndex[iAssembly]->getCellIndex(vPoin_on_Assembly);
-	int iMesh = v_CellIndex[iAssembly]->getMeshID(iCell, vPoin_on_Assembly);
-	return std::make_tuple(iAssembly, iCell, iMesh);
+	Vector vPoin_on_AssemblyType = vPoint - pMOCMesh->m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint
+		+pMOCMesh->m_vAssembly[iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint;
+	int iCell=v_CellIndex[iAsssemblyTypeIndex]->getCellIndex(vPoin_on_AssemblyType);
+	int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType);
+	return std::make_tuple(iAssemblyIndex, iCell, iMesh);
 }
 
 
 void CellIndex::buildIndex()
 {
-	std::vector<Cell>& v_Cell = pAssembly->pAssembly_type->v_Cell;
+	std::vector<Cell>& v_Cell = pAssemblyType->v_Cell;
 	std::vector<Vector> vLeftDownPoint, vRightUpPoint;
 	vLeftDownPoint.resize(v_Cell.size());
 	vRightUpPoint.resize(v_Cell.size());
@@ -121,28 +135,33 @@ void CellIndex::buildIndex()
 	}
 	getOrderXY(vLeftDownPoint, vRightUpPoint, m_x, m_y);
 
-	m_cellIndex.resize(m_x.size());
-	int ySize = m_y.size();
-	for (int i = 0; i < m_x.size(); i++)
+	m_cellIndex.resize(m_x.size()-1);
+	int ySize = m_y.size()-1;
+	for (int i = 0; i < m_x.size()-1; i++)
 	{
 		m_cellIndex[i].resize(ySize);
 		std::fill(m_cellIndex[i].begin(), m_cellIndex[i].end(), -1);//初始值赋值为-1
 	}
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{
-		//遍历堆中栅元，根据栅元的左下角坐标x获取索引 满足x>=m_x[i],且x<m_x[i+1],同样获取y，
+		//遍历堆中栅元，根据栅元中心坐标x获取索引 满足x>=m_x[i],且x<m_x[i+1],同样获取y，
 		//根据获得的I,J给m_cellIndex赋值
-		int xIndex = getindex(v_Cell[i].vCell_LeftDownPoint.x_, m_x);
-		int yIndex = getindex(v_Cell[i].vCell_RightUpPoint.y_, m_y);
+		int xIndex = getindex((v_Cell[i].vCell_LeftDownPoint.x_+ v_Cell[i].vCell_RightUpPoint.x_)/2, m_x);
+		int yIndex = getindex((v_Cell[i].vCell_LeftDownPoint.y_ + v_Cell[i].vCell_RightUpPoint.y_) / 2, m_y);
 		m_cellIndex[xIndex][yIndex] = i;
 	}
 	//call v_MocIndex buildindex
 	v_MocIndex.resize(v_Cell.size());
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{
-		v_MocIndex[i] = std::make_shared<MOCIndex>(v_Cell[i].vMeshPointPtrVec);
+		v_MocIndex[i] = std::make_shared<MOCIndex>(*pMOCMesh,v_Cell[i]);
 		v_MocIndex[i]->BuildUpIndex();
 	}
+}
+
+CellIndex::CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh) :pAssemblyType(&mocAssemblyType), pMOCMesh(mocMesh)
+{
+	iAssembly_type = pAssemblyType->iAssemblyType;
 }
 int CellIndex::getCellIndex(Vector vPoint)
 {

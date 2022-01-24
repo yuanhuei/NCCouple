@@ -17,6 +17,50 @@ extern int g_iProcessID;
 //	Zr4,
 //	UNKNOWN
 //};
+class MocMeshField
+{
+public:
+	MocMeshField();
+
+public:
+	void SetValue(double value, ValueType vt) {
+		switch (vt)
+		{
+		case ValueType::TEMPERAURE:
+			m_temperature = value;
+			break;
+		case ValueType::HEATPOWER:
+			m_heatPower = value;
+			break;
+		case ValueType::DENSITY:
+			m_density = value;
+			break;
+		default:
+			break;
+		}
+
+		return;
+	}
+	double GetValue(ValueType vt) const {
+		switch (vt)
+		{
+		case ValueType::TEMPERAURE:
+			return m_temperature;
+		case ValueType::HEATPOWER:
+			return m_heatPower;
+			break;
+		case ValueType::DENSITY:
+			return m_density;
+		default:
+			break;
+		}
+		return 0.0;
+	}
+private:
+	double m_density = 0.0; //< Unit: kg/m3
+	double m_temperature = 0.0;
+	double m_heatPower = 0.0;
+};
 
 struct Cell
 {
@@ -37,9 +81,8 @@ struct Assembly
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
 	int iAssemblyID;//数据文件中的ID号
 	int iAssemblyType;//组件类型
-    //std:vector<std::vector<field>> v_field;//记录场值
+    std::vector<std::vector<MocMeshField>> v_field;//记录场值
 };//组件结构体
-
 
 
 

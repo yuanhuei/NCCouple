@@ -8,13 +8,14 @@
 //#include "MOCMesh.h"
 class MOCMesh;
 class MeshPoint;
+struct Cell;
 //An index build up for fast seaching when building up Solver
 class MOCIndex
 {
 public:
 	//pointer to the MOC mesh
 	MOCMesh* pMOCMesh = nullptr;
-	std::vector<std::shared_ptr<MeshPoint>>* pVMeshPoint = nullptr;
+	Cell* m_pCell = nullptr;
 	//index for MOC IDs written in an array
 	std::vector<std::vector<std::vector<int> > > v_MOCID;
 
@@ -38,7 +39,7 @@ public:
 public:
 	//Constructor with a given MOC mesh
 	MOCIndex(MOCMesh&);
-	MOCIndex(std::vector<std::shared_ptr<MeshPoint>>&vMesh) :pVMeshPoint(&vMesh){};
+	MOCIndex(MOCMesh&, Cell&);
 	//extract information from MOC mesh
 	void Initialization();
 	//estimate a tolerance

@@ -5,7 +5,16 @@
 
 MOCIndex::MOCIndex(MOCMesh& mocMesh)
 	:pMOCMesh(&mocMesh)
-{}
+{
+	Initialization();
+	//BuildUpIndex();
+	//CheckIndex();
+}
+MOCIndex::MOCIndex(MOCMesh&pMocMesh, Cell& pCell) :m_pCell(&pCell), pMOCMesh(&pMocMesh)
+{ 
+	Initialization();
+}
+
 
 void MOCIndex::Initialization()
 {
@@ -20,10 +29,10 @@ void MOCIndex::BuildUpIndex()
 {
 	AllocateDim(this->v_MOCID, this->circularCellNum, this->v_radius.size(), this->axialCellNum);
 	//for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
-	for (int i = 0; i < (*pVMeshPoint).size(); i++)
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
 
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*(*pVMeshPoint)[i]);
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 		int verticeNum = mocPoint.VerticesNum();
 		double RSum = 0.0;
 		double ZSum = 0.0;
@@ -76,9 +85,9 @@ void MOCIndex::BuildUpIndex()
 void MOCIndex::SetTolerance()
 {
 	Scalar maxRadius = 0.0;
-	for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 		std::vector<Scalar> radiusList = mocPoint.GetRadiusList();
 		for (size_t j = 0;j < radiusList.size();j++)
 		{
@@ -93,9 +102,9 @@ void MOCIndex::GetRadiusList()
 {
 	//insert into v_radius list
 	this->v_radius.clear();
-	for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 		std::vector<Scalar> radiusList = mocPoint.GetRadiusList();
 		//for each radius in this cell
 		for (size_t j = 0;j < radiusList.size();j++)
@@ -144,9 +153,9 @@ void MOCIndex::SetAxialInfo()
 	//axis center
 	Vector numerator(0.0,0.0,0.0);
 	int denominator = 0;
-	for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 		std::pair<bool, Vector> axisCenterInfo = mocPoint.AxisCenter();
 		if (axisCenterInfo.first)
 		{
@@ -243,7 +252,7 @@ int MOCIndex::GetMOCIDWithPoint
 
 void MOCIndex::CheckIndex()
 {
-	int meshNum = pMOCMesh->GetMeshPointNum();
+	int meshNum = m_pCell->vMeshPointPtrVec.size();
 	std::vector<bool> v_registered;
 	v_registered.resize(meshNum);
 	for (size_t i = 0;i < meshNum;i++)
@@ -268,7 +277,7 @@ void MOCIndex::CheckIndex()
 	{
 		if (false == v_registered[i])
 		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 			Vector meshCenter = mocPoint.Center();
 			msg << "mesh #" << i << " is not registered, centering at " << meshCenter << std::endl;
 			unregisteredNum++;

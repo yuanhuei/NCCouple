@@ -9,21 +9,24 @@
 #include "MOCIndex.h"
 class MOCMesh;
 struct Assembly;
+struct Assembly_Type;
 
 class CellIndex {
 
 public:
-	CellIndex(Assembly& mocAssembly) :pAssembly(&mocAssembly) {};
+	CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh);
 	~CellIndex() {};
 private:
 	std::vector<double> m_x;
 	std::vector<double> m_y;
 
 	std::vector<std::vector<int>> m_cellIndex;
-	Assembly* pAssembly = nullptr;
+	Assembly_Type* pAssemblyType = nullptr;
+	MOCMesh* pMOCMesh = nullptr;
 	std::vector<std::shared_ptr<MOCIndex>> v_MocIndex;
 
 public:
+	int iAssembly_type;
 	void buildIndex();
 	int getCellIndex(Vector vPoint);
 	int getMeshID(int iCellID, Vector vPoint);

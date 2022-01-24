@@ -28,6 +28,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	int xDirection_Number = 0, yDirection_Number = 0;//x,y方向上的组件个数
 	int iNt_Assembly_index = 0;
 	std::streampos strpos, assembly_pos;
+	bool bNextAssembly = false;
 	while (getline(infile, line))  //read mesh data
 	{
 		outFile << line << endl;
@@ -129,6 +130,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 			if (token == "*Nt_Assembly")
 			{
 			loop:
+				bNextAssembly = false;
 				vector<string> meshMaterialNameTemperary;
 				vector<string> meshTemperatureNameTemperary;
 				vector<string> meshFaceTypeTemperary;
@@ -208,7 +210,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 								{
 									out0 = 0;
 									stringlineMeshID >> token;
-									infile.seekg(pos);
+									//infile.seekg(pos);
 									break;
 								}
 								meshIDTemperary.push_back(stod(tokenMeshId));
@@ -283,6 +285,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						int out0 = 1;
 						while (out0 != 0)
 						{
+							assembly_pos = infile.tellg();
 							getline(infile, line);
 							stringstream stringlineTemperatureName(line);
 							while (stringlineTemperatureName >> tokenTemperatureName)
@@ -309,11 +312,16 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					}
 					if (line.find("*Nt_Assembly") != std::string::npos)
 					{
-						infile.seekg(assembly_pos);
+						//infile.seekg(assembly_pos);
+						bNextAssembly = true;
 						break;
 					}
 					assembly_pos = infile.tellg();
+
 				}
+
+				//生成每一个组件类型的网格
+				
 				int iTotalMeshNum = 0;
 				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
 				{
@@ -371,7 +379,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					}
 					iMeshID_index = iMeshID_index + vNumber_of_each_coarse_mesh[k];
 				}
+				
 				iNt_Assembly_index++;
+				if (bNextAssembly)
+					goto loop;
 			}
 			break;
 		}
@@ -379,6 +390,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	}
 	outFile.close();
 	InitAssembly();
+	m_pAssemblyIndex->buildIndex();
 }
 
 void MOCMesh::InitAssembly()
@@ -1079,17 +1091,6 @@ Surface::Surface(int faceID0, int nodeID, vector<MOCEdge> allEdgesTransfer, stri
 void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 {
 	int face_edge_num = faceEdges.size();
-	if (nodeID == 298)
-	{
-		for (int i = 0; i < face_edge_num; i++)
-		{
-			std::cout << "edgeID:" << faceEdges[i].edgeID << std::endl;
-			std::cout << "endpoint1(x,y): " << faceEdges[i].edgePoints[0].at(0) << " " << faceEdges[i].edgePoints[0].at(1) << std::endl;
-			std::cout << "endpoint2(x,y): " << faceEdges[i].edgePoints[1].at(0) << " " << faceEdges[i].edgePoints[1].at(1) << std::endl;
-			std::cout << "sidemeshid: " << faceEdges[i].sideMeshID[0] << " " << faceEdges[i].sideMeshID[1] << std::endl;
-		}
-	}
-
 	MOCEdge mostLeftEdge;
 	double minx = 1.0e8;
 	double RoundingError = 1.0e-12;  //Rounding error of computer
@@ -1137,6 +1138,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 	}
 	//Sort other edges and points anticlockwise
 
+	double RoundingError0 = 1.0e-6;
 	MOCEdge presentEdge = mostLeftEdge;
 	for (int i = 1; i < face_edge_num; i++)
 	{
@@ -1146,7 +1148,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 			{
 				continue;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[1];
@@ -1164,7 +1166,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 				faceEdgesTemporary.erase(faceEdgesTemporary.begin() + j);
 				break;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[0];
@@ -1191,7 +1193,6 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 		faceEdges[i] = edgeTemperary[i];
 	}
 }
-
 MOCEdge::MOCEdge()
 {
 	edgePoints.clear();
