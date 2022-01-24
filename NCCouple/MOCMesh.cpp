@@ -15,7 +15,6 @@ using namespace std;
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
-	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
 	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
@@ -24,7 +23,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		exit(EXIT_FAILURE);
 	}
 	string line;
-
+	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
 
 	int xDirection_Number = 0, yDirection_Number = 0;//x,y方向上的组件个数
 	int iNt_Assembly_index = 0;
@@ -314,7 +313,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						break;
 					}
 					assembly_pos = infile.tellg();
-
 				}
 				int iTotalMeshNum = 0;
 				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
@@ -331,13 +329,11 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
 					}
 				}
-
 				setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
 				ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
 
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-
 				//按照栅元组织生成meshpoint
 				int iMeshID_index = 0;
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
@@ -366,8 +362,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
 							}
-
-
 							const char* removeFile = fileNameTemperary[index].data();
 							if (remove(removeFile)) //delete file
 							{
@@ -406,7 +400,6 @@ void MOCMesh::InitAssembly()
 					yMin = min(yMin, mocPoint.VerticeCoordinate(m).y_);
 					xMax = max(xMax, mocPoint.VerticeCoordinate(m).x_);
 					yMax = max(yMax, mocPoint.VerticeCoordinate(m).y_);
-
 				}
 			}
 			//栅元左下角右上角坐标
@@ -435,19 +428,16 @@ void MOCMesh::InitAssembly()
 				m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.y_;
 			m_vAssembly[0].vAssembly_RightUpPoint.x_ = xLength;
 			m_vAssembly[0].vAssembly_RightUpPoint.y_ = yLength;
-
 	}
 	else
 	{
 		for (int xIndex = 0; xIndex < m_pAssemblyIndex->m_assemblyIndex.size(); xIndex++)
 		{
-
 			for (int yIndex = 0; yIndex < m_pAssemblyIndex->m_assemblyIndex[xIndex].size(); yIndex++)
 			{
 				int iAssemblyIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex);
 				if (xIndex == 0 && yIndex == 0)
 				{
-
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 				}
 				else
@@ -465,7 +455,6 @@ void MOCMesh::InitAssembly()
 				}
 			}
 		}
-
 	}
 	//meshpoint 按照poinid排序
 	
@@ -1090,6 +1079,17 @@ Surface::Surface(int faceID0, int nodeID, vector<MOCEdge> allEdgesTransfer, stri
 void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 {
 	int face_edge_num = faceEdges.size();
+	if (nodeID == 298)
+	{
+		for (int i = 0; i < face_edge_num; i++)
+		{
+			std::cout << "edgeID:" << faceEdges[i].edgeID << std::endl;
+			std::cout << "endpoint1(x,y): " << faceEdges[i].edgePoints[0].at(0) << " " << faceEdges[i].edgePoints[0].at(1) << std::endl;
+			std::cout << "endpoint2(x,y): " << faceEdges[i].edgePoints[1].at(0) << " " << faceEdges[i].edgePoints[1].at(1) << std::endl;
+			std::cout << "sidemeshid: " << faceEdges[i].sideMeshID[0] << " " << faceEdges[i].sideMeshID[1] << std::endl;
+		}
+	}
+
 	MOCEdge mostLeftEdge;
 	double minx = 1.0e8;
 	double RoundingError = 1.0e-12;  //Rounding error of computer
