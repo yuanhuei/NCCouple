@@ -81,6 +81,14 @@ void AssemblyIndex::buildIndex()
 	}
 	*/
 	//call v_CellIndex buildindex
+	std::cout << "AssemblyIndex"<<std::endl;
+	for (int i = 0; i < m_assemblyIndex.size(); i++)
+	{
+		for (int j = 0; j < m_assemblyIndex[i].size(); j++)
+		{
+			std::cout << "i="<<i<<" j="<<j << " m_assemblyIndex="<< m_assemblyIndex [i][j]<< std::endl;
+		}
+	}
 	v_CellIndex.resize(v_AssemblyType.size());
 	for (int i =0 ; i < v_AssemblyType.size(); i++)
 	{
@@ -151,6 +159,16 @@ void CellIndex::buildIndex()
 		m_cellIndex[xIndex][yIndex] = i;
 	}
 	//call v_MocIndex buildindex
+
+	std::cout << "CellIndex" << std::endl;
+	for (int i = 0; i < m_cellIndex.size(); i++)
+	{
+		for (int j = 0; j < m_cellIndex[i].size(); j++)
+		{
+			std::cout << "i=" << i << " j=" << j << " m_cellIndex=" << m_cellIndex[i][j] << std::endl;
+		}
+	}
+
 	v_MocIndex.resize(v_Cell.size());
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{

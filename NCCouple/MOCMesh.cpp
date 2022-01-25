@@ -136,6 +136,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				vector<string> meshFaceTypeTemperary;
 				vector<string> meshFaceTemperatureNameTemperary;
 				vector<string> fileNameTemperary;
+				vector< std::stringstream> vStreamTemperay;
 				vector<int> meshIDTemperary;
 				int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
 				std::vector<Surface>allMeshFaces;   //all face objects
@@ -337,8 +338,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
 					}
 				}
+				vStreamTemperay.resize(layerMeshNum* axialNum);
 				setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
-				ThreeDemMeshOutput(fileNameTemperary, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
+				//ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
+				ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
 
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
@@ -365,16 +368,18 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 										break;
 									}
 								}
-								std::ifstream ifs(fileNameTemperary[index]);
+								//std::ifstream ifs(fileNameTemperary[index]);
+								std::stringstream& ifs = vStreamTemperay[index];
 								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
 									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
 									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
 							}
+							/*
 							const char* removeFile = fileNameTemperary[index].data();
 							if (remove(removeFile)) //delete file
 							{
 								cout << "delete file fail" << endl;
-							}
+							}*/
 						}
 					}
 					iMeshID_index = iMeshID_index + vNumber_of_each_coarse_mesh[k];
@@ -622,7 +627,7 @@ void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> 
 	}
 }
 
-void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
+void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
 {
 	string filename = "";
 	int H0 = 0, H1 = 0;
@@ -641,6 +646,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 		}
 		for (int i = 0; i < layerMeshNum; i++)
 		{
+			std::stringstream& outFile= vStreamTemperay[index0];
 			stringstream ssID;
 			stringstream ssaxialID;
 			string sID;
@@ -656,8 +662,8 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
 			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
 			
-			fileNameTransfer.push_back(filename);
-			ofstream outFile(filename);
+			//fileNameTransfer.push_back(filename);
+			//fstream outFile(filename);
 			int pointNumPerMesh = allMeshFaces[i].facePointPosition.size() - 1;
 			int ArcNumber = 0;
 			for (int j = 0; j < allMeshFaces[i].faceEdges.size(); j++)
@@ -733,7 +739,7 @@ void MOCMesh::ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std
 					allMeshFaces[i].curveFaceAxisDir.push_back(allMeshFaces[i].faceEdges[j].arcAxisDir);
 				}
 			}
-			outFile.close();  //close iostream
+			//outFile.close();  //close iostream
 		}
 	}
 }
@@ -1000,8 +1006,6 @@ void MOCMesh::WriteTecplotFile
 		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
-			if (j == 2)
-				break;
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
 				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
