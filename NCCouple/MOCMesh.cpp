@@ -452,6 +452,19 @@ void MOCMesh::InitAssembly()
 				{
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 				}
+				else if(xIndex == 0 && yIndex != 0)
+				{
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = 0;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ 
+						+ m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+
+				}
+				else if(xIndex != 0 && yIndex == 0)
+				{
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = 0;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ 
+						+ m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+				}
 				else
 				{
 					int iLeftPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex - 1, yIndex);
@@ -987,7 +1000,7 @@ void MOCMesh::WriteTecplotFile
 		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
-			if (j != 0)
+			if (j == 2)
 				break;
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
@@ -995,7 +1008,7 @@ void MOCMesh::WriteTecplotFile
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				if (mType != mocPoint.GetMaterialName()) continue;
+				//if (mType != mocPoint.GetMaterialName()) continue;
 				//处理平移
 
 				//
