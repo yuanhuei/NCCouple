@@ -214,6 +214,8 @@ public:
 	void WriteTecplotFile(std::string, std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
+	//根据坐标获取燃料组件，栅元，以及网格的id
+	std::tuple<int, int, int> getIndex(Vector vPoint);
 	void Display()
 	{
 		std::cout << "m_coarseMeshInfo:" << std::endl;
