@@ -12,6 +12,8 @@ enum class ValueType
 	DENSITY
 };
 
+
+
 std::string NameOfValueType(ValueType vt);
 
 enum class MeshKernelType
@@ -141,6 +143,7 @@ protected:
 
 protected:
 	std::vector<std::shared_ptr<MeshPoint>> m_meshPointPtrVec;
+
 };
 
 #endif
