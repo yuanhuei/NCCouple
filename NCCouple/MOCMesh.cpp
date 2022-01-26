@@ -1000,8 +1000,8 @@ void MOCMesh::WriteTecplotFile
 	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
-		if (i != 0)
-			break;
+		//if (i != 0)
+			//break;
 		//平移坐标,x y为组件左下角坐标，网格的坐标需要平移x y
 		double x = m_vAssembly[i].vAssembly_LeftDownPoint.x_;
 		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
@@ -1013,7 +1013,7 @@ void MOCMesh::WriteTecplotFile
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				//if (mType != mocPoint.GetMaterialName()) continue;
+				if (mType != mocPoint.GetMaterialName()) continue;
 				//处理平移
 
 				//
