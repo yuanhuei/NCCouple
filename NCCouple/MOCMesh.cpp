@@ -362,7 +362,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 							if (kernelType == MeshKernelType::MHT_KERNEL) {
 								Vector point, norm;
-								for (auto& edge : allMeshFaces[i].faceEdges) {
+								for (auto& edge : allMeshFaces[iMeshID_index].faceEdges) {
 									if (edge.edgeType == 3) {
 										point = edge.arcCenter;
 										norm = edge.arcAxisDir;
@@ -1077,6 +1077,11 @@ Assembly_Type* MOCMesh::GetAssemblyTypePointer(int iAssemblyType)
 	}
 	return nullptr;
 }
+std::tuple<int, int, int> MOCMesh::getIndex(Vector vPoint)
+{
+	return m_pAssemblyIndex->getIndex(vPoint);
+}
+
 Surface::Surface()
 {
 	facePointPosition.clear();
@@ -1233,7 +1238,4 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 	}
 }
 
-std::tuple<int, int, int> MOCMesh::getIndex(Vector vPoint)
-{
-	return m_pAssemblyIndex->getIndex(vPoint);
-}
+

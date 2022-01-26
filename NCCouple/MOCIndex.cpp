@@ -78,7 +78,7 @@ void MOCIndex::BuildUpIndex()
 		int IndexK = int(height / axialCellSize);
 		this->v_MOCID[IndexI][IndexJ][IndexK] = i;
 	}
-	CheckIndex();
+	//CheckIndex();
 	return;
 }
 
