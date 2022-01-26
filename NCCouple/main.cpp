@@ -34,7 +34,7 @@ void MOC_APL_INP_FileTest()
 	MOCMesh mocMesh("c5g72l.apl", "c5g7.inp", MeshKernelType::MHT_KERNEL);
 
 	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
-	mocMesh.WriteTecplotFile("mMOD", "c5g721_cell12.plt");
+	//mocMesh.WriteTecplotFile("mMOD", "c5g721_cell12.plt");
 	//mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	//mocMesh.WriteTecplotFile("UO2", "u2o.plt");
 	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");

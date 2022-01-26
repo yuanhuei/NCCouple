@@ -30,6 +30,7 @@ public:
 	void buildIndex();
 	int getCellIndex(Vector vPoint);
 	int getMeshID(int iCellID, Vector vPoint);
+	void checkCellIndex();
 };
 
 class AssemblyIndex {

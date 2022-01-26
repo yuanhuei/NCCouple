@@ -160,14 +160,7 @@ void CellIndex::buildIndex()
 	}
 	//call v_MocIndex buildindex
 
-	std::cout << "CellIndex" << std::endl;
-	for (int i = 0; i < m_cellIndex.size(); i++)
-	{
-		for (int j = 0; j < m_cellIndex[i].size(); j++)
-		{
-			std::cout << "i=" << i << " j=" << j << " m_cellIndex=" << m_cellIndex[i][j] << std::endl;
-		}
-	}
+	checkCellIndex();
 
 	v_MocIndex.resize(v_Cell.size());
 	for (int i =0 ; i < v_Cell.size(); i++)
@@ -176,6 +169,28 @@ void CellIndex::buildIndex()
 		v_MocIndex[i]->BuildUpIndex();
 	}
 }
+void CellIndex::checkCellIndex()
+{
+	std::vector<Cell>& v_Cell = pAssemblyType->v_Cell;
+	std::cout << "CellIndex" << std::endl;
+	std::set<int> setCell;
+	for (int i = 0; i < m_cellIndex.size(); i++)
+	{
+		for (int j = 0; j < m_cellIndex[i].size(); j++)
+		{
+			setCell.insert(m_cellIndex[i][j]);
+			std::cout << "i=" << i << " j=" << j << " m_cellIndex=" << m_cellIndex[i][j] << std::endl;
+		}
+	}
+	std::cout << "number of cell: " << v_Cell.size() << std::endl;
+	std::cout << "number of m_cellIndex:" << setCell.size() << std::endl;
+	if (v_Cell.size() != setCell.size())
+	{
+		FatalError("wrong cell index");
+	}
+
+}
+
 
 CellIndex::CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh) :pAssemblyType(&mocAssemblyType), pMOCMesh(mocMesh)
 {
