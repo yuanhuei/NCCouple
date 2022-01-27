@@ -467,6 +467,31 @@ namespace MHT
 		}
 	}
 
+	void Polyhedron::Move(Vector& translation)
+	{
+		//move vertices
+		for (size_t i = 0;i < this->v_point.size();i++)
+		{
+			this->v_point[i] += translation;
+		}
+		if (geometryCalculated)
+		{
+			for (size_t i = 0;i < this->v_faceCenter.size();i++)
+			{
+				this->v_faceCenter[i] += translation;
+			}
+			this->center += translation;
+		}
+		return;
+	}
+
+	Polyhedron Polyhedron::Copy(Vector& translation)
+	{
+		Polyhedron result = *(this);
+		result.Move(translation);
+		return result;
+	}
+
 	Polyhedron Polyhedron::ClipByPlane
 	(
 		Vector pointOnPlane, 

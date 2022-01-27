@@ -72,6 +72,10 @@ namespace MHT
 
 		bool IsExisting() const;
 
+		void Move(Vector&);
+
+		Polyhedron Copy(Vector&);
+
 		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 
 		Polygon SearchCutPosition(Vector norm, Scalar volume, Scalar tolerance);
