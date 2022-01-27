@@ -401,7 +401,10 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 void MOCMesh::InitAssembly()
 {
-//计算组件类型左下角右上角坐标，坐标系为数据文件中读取出来的原始坐标系
+    //计算组件类型高度
+	std::pair<int, Scalar> mocAxial = GetAxialInformation();
+	double mocHeight = mocAxial.first * mocAxial.second;
+	//计算组件类型左下角右上角坐标，坐标系为数据文件中读取出来的原始坐标系
 	for(int i=0;i<m_vAssemblyType.size();i++)
 	{
 		double xAssembly_Min = 10000, yAssembly_Min = 10000,xAssembly_Max = -10000, yAssembly_Max = -10000;
@@ -430,7 +433,7 @@ void MOCMesh::InitAssembly()
 			yAssembly_Max = max(yAssembly_Max, yMax);
 		}
 		m_vAssemblyType[i].vAssemblyType_LeftDownPoint = Vector(xAssembly_Min, yAssembly_Min, 0);
-		m_vAssemblyType[i].vAssemblyType_RightUpPoint = Vector(xAssembly_Max, yAssembly_Max, 0);
+		m_vAssemblyType[i].vAssemblyType_RightUpPoint = Vector(xAssembly_Max, yAssembly_Max, mocHeight);
 	}
 	//初始化组件指针
 	for (int i = 0; i < m_vAssembly.size(); i++)
