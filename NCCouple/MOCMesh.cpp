@@ -443,12 +443,14 @@ void MOCMesh::InitAssembly()
 	//计算组件左下角坐标和右上角坐标，坐标系为以组件矩阵左下角为原点的坐标系
 	if (m_bSingleCell)
 	{
+			m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 			double xLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.x_ -
 			m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.x_;
 			double yLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.y_ -
 				m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.y_;
 			m_vAssembly[0].vAssembly_RightUpPoint.x_ = xLength;
 			m_vAssembly[0].vAssembly_RightUpPoint.y_ = yLength;
+			m_vAssembly[0].vAssembly_RightUpPoint.z_ = mocHeight;
 	}
 	else
 	{
@@ -457,6 +459,7 @@ void MOCMesh::InitAssembly()
 			for (int yIndex = 0; yIndex < m_pAssemblyIndex->m_assemblyIndex[xIndex].size(); yIndex++)
 			{
 				int iAssemblyIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex);
+				m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.z_ = mocHeight;
 				if (xIndex == 0 && yIndex == 0)
 				{
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);

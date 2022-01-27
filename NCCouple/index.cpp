@@ -81,14 +81,8 @@ void AssemblyIndex::buildIndex()
 	}
 	*/
 	//call v_CellIndex buildindex
-	std::cout << "AssemblyIndex"<<std::endl;
-	for (int i = 0; i < m_assemblyIndex.size(); i++)
-	{
-		for (int j = 0; j < m_assemblyIndex[i].size(); j++)
-		{
-			std::cout << "i="<<i<<" j="<<j << " m_assemblyIndex="<< m_assemblyIndex [i][j]<< std::endl;
-		}
-	}
+	checkAssemblyIndex();
+
 	v_CellIndex.resize(v_AssemblyType.size());
 	for (int i =0 ; i < v_AssemblyType.size(); i++)
 	{
@@ -126,6 +120,35 @@ std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 	int iCell=v_CellIndex[iAsssemblyTypeIndex]->getCellIndex(vPoin_on_AssemblyType);
 	int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType);
 	return std::make_tuple(iAssemblyIndex, iCell, iMesh);
+}
+void AssemblyIndex::checkAssemblyIndex()
+{
+	std::vector<Assembly>& v_Assembly = pMOCMesh->m_vAssembly;
+	std::cout << "AssemblyIndex" << std::endl;
+	std::set<int> setAssembly;
+	for (int i = 0; i < m_assemblyIndex.size(); i++)
+	{
+		for (int j = 0; j < m_assemblyIndex[i].size(); j++)
+		{
+			setAssembly.insert(m_assemblyIndex[i][j]);
+			std::cout << "i=" << i << " j=" << j << " m_assemblyIndex=" << m_assemblyIndex[i][j] << std::endl;
+		}
+	}
+	std::cout << "number of Assembly: " << v_Assembly.size() << std::endl;
+	std::cout << "number of m_assemblyIndex:" << setAssembly.size() << std::endl;
+	for (int i = 0; i < v_Assembly.size(); i++)
+	{
+		std::cout << "Assembly " << i << " leftdownpoint=" << v_Assembly[i].vAssembly_LeftDownPoint << std::endl;
+		std::cout << "Assembly " << i << " rightuppoint=" << v_Assembly[i].vAssembly_RightUpPoint << std::endl;
+
+	}
+	if (v_Assembly.size() != setAssembly.size())
+	{
+		FatalError("wrong Assembly index");
+	}
+
+
+
 }
 
 
