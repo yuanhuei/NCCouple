@@ -462,20 +462,37 @@ void MOCMesh::InitAssembly()
 				m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.z_ = mocHeight;
 				if (xIndex == 0 && yIndex == 0)
 				{
-					m_vAssembly[m_pAssemblyIndex->getAssemblyIndex(0,0)].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					int iAssembly = m_pAssemblyIndex->getAssemblyIndex(0, 0);
+					m_vAssembly[iAssembly].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					m_vAssembly[iAssembly].vAssembly_RightUpPoint.x_ =m_vAssembly[iAssembly].pAssembly_type->xLength;
+					m_vAssembly[iAssembly].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssembly].pAssembly_type->yLength;
 				}
 				else if(xIndex == 0 && yIndex != 0)
 				{
+					int iDownPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex - 1);
+
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = 0;
 					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ 
 						+ m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
 
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = m_vAssembly[iDownPreIndex].vAssembly_LeftDownPoint.y_ +
+						m_vAssembly[iDownPreIndex].pAssembly_type->yLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ + m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+
+
 				}
 				else if(xIndex != 0 && yIndex == 0)
 				{
+					int iLeftPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex - 1, yIndex);
+
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = 0;
 					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ 
 						+ m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = m_vAssembly[iLeftPreIndex].vAssembly_LeftDownPoint.x_ +
+						m_vAssembly[iLeftPreIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ + m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+
 				}
 				else
 				{
