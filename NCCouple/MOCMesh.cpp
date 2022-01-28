@@ -462,7 +462,7 @@ void MOCMesh::InitAssembly()
 				m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.z_ = mocHeight;
 				if (xIndex == 0 && yIndex == 0)
 				{
-					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					m_vAssembly[m_pAssemblyIndex->getAssemblyIndex(0,0)].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 				}
 				else if(xIndex == 0 && yIndex != 0)
 				{
