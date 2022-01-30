@@ -443,12 +443,14 @@ void MOCMesh::InitAssembly()
 	//计算组件左下角坐标和右上角坐标，坐标系为以组件矩阵左下角为原点的坐标系
 	if (m_bSingleCell)
 	{
+			m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 			double xLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.x_ -
 			m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.x_;
 			double yLength = m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_RightUpPoint.y_ -
 				m_vAssembly[0].pAssembly_type->v_Cell[0].vCell_LeftDownPoint.y_;
 			m_vAssembly[0].vAssembly_RightUpPoint.x_ = xLength;
 			m_vAssembly[0].vAssembly_RightUpPoint.y_ = yLength;
+			m_vAssembly[0].vAssembly_RightUpPoint.z_ = mocHeight;
 	}
 	else
 	{
@@ -457,22 +459,40 @@ void MOCMesh::InitAssembly()
 			for (int yIndex = 0; yIndex < m_pAssemblyIndex->m_assemblyIndex[xIndex].size(); yIndex++)
 			{
 				int iAssemblyIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex);
+				m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.z_ = mocHeight;
 				if (xIndex == 0 && yIndex == 0)
 				{
-					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					int iAssembly = m_pAssemblyIndex->getAssemblyIndex(0, 0);
+					m_vAssembly[iAssembly].vAssembly_LeftDownPoint = Vector(0, 0, 0);
+					m_vAssembly[iAssembly].vAssembly_RightUpPoint.x_ =m_vAssembly[iAssembly].pAssembly_type->xLength;
+					m_vAssembly[iAssembly].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssembly].pAssembly_type->yLength;
 				}
 				else if(xIndex == 0 && yIndex != 0)
 				{
+					int iDownPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex, yIndex - 1);
+
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = 0;
 					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ 
 						+ m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
 
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = m_vAssembly[iDownPreIndex].vAssembly_LeftDownPoint.y_ +
+						m_vAssembly[iDownPreIndex].pAssembly_type->yLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ + m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+
+
 				}
 				else if(xIndex != 0 && yIndex == 0)
 				{
+					int iLeftPreIndex = m_pAssemblyIndex->getAssemblyIndex(xIndex - 1, yIndex);
+
 					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ = 0;
 					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.y_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.y_ 
 						+ m_vAssembly[iAssemblyIndex].pAssembly_type->yLength;
+
+					m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ = m_vAssembly[iLeftPreIndex].vAssembly_LeftDownPoint.x_ +
+						m_vAssembly[iLeftPreIndex].pAssembly_type->xLength;
+					m_vAssembly[iAssemblyIndex].vAssembly_RightUpPoint.x_ = m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint.x_ + m_vAssembly[iAssemblyIndex].pAssembly_type->xLength;
+
 				}
 				else
 				{
@@ -1035,30 +1055,6 @@ void MOCMesh::WriteTecplotFile
 	}
 	*/
 	ofile.close();
-	return;
-}
-
-void MOCMesh::WriteSurfaceTecplotFile(std::string fileName)
-{
-	std::vector<MHT::Polygon> v_faceList;
-	for (int i = 0; i < 1; i++)
-	{
-		Vector assemblyMin = m_vAssembly[i].vAssembly_LeftDownPoint;
-		Vector assemblyMax = m_vAssembly[i].vAssembly_RightUpPoint;
-		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
-		{
-			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
-			{
-				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
-					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				std::vector<MHT::Polygon> subFaceList = mhtPolyhedron.GetFacesOnBoxBoundary(assemblyMin, assemblyMax, 1e-6);
-				std::cout << subFaceList.size() << " faces in assembly #" << i << " cell #" << j << " grid #" << k << " is on boundary" << std::endl;
-				v_faceList.insert(v_faceList.begin(), subFaceList.begin(), subFaceList.end());
-			}
-		}
-		system("pause");
-	}
-	std::cout << v_faceList.size() << "faces are registered" << std::endl;
 	return;
 }
 
