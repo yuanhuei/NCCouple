@@ -1038,6 +1038,30 @@ void MOCMesh::WriteTecplotFile
 	return;
 }
 
+void MOCMesh::WriteSurfaceTecplotFile(std::string fileName)
+{
+	std::vector<MHT::Polygon> v_faceList;
+	for (int i = 0; i < 1; i++)
+	{
+		Vector assemblyMin = m_vAssembly[i].vAssembly_LeftDownPoint;
+		Vector assemblyMax = m_vAssembly[i].vAssembly_RightUpPoint;
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				std::vector<MHT::Polygon> subFaceList = mhtPolyhedron.GetFacesOnBoxBoundary(assemblyMin, assemblyMax, 1e-6);
+				std::cout << subFaceList.size() << " faces in assembly #" << i << " cell #" << j << " grid #" << k << " is on boundary" << std::endl;
+				v_faceList.insert(v_faceList.begin(), subFaceList.begin(), subFaceList.end());
+			}
+		}
+		system("pause");
+	}
+	std::cout << v_faceList.size() << "faces are registered" << std::endl;
+	return;
+}
+
 std::pair<int,Scalar> MOCMesh::GetAxialInformation()
 {
 	Scalar totalHeight = 0.0;

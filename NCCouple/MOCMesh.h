@@ -212,6 +212,7 @@ public:
 public:
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string, std::string);
+	void WriteSurfaceTecplotFile(std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
 	//根据坐标获取燃料组件，栅元，以及网格的id

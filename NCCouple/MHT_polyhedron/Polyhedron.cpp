@@ -282,6 +282,52 @@ namespace MHT
 		}
 	}
 
+	Polygon Polyhedron::GetFace(int faceID) const
+	{
+		if (faceID < 0 || faceID >= this->v_facePointID.size())
+		{
+			FatalError("in Polyhedron::GetFace(), face ID " + std::to_string(faceID) + " is out of range.");
+		}
+		Polygon result;
+		for (size_t i = 0;i < v_facePointID[faceID].size();i++)
+		{
+			int nodeID = v_facePointID[faceID][i];
+			Vector vertice = v_point[nodeID];
+			result.v_point.push_back(vertice);
+		}
+		result.center = this->v_faceCenter[faceID];
+		result.area = this->v_faceArea[faceID];
+		return result;
+	}
+
+	//collect all faces on boundaries of a box
+	std::vector<Polygon> Polyhedron::GetFacesOnBoxBoundary
+	(
+		Vector verticeMin,//xmin, ymin, zmin
+		Vector verticeMax,//xmax, ymax, zmax
+		Scalar tolerance
+	) const
+	{
+		std::vector<Polygon> faceList;
+		for (size_t i = 0;i < v_faceCenter.size();i++)
+		{
+			Scalar xCenter = v_faceCenter[i].x_;
+			Scalar yCenter = v_faceCenter[i].y_;
+			Scalar zCenter = v_faceCenter[i].z_;
+			bool isOnBoundary = false;
+			if (fabs(xCenter - verticeMin.x_) < tolerance || fabs(xCenter - verticeMax.x_) < tolerance) isOnBoundary = true;
+			if (fabs(yCenter - verticeMin.y_) < tolerance || fabs(yCenter - verticeMax.y_) < tolerance) isOnBoundary = true;
+			if (fabs(zCenter - verticeMin.z_) < tolerance || fabs(zCenter - verticeMax.z_) < tolerance) isOnBoundary = true;
+			if (isOnBoundary)
+			{
+				std::cout << "face center = " << v_faceCenter[i] << ", verticeMin = " << verticeMin << ", verticeMax = " << verticeMax << std::endl;
+				system("pause");
+				faceList.push_back(this->GetFace(i));
+			}
+		}
+		return faceList;
+	}
+
 	void Polyhedron::WriteDataFile(ofstream& outfile) const
 	{
 		outfile << this->v_point.size() << std::endl;

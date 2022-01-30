@@ -43,6 +43,8 @@ public:
 
 	std::pair<bool, Vector> GetAxisCenter() const;
 
+	std::vector<MHT::Polygon> GetFacesOnBoxBoundary(Vector, Vector, Scalar) const;
+
 	void WriteTecplotFile(std::string) const;
 
 	void WriteTecplotFile(ofstream&) const;

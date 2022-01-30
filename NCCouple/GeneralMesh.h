@@ -32,6 +32,7 @@ public:
 public:
 	virtual double Volume() const = 0;
 	virtual Vector Center() const = 0;
+	virtual vector<MHT::Polygon> GetFacesOnBoxBoundary(Vector, Vector, Scalar) const = 0;
 	virtual std::vector<Scalar> GetRadiusList() const = 0;
 	virtual std::pair<bool, Vector> AxisCenter() const = 0;
 	virtual double IntersectedVolume(const MeshPoint& other) const = 0;
@@ -61,6 +62,11 @@ public:
 	Vector Center() const override
 	{
 		return m_poly.GetCenter();
+	}
+
+	vector<MHT::Polygon> GetFacesOnBoxBoundary(Vector nodeMin, Vector nodeMax, Scalar tolerance) const override
+	{
+		return m_poly.GetFacesOnBoxBoundary(nodeMin, nodeMax, tolerance);
 	}
 
 	std::vector<Scalar> GetRadiusList() const override

@@ -578,6 +578,29 @@ std::pair<bool, Vector> PolyhedronSet::GetAxisCenter() const
 	return info;
 }
 
+std::vector<MHT::Polygon> PolyhedronSet::GetFacesOnBoxBoundary
+(
+	Vector verticeMin,//xmin, ymin, zmin
+	Vector verticeMax,//xmax, ymax, zmax
+	Scalar tolerance
+) const
+{
+	if (!clipped)
+	{
+		return Polyhedron::GetFacesOnBoxBoundary(verticeMin, verticeMax, tolerance);
+	}
+	else
+	{
+		std::vector<MHT::Polygon> faceList;
+		for (size_t i = 0;i < this->v_subPolyhedron.size();i++)
+		{
+			std::vector<MHT::Polygon> subFaceList = this->v_subPolyhedron[i].GetFacesOnBoxBoundary(verticeMin, verticeMax, tolerance);
+			faceList.insert(faceList.end(), subFaceList.begin(), subFaceList.end());
+		}
+		return faceList;
+	}
+}
+
 void PolyhedronSet::WriteTecplotFile(std::string filename) const
 {
 	if (false == this->clipped)

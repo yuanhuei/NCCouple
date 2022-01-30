@@ -56,6 +56,10 @@ namespace MHT
 
 		Vector GetCenter() const;
 
+		Polygon GetFace(int) const;
+
+		std::vector<Polygon> GetFacesOnBoxBoundary(Vector, Vector, Scalar) const;
+
 		void CalculateVolume();
 
 		void Clear();
