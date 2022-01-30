@@ -99,6 +99,9 @@ public:
 	void WriteTecplotZones(std::ofstream& ofile) const {
 		m_poly.WriteTecplotZones(ofile);
 	}
+	void Move(Vector& vPoint) {
+		m_poly.Move(vPoint);
+	}
 
 protected:
 	MHTMeshPoint() = delete;

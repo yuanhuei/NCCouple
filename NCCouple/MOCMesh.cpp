@@ -167,9 +167,9 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					{
 						stringline >> token;
 						stringline >> token;
-						m_vAssemblyType[iNt_Assembly_index].xLength = std::stod(token);
+						m_vAssemblyType[iNt_Assembly_index].xLength = std::stod(token)/10;
 						stringline >> token;
-						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token);
+						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token)/10;
 
 					}
 					if (token == "*Mesh_number_of_each_coarse_mesh")//多棒需要解析，单棒不需要
@@ -1023,24 +1023,31 @@ void MOCMesh::WriteTecplotFile
 	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
-		//if (i != 0)
-			//break;
-		//平移坐标,x y为组件左下角坐标，网格的坐标需要平移x y
-		double x = m_vAssembly[i].vAssembly_LeftDownPoint.x_;
-		double y= m_vAssembly[i].vAssembly_LeftDownPoint.y_;
+		//if (i == 0)
+			//continue;
+		if (i > 0)
+			break;
+
+		//平移坐标,
+		double x = m_vAssembly[i].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[i].vAssembly_LeftDownPoint.x_;
+		double y= m_vAssembly[i].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[i].vAssembly_LeftDownPoint.y_;
+		std::cout << "i="<<i << " x=" << x << std::endl;
+		std::cout << "i="<<i<< " y=" << y << std::endl;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
-				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>
+				const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				if (mType != mocPoint.GetMaterialName()) continue;
+				//if (mType != mhtPolyhedron.GetMaterialName()) continue;
 				//处理平移
-
-				//
-				mhtPolyhedron.WriteTecplotZones(ofile);
+				
+				MHTMocMeshPoint meshPoint = mhtPolyhedron;
+				meshPoint.Move(Vector(-x, -y, 0));
+				
+				meshPoint.WriteTecplotZones(ofile);
 			}
 		}
 	}
