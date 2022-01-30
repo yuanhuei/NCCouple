@@ -1058,6 +1058,124 @@ void MOCMesh::WriteTecplotFile
 	return;
 }
 
+void MOCMesh::WriteSurfaceTecplotFile
+(
+	std::string fileName
+)
+{
+	std::vector<MHT::Polygon> polygonList;
+	for (int i = 0; i < 1; i++)
+	{
+		Vector verticeMin = m_vAssembly[i].vAssembly_LeftDownPoint;
+		Vector verticeMax = m_vAssembly[i].vAssembly_RightUpPoint;
+		std::cout << "assembly range = " << verticeMin << ", " << verticeMax << std::endl;
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				std::vector<MHT::Polygon> subPolygonList = mhtPolyhedron.GetFacesOnBoxBoundary(verticeMin, verticeMax, 1e-6);
+				if (0 != subPolygonList.size())
+				{
+					polygonList.insert(polygonList.end(), subPolygonList.begin(), subPolygonList.end());
+				}
+			}
+		}
+	}
+
+	int nodeNum = 0;
+	int faceNum = 0;
+	int elemNum = (int)polygonList.size();
+
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		nodeNum += (int)polygonList[polyID].v_point.size();
+		faceNum += (int)polygonList[polyID].v_point.size();
+	}
+	std::ofstream outFile(fileName);
+	outFile << "TITLE = \"PolygonList\" " << std::endl;
+	outFile << "VARIABLES = " << "\"x \"," << "\"y \"," << "\"z \"" << std::endl;
+	outFile << "ZONE T = \"polygons\"" << std::endl;
+	outFile << "STRANDID = 0, SOLUTIONTIME = 0" << std::endl;
+	outFile << "Nodes = " << nodeNum << ", Faces = " << faceNum << ", Elements = " << elemNum;
+	outFile << ", ZONETYPE = FEPolygon" << std::endl;
+	outFile << "NumConnectedBoundaryFaces = 0, TotalNumBoundaryConnections = 0" << std::endl;
+	outFile << "DT = (SINGLE SINGLE SINGLE)";
+	// Write node X
+	int nCountI(0);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size(); i++, nCountI++)
+		{
+			if (nCountI % 5 == 0) outFile << std::endl;
+			outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << polygonList[polyID].v_point[i].x_ << " ";
+		}
+	}
+	// Write node Y
+	int nCountJ(0);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size(); i++, nCountJ++)
+		{
+			if (nCountJ % 5 == 0) outFile << std::endl;
+			outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << polygonList[polyID].v_point[i].y_ << " ";
+		}
+	}
+	// Write node Z
+	int nCountK(0);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size(); i++, nCountK++)
+		{
+			if (nCountK % 5 == 0) outFile << std::endl;
+			outFile << std::setprecision(8) << std::setiosflags(std::ios::scientific) << polygonList[polyID].v_point[i].z_ << " ";
+		}
+	}
+	outFile << std::endl;
+	outFile << "# Face nodes" << std::endl;
+	int nLineCount(1);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size() - 1; i++)
+		{
+			outFile << nLineCount + i << " " << nLineCount + i + 1 << " ";
+		}
+		outFile << nLineCount + polygonList[polyID].v_point.size() - 1 << " " << nLineCount << " ";
+		outFile << std::endl;
+		nLineCount += (int)polygonList[polyID].v_point.size();
+	}
+
+	outFile << "# left elements";
+	int count = 0;
+	int nElemCount(1);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size(); i++)
+		{
+			if (count % 10 == 0) outFile << std::endl;
+			count++;
+			outFile << nElemCount << " ";
+		}
+		nElemCount++;
+	}
+	outFile << std::endl;
+
+	outFile << "# right elements";
+	int nLeftElemCount(0);
+	for (int polyID = 0; polyID < (int)polygonList.size(); polyID++)
+	{
+		for (int i = 0; i < (int)polygonList[polyID].v_point.size(); i++, nLeftElemCount++)
+		{
+			if (nLeftElemCount % 10 == 0) outFile << std::endl;
+			outFile << "0" << " ";
+		}
+	}
+	outFile << std::endl;
+
+	outFile.close();
+	return;
+}
+
 std::pair<int,Scalar> MOCMesh::GetAxialInformation()
 {
 	Scalar totalHeight = 0.0;

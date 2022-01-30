@@ -78,7 +78,7 @@ namespace MHT
 
 		void Move(Vector&);
 
-		Polyhedron Copy(Vector&);
+		Polyhedron Copy(Vector&) const;
 
 		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 

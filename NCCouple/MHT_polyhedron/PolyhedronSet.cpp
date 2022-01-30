@@ -485,6 +485,28 @@ bool PolyhedronSet::IsContaining(Vector& point) const
 	return contain;
 }
 
+void PolyhedronSet::Move(Vector& translation)
+{
+	this->Polyhedron::Move(translation);
+	//move the axis center
+	this->axisCenter += translation;
+	return;
+}
+
+PolyhedronSet PolyhedronSet::Copy(Vector& translation) const
+{
+	PolyhedronSet result = *this;
+	result.Move(translation);
+	if (this->clipped)
+	{
+		for (size_t i = 0;i < result.v_subPolyhedron.size();i++)
+		{
+			result.v_subPolyhedron[i].Move(translation);
+		}
+	}
+	return result;
+}
+
 Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron
 (
 	const MHT::Polyhedron& poly

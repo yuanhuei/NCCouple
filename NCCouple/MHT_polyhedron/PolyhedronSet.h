@@ -35,6 +35,10 @@ public:
 
 	bool IsContaining(Vector&) const;
 
+	void Move(Vector&);
+
+	PolyhedronSet Copy(Vector&) const;
+
 	Scalar IntersectionVolumeWithPolyhedron(const MHT::Polyhedron&) const;
 
 	Scalar IntersectionVolumeWithPolyhedronSet(const PolyhedronSet&) const;

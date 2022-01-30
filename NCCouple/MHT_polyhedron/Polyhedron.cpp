@@ -315,14 +315,25 @@ namespace MHT
 			Scalar yCenter = v_faceCenter[i].y_;
 			Scalar zCenter = v_faceCenter[i].z_;
 			bool isOnBoundary = false;
+			if (xCenter - verticeMin.x_ < -tolerance) continue;
+			if (xCenter - verticeMax.x_ > tolerance) continue;
+			if (yCenter - verticeMin.y_ < -tolerance) continue;
+			if (yCenter - verticeMax.y_ > tolerance) continue;
+			if (zCenter - verticeMin.z_ < -tolerance) continue;
+			if (zCenter - verticeMax.z_ > tolerance) continue;
 			if (fabs(xCenter - verticeMin.x_) < tolerance || fabs(xCenter - verticeMax.x_) < tolerance) isOnBoundary = true;
 			if (fabs(yCenter - verticeMin.y_) < tolerance || fabs(yCenter - verticeMax.y_) < tolerance) isOnBoundary = true;
 			if (fabs(zCenter - verticeMin.z_) < tolerance || fabs(zCenter - verticeMax.z_) < tolerance) isOnBoundary = true;
 			if (isOnBoundary)
 			{
-				std::cout << "face center = " << v_faceCenter[i] << ", verticeMin = " << verticeMin << ", verticeMax = " << verticeMax << std::endl;
+				std::cout << "face center = " << v_faceCenter[i] << ", box range = " << verticeMin << " ~ " << verticeMax << std::endl;
+				Polygon face = this->GetFace(i);
+				for (int j = 0;j < face.v_point.size();j++)
+				{
+					std::cout << "point coordinate = " << face.v_point[j] << std::endl;
+				}
+				faceList.push_back(face);
 				system("pause");
-				faceList.push_back(this->GetFace(i));
 			}
 		}
 		return faceList;
@@ -522,16 +533,18 @@ namespace MHT
 		}
 		if (geometryCalculated)
 		{
+			//move face centers
 			for (size_t i = 0;i < this->v_faceCenter.size();i++)
 			{
 				this->v_faceCenter[i] += translation;
 			}
+			//move polyhedron center
 			this->center += translation;
 		}
 		return;
 	}
 
-	Polyhedron Polyhedron::Copy(Vector& translation)
+	Polyhedron Polyhedron::Copy(Vector& translation) const
 	{
 		Polyhedron result = *(this);
 		result.Move(translation);
