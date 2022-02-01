@@ -1046,7 +1046,6 @@ void MOCMesh::WriteTecplotFile
 				
 				MHTMocMeshPoint meshPoint = mhtPolyhedron;
 				meshPoint.Move(Vector(-x, -y, 0));
-				
 				meshPoint.WriteTecplotZones(ofile);
 			}
 		}
