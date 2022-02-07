@@ -362,7 +362,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 							if (kernelType == MeshKernelType::MHT_KERNEL) {
 								Vector point, norm;
-								for (auto& edge : allMeshFaces[iMeshID_index].faceEdges) {
+								for (auto& edge : allMeshFaces[iMeshID_index+i].faceEdges) {
 									if (edge.edgeType == 3) {
 										point = edge.arcCenter;
 										norm = edge.arcAxisDir;
@@ -372,7 +372,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 								//std::ifstream ifs(fileNameTemperary[index]);
 								std::stringstream& ifs = vStreamTemperay[index];
 								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
-									meshIDtemp_, ifs, allMeshFaces[i].curveInfo, point, norm,
+									meshIDtemp_, ifs, allMeshFaces[iMeshID_index+i].curveInfo, point, norm,
 									meshMaterialNameTemperary[index], meshTemperatureNameTemperary[index]);
 							}
 							/*
