@@ -41,6 +41,7 @@ PolyhedronSet::PolyhedronSet(std::string filename)
 	infile.close();
 	this->ClipIntoSubPolygons(maxDegree);
 	this->CalculateVolume();
+
 	return;
 }
 
@@ -88,6 +89,7 @@ PolyhedronSet::PolyhedronSet
 	{
 		this->ClipIntoSubPolygons(maxDegree);
 	}
+
 }
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
@@ -259,6 +261,19 @@ PolyhedronSet PolyhedronSet::ClipByPlane(Vector pointOnPlane, Vector planeNorm)
 						Vector RCenter = axisCenter + OR;
 						intersection = RCenter + faceRadius * (intersection - RCenter).GetNormal();
 					}
+
+					//written for test
+					if (intersection.x_ > 12.15 && intersection.x_ < 12.2 && intersection.y_>7.66 && intersection.y_ < 7.76)
+					{
+						std::cout << "faceIsCurved = " << faceIsCurved << std::endl;
+						std::cout << "axisCenter = " << axisCenter << std::endl;
+						std::cout << "axisNorm = " << axisNorm << std::endl;
+						std::cout << "A = " << A + Vector(0.0, 42.84, 0.0) << std::endl;
+						std::cout << "B = " << B + Vector(0.0, 42.84, 0.0) << std::endl;
+						system("pause");
+					}
+					//end of written for test
+
 					//end of correction
 					int IDInNew = (int)targetMOCPoly.v_point.size();
 					targetMOCPoly.v_point.push_back(intersection);
@@ -383,6 +398,12 @@ Tensor RotateTensor(Vector& axis, Scalar theeta)
 
 void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 {
+
+	if (center.x_ > 12 && center.x_ < 12.4 && center.y_>7.56 && center.y_ < 7.76)
+	{
+		this->Display();
+		system("pause");
+	}
 	this->v_subPolyhedron.clear();
 	if (false == this->geometryCalculated)
 	{
@@ -609,6 +630,7 @@ std::vector<MHT::Polygon> PolyhedronSet::GetFacesOnBoxBoundary
 ) const
 {
 	if (!clipped)
+	//if (clipped)
 	{
 		return Polyhedron::GetFacesOnBoxBoundary(verticeMin, verticeMax, tolerance);
 	}
