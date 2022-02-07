@@ -15,7 +15,7 @@ class CellIndex {
 
 public:
 	CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh);
-	~CellIndex() {};
+
 private:
 	std::vector<double> m_x;
 	std::vector<double> m_y;
@@ -36,8 +36,7 @@ public:
 class AssemblyIndex {
 
 public:
-	AssemblyIndex(MOCMesh& mocMesh);
-	~AssemblyIndex() {};
+	AssemblyIndex(MOCMesh& mocMesh) :pMOCMesh(&mocMesh) {};
 private:
 
 	MOCMesh* pMOCMesh = nullptr;

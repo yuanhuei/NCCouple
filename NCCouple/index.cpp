@@ -43,9 +43,7 @@ void getOrderXY(const std::vector<Vector>& vLeftDownPoint, const std::vector<Vec
 		i++;
 	}
 }
-AssemblyIndex::AssemblyIndex(MOCMesh& mocMesh):pMOCMesh(&mocMesh)
-{
-}
+
 
 void AssemblyIndex::buildIndex()
 {
@@ -213,12 +211,12 @@ void CellIndex::checkCellIndex()
 	}
 
 }
-
-
 CellIndex::CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh) :pAssemblyType(&mocAssemblyType), pMOCMesh(mocMesh)
 {
 	iAssembly_type = pAssemblyType->iAssemblyType;
-}
+};
+
+
 int CellIndex::getCellIndex(Vector vPoint)
 {
 	int xIndex = getindex(vPoint.x_, m_x);
