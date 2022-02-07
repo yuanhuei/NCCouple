@@ -324,16 +324,16 @@ namespace MHT
 			if (fabs(xCenter - verticeMin.x_) < tolerance || fabs(xCenter - verticeMax.x_) < tolerance) isOnBoundary = true;
 			if (fabs(yCenter - verticeMin.y_) < tolerance || fabs(yCenter - verticeMax.y_) < tolerance) isOnBoundary = true;
 			if (fabs(zCenter - verticeMin.z_) < tolerance || fabs(zCenter - verticeMax.z_) < tolerance) isOnBoundary = true;
-			if (isOnBoundary)
+			if (isOnBoundary&&(i / 2 == 1))
 			{
-				std::cout << "face center = " << v_faceCenter[i] << ", box range = " << verticeMin << " ~ " << verticeMax << std::endl;
+				//std::cout << "face center = " << v_faceCenter[i] << ", box range = " << verticeMin << " ~ " << verticeMax << std::endl;
 				Polygon face = this->GetFace(i);
-				for (int j = 0;j < face.v_point.size();j++)
-				{
-					std::cout << "point coordinate = " << face.v_point[j] << std::endl;
-				}
+				//for (int j = 0;j < face.v_point.size();j++)
+				//{
+				//	std::cout << "point coordinate = " << face.v_point[j] << std::endl;
+				//}
 				faceList.push_back(face);
-				system("pause");
+				//system("pause");
 			}
 		}
 		return faceList;
