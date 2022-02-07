@@ -4,7 +4,7 @@
 #define _PolyhedronSet_
 
 #include "Polyhedron.h"
-#define maxDegree 10.01
+#define maxDegree 22.6
 
 class PolyhedronSet :public MHT::Polyhedron
 {

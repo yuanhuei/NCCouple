@@ -1069,18 +1069,54 @@ void MOCMesh::WriteSurfaceTecplotFile
 	std::string fileName
 )
 {
-	std::vector<MHT::Polygon> polygonList;
-	for (int i = 0; i < 1; i++)
+
+	for (size_t i = 0; i < m_vAssembly.size(); i++)
 	{
-		Vector verticeMin = m_vAssembly[i].vAssembly_LeftDownPoint;
-		Vector verticeMax = m_vAssembly[i].vAssembly_RightUpPoint;
-		std::cout << "assembly range = " << verticeMin << ", " << verticeMax << std::endl;
+		int sum = 0;
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			sum += m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size();
+		}
+		std::cout << "assembly #" << i << " has " << sum << " grids" << std::endl;
+
+	}
+	//step 1: calculate boundaries
+	std::vector<MHT::Polygon> polygonList;
+	Vector initialCenter = 0.5 * (m_vAssembly[0].vAssembly_LeftDownPoint + m_vAssembly[0].vAssembly_RightUpPoint);
+	Scalar xmin = initialCenter.x_;
+	Scalar xmax = initialCenter.x_;
+	Scalar ymin = initialCenter.y_;
+	Scalar ymax = initialCenter.y_;
+	Scalar zmin = initialCenter.z_;
+	Scalar zmax = initialCenter.z_;
+	for (size_t i = 0; i < m_vAssembly.size(); i++)
+	{
+		Vector assemblyMin = m_vAssembly[i].vAssembly_LeftDownPoint;
+		xmin = std::min(xmin, assemblyMin.x_);
+		ymin = std::min(ymin, assemblyMin.y_);
+		zmin = std::min(zmin, assemblyMin.z_);
+		Vector assemblyMax = m_vAssembly[i].vAssembly_RightUpPoint;
+		xmax = std::max(xmax, assemblyMax.x_);
+		ymax = std::max(ymax, assemblyMax.y_);
+		zmax = std::max(zmax, assemblyMax.z_);
+	}
+	Vector globalMin(xmin, ymin, zmin);
+	Vector globalMax(xmax, ymax, zmax);
+	globalMin = Vector(1.26 * 9, 21.42 * 2+ 1.26 * 6, zmin);
+	globalMax = Vector(1.26 * 10, 21.42 * 2 + 1.26 * 7, 2.0);
+	//step 2: collect faces on assembly boundaries
+	for (size_t i = 0; i < m_vAssembly.size(); i++)
+	{
+		Vector assemblyMin = m_vAssembly[i].vAssembly_LeftDownPoint;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
-				const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				std::vector<MHT::Polygon> subPolygonList = mhtPolyhedron.GetFacesOnBoxBoundary(verticeMin, verticeMax, 1e-6);
+				const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>
+					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				MHTMocMeshPoint meshPoint = mhtPolyhedron;
+				meshPoint.Move(assemblyMin);
+				std::vector<MHT::Polygon> subPolygonList = meshPoint.GetFacesOnBoxBoundary(globalMin, globalMax, 1e-6);
 				if (0 != subPolygonList.size())
 				{
 					polygonList.insert(polygonList.end(), subPolygonList.begin(), subPolygonList.end());
@@ -1088,7 +1124,8 @@ void MOCMesh::WriteSurfaceTecplotFile
 			}
 		}
 	}
-
+	std::cout << polygonList.size() << " polygons saved" << std::endl;
+	//step 3: plot faces collected in step 2
 	int nodeNum = 0;
 	int faceNum = 0;
 	int elemNum = (int)polygonList.size();
@@ -1177,8 +1214,8 @@ void MOCMesh::WriteSurfaceTecplotFile
 		}
 	}
 	outFile << std::endl;
-
 	outFile.close();
+
 	return;
 }
 
