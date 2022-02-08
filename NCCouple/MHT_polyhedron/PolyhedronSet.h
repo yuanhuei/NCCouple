@@ -21,6 +21,8 @@ public:
 
 	PolyhedronSet(string);
 
+	PolyhedronSet(Vector, Vector);
+
 	void ReadCurveFaces(ifstream& infile);
 
 	void CalculateRadius();

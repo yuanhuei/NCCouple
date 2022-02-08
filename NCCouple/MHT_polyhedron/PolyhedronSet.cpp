@@ -1,5 +1,6 @@
 #include "PolyhedronSet.h"
 #include "../MHT_common/Tensor.h"
+#include "../MHT_common/SystemControl.h"
 
 PolyhedronSet::PolyhedronSet()
 	:MHT::Polyhedron()
@@ -91,6 +92,10 @@ PolyhedronSet::PolyhedronSet
 	}
 
 }
+
+PolyhedronSet::PolyhedronSet(Vector vec1, Vector vec2)
+	:MHT::Polyhedron(vec1,vec2)
+{}
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
 {

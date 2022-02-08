@@ -48,6 +48,8 @@ namespace MHT
 
 		Polyhedron(std::istream& is);
 
+		Polyhedron(Vector, Vector);
+
 		void Display() const;
 
 		void Check() const;

@@ -47,6 +47,60 @@ namespace MHT
 		return;
 	}
 
+	Polyhedron::Polyhedron(Vector minVertice, Vector maxVertice)
+	{
+		Scalar xmin = minVertice.x_;
+		Scalar xmax = maxVertice.x_;
+		Scalar ymin = minVertice.y_;
+		Scalar ymax = maxVertice.y_;
+		Scalar zmin = minVertice.z_;
+		Scalar zmax = maxVertice.z_;
+		if (xmax <= xmin || ymax <= ymin || zmax <= zmin)
+		{
+			stringstream ss;
+			ss << "invalid vertice: " << minVertice << " and " << maxVertice;
+			FatalError(ss.str());
+		}
+		//create the 8 vertices
+		this->v_point.resize(8);
+		v_point[0] = Vector(xmin, ymin, zmin);
+		v_point[1] = Vector(xmax, ymin, zmin);
+		v_point[2] = Vector(xmax, ymax, zmin);
+		v_point[3] = Vector(xmin, ymax, zmin);
+		v_point[4] = Vector(xmin, ymin, zmax);
+		v_point[5] = Vector(xmax, ymin, zmax);
+		v_point[6] = Vector(xmax, ymax, zmax);
+		v_point[7] = Vector(xmin, ymax, zmax);
+		//create the 6 faces
+		this->v_facePointID.resize(6);
+		v_facePointID[0].push_back(0);
+		v_facePointID[0].push_back(3);
+		v_facePointID[0].push_back(2);
+		v_facePointID[0].push_back(1);
+		v_facePointID[1].push_back(0);
+		v_facePointID[1].push_back(1);
+		v_facePointID[1].push_back(5);
+		v_facePointID[1].push_back(4);
+		v_facePointID[2].push_back(0);
+		v_facePointID[2].push_back(4);
+		v_facePointID[2].push_back(7);
+		v_facePointID[2].push_back(3);
+		v_facePointID[3].push_back(2);
+		v_facePointID[3].push_back(3);
+		v_facePointID[3].push_back(7);
+		v_facePointID[3].push_back(6);
+		v_facePointID[4].push_back(1);
+		v_facePointID[4].push_back(2);
+		v_facePointID[4].push_back(6);
+		v_facePointID[4].push_back(5);
+		v_facePointID[5].push_back(4);
+		v_facePointID[5].push_back(5);
+		v_facePointID[5].push_back(6);
+		v_facePointID[5].push_back(7);
+		//calculate geomety
+		this->CalculateVolume();
+	}
+
 	void Polyhedron::ReadGeometry(ifstream& infile)
 	{
 		int numPoints;
@@ -180,7 +234,16 @@ namespace MHT
 			{
 				cout << v_facePointID[i][j] << " ";
 			}
+			if (geometryCalculated)
+			{
+				cout << " center" << this->v_faceCenter[i] << ", area" << this->v_faceArea[i];
+			}
 			cout << endl;
+		}
+		if (geometryCalculated)
+		{
+			cout << "polyhedron center: " << this->center << endl;
+			cout << "polyhedron volume: " << this->volume << endl;
 		}
 		return;
 	}
