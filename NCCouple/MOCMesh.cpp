@@ -10,6 +10,7 @@
 using namespace std;
 
 #define PI 3.14159265358979323846
+#define PI 3.14159265358979323846
 #define NA 6.022e23
 #define BARN 1.0e-24
 
@@ -684,7 +685,7 @@ void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, st
 
 			//filename = filename + ".off";		
 			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
-			filename = filename + "_" + std::to_string(g_iProcessID) + ".off";
+			filename = filename  + ".off";
 			
 			//fileNameTransfer.push_back(filename);
 			//fstream outFile(filename);
@@ -1049,7 +1050,7 @@ void MOCMesh::WriteTecplotFile
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				//if (mType != mhtPolyhedron.GetMaterialName()) continue;
+				if (mType != mhtPolyhedron.GetMaterialName()) continue;
 				//处理平移
 				
 				MHTMocMeshPoint meshPoint = mhtPolyhedron;

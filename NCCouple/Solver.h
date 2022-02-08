@@ -42,4 +42,7 @@ private:
 	std::string materialName;
 	std::vector<std::unordered_map<int, double>> m_CFD_MOC_Map;
 	std::vector<std::unordered_map<int, double>> m_MOC_CFD_Map;
+	//std::vector<std::vector<std::vector<std::unordered_map<int, double>>>> m_MOC_CFD_Map;
+	//std::vector<std::unordered_map<std::tuple<int,int,int>, double>> m_CFD_MOC_Map;
+
 };

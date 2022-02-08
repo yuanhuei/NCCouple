@@ -204,12 +204,12 @@ void RunWithParameters(std::vector<std::string>& parameters)
 int main(int argc, char** argv)
 {
 	//get processor ID
-	g_iProcessID = (int)getpid();
+	//g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
-		box.MHT::Polyhedron::Display();
-		//MOC_APL_INP_FileTest();
+		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
+		//box.MHT::Polyhedron::Display();
+		MOC_APL_INP_FileTest();
 		return 0;
 	}
 	else

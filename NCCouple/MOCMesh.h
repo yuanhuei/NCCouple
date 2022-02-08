@@ -9,7 +9,7 @@
 //#include "index.h"
 //#define nFineMesh 4
 class AssemblyIndex;
-extern int g_iProcessID;
+//extern int g_iProcessID;
 //enum class MaterialType {
 //	H2O,
 //	UO2,
@@ -64,25 +64,25 @@ private:
 
 struct Cell
 {
-	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //Õ¤ÔªÍø¸ñÐÅÏ¢
+	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //Õ¤Ôªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
 };
  struct Assembly_Type
 {
 	std::vector<Cell> v_Cell;
-	int iAssemblyType;//×é¼þÀàÐÍ
-	double xLength, yLength;//³¤¿í
+	int iAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	double xLength, yLength;//ï¿½ï¿½ï¿½ï¿½
 	Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
 
-};//×é¼þÀàÐÍ½á¹¹Ìå
+};//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í½á¹¹ï¿½ï¿½
 struct Assembly
 {
 	Assembly_Type* pAssembly_type;
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
-	int iAssemblyID;//Êý¾ÝÎÄ¼þÖÐµÄIDºÅ
-	int iAssemblyType;//×é¼þÀàÐÍ
-    std::vector<std::vector<MocMeshField>> v_field;//¼ÇÂ¼³¡Öµ
-};//×é¼þ½á¹¹Ìå
+	int iAssemblyID;//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½IDï¿½ï¿½
+	int iAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    std::vector<std::vector<MocMeshField>> v_field;//ï¿½ï¿½Â¼ï¿½ï¿½Öµ
+};//ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
 
 
 
@@ -215,8 +215,19 @@ public:
 	void WriteSurfaceTecplotFile(std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
-	//¸ù¾Ý×ø±ê»ñÈ¡È¼ÁÏ×é¼þ£¬Õ¤Ôª£¬ÒÔ¼°Íø¸ñµÄid
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¤Ôªï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
 	std::tuple<int, int, int> getIndex(Vector vPoint);
+	MHTMocMeshPoint Move(int iAssembly,int iCell,int iMoc)
+	{
+		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
+		double y= m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
+		
+		const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>
+					(*m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[iMoc]);
+		MHTMocMeshPoint meshPoint = mhtPolyhedron;
+		meshPoint.Move(Vector(-x, -y, 0));
+		return meshPoint;
+	};
 	void Display()
 	{
 		std::cout << "m_coarseMeshInfo:" << std::endl;
@@ -259,10 +270,10 @@ private:
 	std::stringstream m_preContext, m_sufContext;
 
 public:
-	std::vector<Assembly_Type> m_vAssemblyType;//×é¼þÀàÐÍvector 
-	std::vector<Assembly> m_vAssembly;//×é¼þvector£¬
-	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//×é¼þË÷Òý 
-	bool m_bSingleCell = true;//µ¥°ô
+	std::vector<Assembly_Type> m_vAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vector 
+	std::vector<Assembly> m_vAssembly;//ï¿½ï¿½ï¿½vectorï¿½ï¿½
+	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	bool m_bSingleCell = true;//ï¿½ï¿½ï¿½ï¿½
 
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
