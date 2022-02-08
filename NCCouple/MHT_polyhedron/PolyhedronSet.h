@@ -4,7 +4,7 @@
 #define _PolyhedronSet_
 
 #include "Polyhedron.h"
-#define maxDegree 22.6
+#define maxDegree 10.05
 
 class PolyhedronSet :public MHT::Polyhedron
 {
@@ -20,6 +20,8 @@ public:
 	PolyhedronSet(std::istream&,std::vector<int>&, Vector, Vector);
 
 	PolyhedronSet(string);
+
+	PolyhedronSet(Vector, Vector);
 
 	void ReadCurveFaces(ifstream& infile);
 

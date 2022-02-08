@@ -1077,17 +1077,6 @@ void MOCMesh::WriteSurfaceTecplotFile
 	std::string fileName
 )
 {
-
-	for (size_t i = 0; i < m_vAssembly.size(); i++)
-	{
-		int sum = 0;
-		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
-		{
-			sum += m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size();
-		}
-		std::cout << "assembly #" << i << " has " << sum << " grids" << std::endl;
-
-	}
 	//step 1: calculate boundaries
 	std::vector<MHT::Polygon> polygonList;
 	Vector initialCenter = 0.5 * (m_vAssembly[0].vAssembly_LeftDownPoint + m_vAssembly[0].vAssembly_RightUpPoint);
@@ -1097,7 +1086,7 @@ void MOCMesh::WriteSurfaceTecplotFile
 	Scalar ymax = initialCenter.y_;
 	Scalar zmin = initialCenter.z_;
 	Scalar zmax = initialCenter.z_;
-	for (size_t i = 0; i < m_vAssembly.size(); i++)
+	for (size_t i = 0; i < 1; i++)
 	{
 		Vector assemblyMin = m_vAssembly[i].vAssembly_LeftDownPoint;
 		xmin = std::min(xmin, assemblyMin.x_);
@@ -1110,8 +1099,6 @@ void MOCMesh::WriteSurfaceTecplotFile
 	}
 	Vector globalMin(xmin, ymin, zmin);
 	Vector globalMax(xmax, ymax, zmax);
-	globalMin = Vector(1.26 * 9, 21.42 * 2+ 1.26 * 6, zmin);
-	globalMax = Vector(1.26 * 10, 21.42 * 2 + 1.26 * 7, 2.0);
 	//step 2: collect faces on assembly boundaries
 	for (size_t i = 0; i < m_vAssembly.size(); i++)
 	{
@@ -1132,7 +1119,7 @@ void MOCMesh::WriteSurfaceTecplotFile
 			}
 		}
 	}
-	std::cout << polygonList.size() << " polygons saved" << std::endl;
+
 	//step 3: plot faces collected in step 2
 	int nodeNum = 0;
 	int faceNum = 0;

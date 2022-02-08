@@ -207,8 +207,9 @@ int main(int argc, char** argv)
 	g_iProcessID = (int)getpid();
 	if (argc == 1)
 	{
-		std::cout << "hello world"<<std::endl;
-		MOC_APL_INP_FileTest();
+		PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
+		box.MHT::Polyhedron::Display();
+		//MOC_APL_INP_FileTest();
 		return 0;
 	}
 	else
