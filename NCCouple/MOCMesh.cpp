@@ -1035,6 +1035,14 @@ void MOCMesh::WriteTecplotFile
 		std::cout << "i="<<i<< " y=" << y << std::endl;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
+			std::vector<int> bVect(299, -1);
+			std::vector<int> bIndex{ 17, 34, 51, 18, 35, 52, 19, 36, 53 };
+			for (auto a : bIndex)
+			{
+				bVect[a] = 1;
+			}
+			if (bVect[j] == -1)
+				continue;
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
 				const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>

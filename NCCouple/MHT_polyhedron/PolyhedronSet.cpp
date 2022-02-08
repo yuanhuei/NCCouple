@@ -270,7 +270,7 @@ PolyhedronSet PolyhedronSet::ClipByPlane(Vector pointOnPlane, Vector planeNorm)
 						std::cout << "axisNorm = " << axisNorm << std::endl;
 						std::cout << "A = " << A + Vector(0.0, 42.84, 0.0) << std::endl;
 						std::cout << "B = " << B + Vector(0.0, 42.84, 0.0) << std::endl;
-						system("pause");
+						//system("pause");
 					}
 					//end of written for test
 
@@ -402,7 +402,7 @@ void PolyhedronSet::ClipIntoSubPolygons(Scalar maxAngleInDegree)
 	if (center.x_ > 12 && center.x_ < 12.4 && center.y_>7.56 && center.y_ < 7.76)
 	{
 		this->Display();
-		system("pause");
+		//system("pause");
 	}
 	this->v_subPolyhedron.clear();
 	if (false == this->geometryCalculated)
