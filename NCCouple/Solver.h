@@ -10,8 +10,8 @@ class Solver {
 public:
 	Solver() {};
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh);
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
-	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName);
+	//Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
+	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName,bool bFirstCreated=false);
 	void CheckMappingWeights();
 
 public:

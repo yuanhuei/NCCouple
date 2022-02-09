@@ -7,6 +7,8 @@
 #include <set>
 #include "MHT_common/Vector.h"
 #include "MOCIndex.h"
+#include"Structure.h"
+
 class MOCMesh;
 struct Assembly;
 struct Assembly_Type;
@@ -56,7 +58,7 @@ public:
 	};
 
 	//根据坐标获取燃料组件，栅元，以及网格的id
-	std::tuple<int, int, int> getIndex(Vector vPoint);
+	SMocIndex getIndex(Vector vPoint);
 	void checkAssemblyIndex();
 	void getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell);
 };

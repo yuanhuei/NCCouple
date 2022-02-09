@@ -6,7 +6,7 @@
 #include <regex>
 #include <unordered_set>
 #include "Logger.h"
-#include "index.h"
+#include "Index.h"
 using namespace std;
 
 #define PI 3.14159265358979323846
@@ -134,8 +134,8 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				bNextAssembly = false;
 				vector<string> meshMaterialNameTemperary;
 				vector<string> meshTemperatureNameTemperary;
-				//vector<string> meshFaceTypeTemperary;
-				//vector<string> meshFaceTemperatureNameTemperary;
+				vector<string> meshFaceTypeTemperary;
+				vector<string> meshFaceTemperatureNameTemperary;
 				vector<string> fileNameTemperary;
 				vector< std::stringstream> vStreamTemperay;
 				vector<int> meshIDTemperary;
@@ -336,14 +336,14 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					for (int i = 0; i < layerMeshNum; i++)
 					{
 						int meshIDtemp_ = meshIDTemperary[i] + j * layerMeshNum - 1;
-						//meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
-						//meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
+						meshFaceTypeTemperary.push_back(meshMaterialNameTemperary[meshIDtemp_]);
+						meshFaceTemperatureNameTemperary.push_back(meshTemperatureNameTemperary[meshIDtemp_]);
 					}
 				}
 				vStreamTemperay.resize(layerMeshNum* axialNum);
-				setMeshFaceInformation(meshIDTemperary, meshMaterialNameTemperary, meshTemperatureNameTemperary, allMeshFaces, allEdges);
-				//ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
-				ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshMaterialNameTemperary, nFineMesh);
+				setMeshFaceInformation(meshIDTemperary, meshFaceTypeTemperary, meshFaceTemperatureNameTemperary, allMeshFaces, allEdges);
+				ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshFaceTypeTemperary, nFineMesh);
+				//ThreeDemMeshOutput(vStreamTemperay, allMeshFaces, meshMaterialNameTemperary, nFineMesh);
 
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
@@ -374,7 +374,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 								std::stringstream& ifs = vStreamTemperay[index];
 								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
 									meshIDtemp_, ifs, allMeshFaces[iMeshID_index+i].curveInfo, point, norm,
-									meshMaterialNameTemperary[index], meshTemperatureNameTemperary[index]);
+									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
 							}
 							/*
 							const char* removeFile = fileNameTemperary[index].data();
@@ -1257,7 +1257,7 @@ Assembly_Type* MOCMesh::GetAssemblyTypePointer(int iAssemblyType)
 	}
 	return nullptr;
 }
-std::tuple<int, int, int> MOCMesh::getIndex(Vector vPoint)
+SMocIndex MOCMesh::getIndex(Vector vPoint)
 {
 	return m_pAssemblyIndex->getIndex(vPoint);
 }

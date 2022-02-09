@@ -3,7 +3,7 @@
 #include <future>
 #include <mutex>
 #include<algorithm>
-#include "index.h"
+#include "Index.h"
 #include "MOCMesh.h"
 
 //extern int g_iProcessID;
@@ -52,14 +52,20 @@ Solver::Solver
 (
 	MOCMesh& mocMesh, 
 	CFDMesh& cfdMesh, 
-	MOCIndex& mocIndex, 
-	std::string mName
+	std::string mName,
+	bool bFirstCreated 
 )
 	:
 	m_mocMeshPtr(&mocMesh),
 	m_cfdMeshPtr(&cfdMesh),
 	materialName(mName)
 {
+
+	if (!bFirstCreated)
+	{
+		readMapInfor();
+		return;
+	}
 	std::mutex mtx;
 	m_CFD_MOC_Map.resize(cfdMesh.GetMeshPointNum());
 	m_MOC_CFD_Map.resize(mocMesh.m_vAssembly.size());
@@ -82,15 +88,10 @@ Solver::Solver
 	{
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
-		std::tuple<int, int, int> tup_index = mocMesh.getIndex(P);
-		int iAssembly=std::get<0>(tup_index),iCell=std::get<1>(tup_index)
-		,iMoc=std::get<2>(tup_index);
-		SMocIndex sFirstMocIndex;
-		sFirstMocIndex.iAssemblyIndex = iAssembly;
-		sFirstMocIndex.iCellIndex = iCell;
-		sFirstMocIndex.iMocIndex = iMoc;
+		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
+		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
 
-		int iMocIndex = mocIndex.GetMOCIDWithPoint(P.x_, P.y_, P.z_);
+		//int iMocIndex = mocIndex.GetMOCIDWithPoint(P.x_, P.y_, P.z_);
 		const MHTCFDMeshPoint& cfdPoint = dynamic_cast<const MHTCFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
 		//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
 		MHTMocMeshPoint mocPoint = m_mocMeshPtr->MoveMeshPoint(iAssembly, iCell, iMoc);
@@ -144,24 +145,28 @@ Solver::Solver
 		//遍历四个栅元中可能和这个CFD相交的MOC网格
 		for(int i=0;i<vPoint.size();i++)
 		{
-			std::tuple<int, int, int> tup_index = mocMesh.getIndex(vPoint[i]);
-			SMocIndex sMocIndex;
-			sMocIndex.iAssemblyIndex = std::get<0>(tup_index);
-			sMocIndex.iCellIndex = std::get<1>(tup_index);
-			sMocIndex.iMocIndex = std::get<2>(tup_index);
+			//获取栅元Index
+			SMocIndex sMocIndex = mocMesh.getIndex(vPoint[i]);
 			vMocIndex[i] = sMocIndex;
+
+			Vector leftdownPoint = mocMesh.m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->v_Cell[sMocIndex.iCellIndex].vCell_LeftDownPoint;
+			Vector rightupPoint = mocMesh.m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->v_Cell[sMocIndex.iCellIndex].vCell_RightUpPoint;
+			mocMesh.MovePoint(leftdownPoint, sMocIndex.iAssemblyIndex);
+			mocMesh.MovePoint(rightupPoint, sMocIndex.iAssemblyIndex);
+			PolyhedronSet box(leftdownPoint, rightupPoint);
+			//栅元和CFD网格相交的体积几乎为0，跳过后续计算
+			if (cfdPoint.IntersectedVolume(box) <= INTERSECT_JUDGE_LIMIT)
+				continue;
+
 			std::vector<int> vMocID;
 			mocMesh.m_pAssemblyIndex->getNearLayerMocID(vMocID, cfdPoint, sMocIndex.iAssemblyIndex,
 				sMocIndex.iCellIndex);
-			//计算该栅元和CFD相交体积，如果为0则不用计算后面
-
-
 
 			//遍历该栅元中所有可能相交的MOC网格
 			for (int j = 0; j < vMocID.size(); j++)
 			{
 				sMocIndex.iMocIndex = vMocID[i];
-				if (sFirstMocIndex == sMocIndex)continue;
+				if (sFirstMocIndex == sMocIndex)continue;//过滤掉上面已经计算过的MOC网格
 				const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(
 					*mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[vMocID[j]]);
 				if (materialName != localMOCPoint.GetMaterialName()) continue;
@@ -565,7 +570,7 @@ void Solver::readMapInfor()
 	return;
 }
 
-
+/*
 Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName)
 	:
 	m_mocMeshPtr(&mocMesh),
@@ -574,3 +579,4 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName)
 {
 	readMapInfor();
 }
+*/

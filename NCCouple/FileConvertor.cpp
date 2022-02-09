@@ -188,7 +188,7 @@ void CreateMapper()
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
-		Solver solverMapper(mocMesh, cfdMesh, mocIndex, materialList[i]);
+		Solver solverMapper(mocMesh, cfdMesh, materialList[i],true);
 		solverMapper.CheckMappingWeights();
 	}
 	return;

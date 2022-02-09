@@ -30,3 +30,8 @@ double MHTMeshPoint::IntersectedVolume(const MeshPoint& other) const {
 
 	return m_poly.IntersectionVolumeWithPolyhedronSet(p_other->m_poly);
 }
+
+double MHTMeshPoint::IntersectedVolume(const PolyhedronSet& other) const {
+
+	return m_poly.IntersectionVolumeWithPolyhedronSet(other);
+}

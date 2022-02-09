@@ -80,6 +80,8 @@ public:
 	}
 
 	double IntersectedVolume(const MeshPoint& other) const override;
+	double IntersectedVolume(const PolyhedronSet& other) const;
+
 	int VerticesNum() const override {
 		return m_poly.v_point.size();
 	}

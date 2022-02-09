@@ -5,7 +5,6 @@
 #include "MOCMesh.h"
 #include "MOCIndex.h"
 #include"CFDMesh.h"
-#include"Structure.h"
 //get  index in x vector according to x
 int getindex(double x, std::vector<double>&v_X)
 {
@@ -99,11 +98,13 @@ int AssemblyIndex::getAssemblyIndex(Vector vPoint)
 		return m_assemblyIndex[xIndex][yIndex];
 	return -1;
 }
-std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
+SMocIndex AssemblyIndex::getIndex(Vector vPoint)
 {
+	SMocIndex sTemp(-1,-1,-1);
+
 	int iAssemblyIndex = getAssemblyIndex(vPoint);
 	if (iAssemblyIndex == -1)
-		return std::make_tuple(- 1, -1, -1);
+		return sTemp;
 	int iAsssemblyTypeIndex;
 	for (int i = 0; i < v_CellIndex.size(); i++)
 	{
@@ -123,9 +124,13 @@ std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 		+pMOCMesh->m_vAssembly[iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint;
 	int iCell=v_CellIndex[iAsssemblyTypeIndex]->getCellIndex(vPoin_on_AssemblyType);
 	if (iCell == -1)
-		return std::make_tuple(-1, -1, -1);
-	int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType);
-	return std::make_tuple(iAssemblyIndex, iCell, iMesh);
+		return sTemp;
+	int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType); 
+	sTemp.iAssemblyIndex = iAssemblyIndex;
+	sTemp.iCellIndex = iCell;
+	sTemp.iMocIndex = iMesh;
+
+	return sTemp;
 }
 void AssemblyIndex::checkAssemblyIndex()
 {

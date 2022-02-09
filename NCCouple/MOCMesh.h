@@ -8,7 +8,6 @@
 #include <functional>
 #include"Structure.h"
 
-//#include "index.h"
 //#define nFineMesh 4
 class AssemblyIndex;
 //extern int g_iProcessID;
@@ -218,7 +217,8 @@ public:
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
 	//���������ȡȼ�������դԪ���Լ������id
-	std::tuple<int, int, int> getIndex(Vector vPoint);
+	SMocIndex getIndex(Vector vPoint);
+	//移动mesh到系统坐标
 	MHTMocMeshPoint MoveMeshPoint(int iAssembly,int iCell,int iMoc)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
