@@ -58,6 +58,12 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					m_vAssembly.resize(1);
 					m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
 					m_vAssembly[0].iAssemblyType = 1;
+					m_pAssemblyIndex->m_assemblyIndex.resize(1);
+					m_pAssemblyIndex->m_assemblyIndex[0].resize(1);
+					m_pAssemblyIndex->m_assemblyIndex[0][0] = 0;
+					//vNumber_of_each_coarse_mesh.resize(1);
+					//vNumber_of_each_coarse_mesh[0] = layerMeshNum;
+
 
 					break;
 				}

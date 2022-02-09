@@ -23,6 +23,9 @@
 #include "./MHT_field/Field.h"
 #include "./MHT_IO/FieldIO.h"
 
+
+
+#include "./MHT_IO/VTKIO.h"
 int g_iProcessID = 0;
 
 //this example was designed for test of
@@ -44,7 +47,36 @@ void MOC_APL_INP_FileTest()
 	//mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
+void MapTest()
+{
+	std::string configFile = "MapFile_FileNames";
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::vector<std::string>& materialList = matches[0];
+	std::vector<std::string>& regionList = matches[1];
+	std::string mocMeshFile = GetFileName(configFile, "inputApl");
+	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
+	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
 
+	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
+
+	MHTVTKReader reader(cfdMeshFile);
+	for (size_t i = 0; i < matches.size(); i++)
+	{
+		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
+		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
+		//read cfd mesh and create solver
+		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
+		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);
+		solverMapper.CheckMappingWeights();
+	}
+
+
+	//InitCFDMeshValue(cfdMesh);
+	//solver.CFDtoMOCinterception(ValueType::DENSITY);
+
+	//mocMesh.OutputStatus("pin_c1.inp");
+
+}
 Scalar initialT(Scalar x, Scalar y, Scalar z)
 {
 	Vector PointCenter(x, y, z);
@@ -212,7 +244,8 @@ int main(int argc, char** argv)
 	{
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
-		MOC_APL_INP_FileTest();
+		//MOC_APL_INP_FileTest();
+		MapTest();
 		return 0;
 	}
 	else

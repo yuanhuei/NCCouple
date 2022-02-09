@@ -57,6 +57,7 @@ public:
 		}
 		return 0.0;
 	}
+
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
@@ -203,7 +204,7 @@ public:
 
 public:
 	MOCMesh() = delete;
-	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType);
+	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType= MeshKernelType::MHT_KERNEL);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh

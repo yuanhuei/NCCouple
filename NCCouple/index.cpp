@@ -105,7 +105,7 @@ SMocIndex AssemblyIndex::getIndex(Vector vPoint)
 	int iAssemblyIndex = getAssemblyIndex(vPoint);
 	if (iAssemblyIndex == -1)
 		return sTemp;
-	int iAsssemblyTypeIndex;
+	int iAsssemblyTypeIndex=-1;
 	for (int i = 0; i < v_CellIndex.size(); i++)
 	{
 		if (v_CellIndex[i]->iAssembly_type == pMOCMesh->m_vAssembly[iAssemblyIndex].iAssemblyType)
@@ -113,12 +113,13 @@ SMocIndex AssemblyIndex::getIndex(Vector vPoint)
 			iAsssemblyTypeIndex = i;
 			break;
 		}
-		else
-		{
-			Logger::LogError("wrong iAssemblyType ");
-			exit(EXIT_FAILURE);
-		}
 	}
+	if(iAsssemblyTypeIndex == -1)
+	{
+		Logger::LogError("wrong iAssemblyType ");
+		exit(EXIT_FAILURE);
+	}
+
 	//坐标需要经过两次转换
 	Vector vPoin_on_AssemblyType = vPoint - pMOCMesh->m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint
 		+pMOCMesh->m_vAssembly[iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint;
@@ -164,7 +165,7 @@ void AssemblyIndex::checkAssemblyIndex()
 
 void AssemblyIndex::getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell)
 {
-	int iAsssemblyTypeIndex;
+	int iAsssemblyTypeIndex=-1;
 	//std::vector<int> vMocIndex;
 	for (int i = 0; i < v_CellIndex.size(); i++)
 	{
@@ -173,12 +174,13 @@ void AssemblyIndex::getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoi
 			iAsssemblyTypeIndex = i;
 			break;
 		}
-		else
-		{
-			Logger::LogError("wrong iAssemblyType ");
-			exit(EXIT_FAILURE);
-		}
 	}
+	if(iAsssemblyTypeIndex==-1)
+	{
+		Logger::LogError("wrong iAssemblyType ");
+		exit(EXIT_FAILURE);
+	}
+
 
 	MOCIndex& mocIndex = *v_CellIndex[iAsssemblyTypeIndex]->v_MocIndex[iCell];
 

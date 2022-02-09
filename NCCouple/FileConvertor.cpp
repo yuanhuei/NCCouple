@@ -126,19 +126,21 @@ void RegisterMapper
 	}
 	MOCMesh mocMesh(strInput_aplFileName, strOutput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	mocIndex.Initialization();
-	mocIndex.BuildUpIndex();
-	mocIndex.CheckIndex();
+	//MOCIndex mocIndex(mocMesh);
+	//mocIndex.Initialization();
+	//mocIndex.BuildUpIndex();
+	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
 	MHTVTKReader reader(strInput_meshFileName);
 	std::vector<std::string> MOCRegionList;
 	std::vector<std::string> CFDRegionList;
 	//collect region names from MOC mesh
-	for (size_t i = 0;i < mocMesh.GetMeshPointNum();i++)
+	for (size_t i = 0;i < mocMesh.m_vSMocIndex.size(); i++)
 	{
-		MOCMeshPoint* mocPoint = dynamic_cast<MOCMeshPoint*>(mocMesh.GetMeshPointPtr(i));
-		std::string thisName = mocPoint->GetMaterialName();
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
+
+		//std::shared_ptr<MOCMeshPoint> mocPoint = dynamic_cast<MOCMeshPoint*>(mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
+		std::string thisName = mocPoint.GetMaterialName();
 		InsertWhenNotFound(MOCRegionList, thisName);
 	}
 	//collect region names from CFD mesh
@@ -176,10 +178,10 @@ void CreateMapper()
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	mocIndex.Initialization();
-	mocIndex.BuildUpIndex();
-	mocIndex.CheckIndex();
+	//MOCIndex mocIndex(mocMesh);
+	//mocIndex.Initialization();
+	//mocIndex.BuildUpIndex();
+	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + cfdMeshFile);
 	MHTVTKReader reader(cfdMeshFile);
 	for (size_t i = 0; i < matches.size(); i++)
