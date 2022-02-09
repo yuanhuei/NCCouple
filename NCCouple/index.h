@@ -10,6 +10,7 @@
 class MOCMesh;
 struct Assembly;
 struct Assembly_Type;
+class CFDMeshPoint;
 
 class CellIndex {
 
@@ -23,9 +24,10 @@ private:
 	std::vector<std::vector<int>> m_cellIndex;
 	Assembly_Type* pAssemblyType = nullptr;
 	MOCMesh* pMOCMesh = nullptr;
-	std::vector<std::shared_ptr<MOCIndex>> v_MocIndex;
 
 public:
+	std::vector<std::shared_ptr<MOCIndex>> v_MocIndex;
+
 	int iAssembly_type;
 	void buildIndex();
 	int getCellIndex(Vector vPoint);
@@ -56,5 +58,6 @@ public:
 	//根据坐标获取燃料组件，栅元，以及网格的id
 	std::tuple<int, int, int> getIndex(Vector vPoint);
 	void checkAssemblyIndex();
+	void getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell);
 };
 #endif

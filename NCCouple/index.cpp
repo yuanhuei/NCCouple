@@ -4,6 +4,8 @@
 #include "./MHT_common/SystemControl.h"
 #include "MOCMesh.h"
 #include "MOCIndex.h"
+#include"CFDMesh.h"
+#include"Structure.h"
 //get  index in x vector according to x
 int getindex(double x, std::vector<double>&v_X)
 {
@@ -11,9 +13,9 @@ int getindex(double x, std::vector<double>&v_X)
 	for (; i < v_X.size() - 1; i++)
 	{
 		if (x >= v_X[i] && x <= v_X[i + 1])
-			break;
+			return i;
 	}
-	return i;
+	return -1;
 }
 //get ordered x y vector according to leftdownpoint and rightuppoint
 
@@ -93,11 +95,15 @@ int AssemblyIndex::getAssemblyIndex(Vector vPoint)
 {
 	int xIndex = getindex(vPoint.x_, m_x);
 	int yIndex = getindex(vPoint.y_, m_y);
-	return m_assemblyIndex[xIndex][yIndex];
+	if(xIndex!=-1&&yIndex!=-1)
+		return m_assemblyIndex[xIndex][yIndex];
+	return -1;
 }
 std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 {
 	int iAssemblyIndex = getAssemblyIndex(vPoint);
+	if (iAssemblyIndex == -1)
+		return std::make_tuple(- 1, -1, -1);
 	int iAsssemblyTypeIndex;
 	for (int i = 0; i < v_CellIndex.size(); i++)
 	{
@@ -116,6 +122,8 @@ std::tuple<int, int, int> AssemblyIndex::getIndex(Vector vPoint)
 	Vector vPoin_on_AssemblyType = vPoint - pMOCMesh->m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint
 		+pMOCMesh->m_vAssembly[iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint;
 	int iCell=v_CellIndex[iAsssemblyTypeIndex]->getCellIndex(vPoin_on_AssemblyType);
+	if (iCell == -1)
+		return std::make_tuple(-1, -1, -1);
 	int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType);
 	return std::make_tuple(iAssemblyIndex, iCell, iMesh);
 }
@@ -149,7 +157,58 @@ void AssemblyIndex::checkAssemblyIndex()
 
 }
 
+void AssemblyIndex::getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell)
+{
+	int iAsssemblyTypeIndex;
+	//std::vector<int> vMocIndex;
+	for (int i = 0; i < v_CellIndex.size(); i++)
+	{
+		if (v_CellIndex[i]->iAssembly_type == pMOCMesh->m_vAssembly[iAssembly].iAssemblyType)
+		{
+			iAsssemblyTypeIndex = i;
+			break;
+		}
+		else
+		{
+			Logger::LogError("wrong iAssemblyType ");
+			exit(EXIT_FAILURE);
+		}
+	}
 
+	MOCIndex& mocIndex = *v_CellIndex[iAsssemblyTypeIndex]->v_MocIndex[iCell];
+
+	//int iMesh = v_CellIndex[iAsssemblyTypeIndex]->getMeshID(iCell, vPoin_on_AssemblyType);
+	//return std::make_tuple(iAssemblyIndex, iCell, iMesh);
+
+
+	//compute the range of structured index in the axial direction 
+	int nzMin = mocIndex.axialCellNum - 1;
+	int nzMax = 0;
+	int verticeNum = cfdPoint.VerticesNum();
+	for (int j = 0; j < verticeNum; j++)
+	{
+		Vector cor = cfdPoint.VerticeCoordinate(j);
+		//坐标需要经过两次转换
+		cor= cor - pMOCMesh->m_vAssembly[iAssembly].vAssembly_LeftDownPoint
+			+ pMOCMesh->m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint;
+		std::tuple<int, int, int> structuredIJK = mocIndex.GetIJKWithPoint(cor.x_, cor.y_, cor.z_);
+		int nz = std::get<2>(structuredIJK);
+		nzMin = min(nz, nzMin);
+		nzMax = max(nz, nzMax);
+	}
+	//loop over only a part of MOC cells in the range previously obtained
+	for (int kk = max(0, nzMin); kk <= min(mocIndex.axialCellNum - 1, nzMax); kk++)
+	{
+		for (int ii = 0; ii < mocIndex.v_MOCID.size(); ii++)
+		{
+			for (int jj = 0; jj < mocIndex.v_MOCID[ii].size(); jj++)
+			{
+				int iMOCID = mocIndex.v_MOCID[ii][jj][kk];
+				vMocID.push_back(iMOCID);
+			}
+		}
+	}
+}
 void CellIndex::buildIndex()
 {
 	std::vector<Cell>& v_Cell = pAssemblyType->v_Cell;
@@ -221,7 +280,9 @@ int CellIndex::getCellIndex(Vector vPoint)
 {
 	int xIndex = getindex(vPoint.x_, m_x);
 	int yIndex = getindex(vPoint.y_, m_y);
-	return m_cellIndex[xIndex][yIndex];
+	if(xIndex!=-1&&yIndex!=-1)
+		return m_cellIndex[xIndex][yIndex];
+	return -1;
 
 }
 

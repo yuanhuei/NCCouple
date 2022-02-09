@@ -6,6 +6,8 @@
 #include <array>
 #include <unordered_map>
 #include <functional>
+#include"Structure.h"
+
 //#include "index.h"
 //#define nFineMesh 4
 class AssemblyIndex;
@@ -217,7 +219,7 @@ public:
 	std::pair<int, Scalar> GetAxialInformation();
 	//���������ȡȼ�������դԪ���Լ������id
 	std::tuple<int, int, int> getIndex(Vector vPoint);
-	MHTMocMeshPoint Move(int iAssembly,int iCell,int iMoc)
+	MHTMocMeshPoint MoveMeshPoint(int iAssembly,int iCell,int iMoc)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
 		double y= m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
@@ -227,6 +229,14 @@ public:
 		MHTMocMeshPoint meshPoint = mhtPolyhedron;
 		meshPoint.Move(Vector(-x, -y, 0));
 		return meshPoint;
+	};
+	void MovePoint(Vector& vPoint, int iAssembly)
+	{
+		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_ - m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
+		double y = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_ - m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
+
+		vPoint.x_ = vPoint.x_ - x;
+		vPoint.y_ = vPoint.y_ - y;
 	};
 	void Display()
 	{
@@ -274,6 +284,40 @@ public:
 	std::vector<Assembly> m_vAssembly;//���vector��
 	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//������� 
 	bool m_bSingleCell = true;//����
+	//返回总的mocMesh数量和Index值
+	int GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
+	{
+		int iIndex = 0;
+		//vSMocIndex.resize(iIndex);
+		SMocIndex sTemp;
+		for (int i = 0; i < m_vAssembly.size(); i++)
+		{
+			for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+			{
+				for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+				{
+					sTemp.iAssemblyIndex = i;
+					sTemp.iCellIndex = j;
+					sTemp.iMocIndex =k;
+					vSMocIndex.push_back(sTemp);
+					iIndex++;
+				}
+			}
+		}
+		return iIndex;
+	};
+	MocMeshField*  GetValueAtIndex(const SMocIndex& sIndex)
+	{
+		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
+	};
+	void SetValueAtIndex(const SMocIndex& sIndex, const MocMeshField& mocField, ValueType vt)
+	{
+		m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(mocField.GetValue(vt),vt);
+	};
+
+	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(SMocIndex pointID) const {
+		return m_vAssembly[pointID.iAssemblyIndex].pAssembly_type->v_Cell[pointID.iCellIndex].vMeshPointPtrVec[pointID.iMocIndex];
+	};
 
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
