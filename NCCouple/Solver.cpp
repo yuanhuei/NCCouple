@@ -60,7 +60,6 @@ Solver::Solver
 	m_cfdMeshPtr(&cfdMesh),
 	materialName(mName)
 {
-
 	if (!bFirstCreated)
 	{
 		readMapInfor();
@@ -77,11 +76,9 @@ Solver::Solver
 		{
 			m_MOC_CFD_Map[i][j].resize(mocMesh.m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
 		}
-
 	}
 	
 	int iNum = 0;
-	//the code below was written for test
 	int nCFDNum = cfdMesh.GetMeshPointNum();
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
@@ -186,14 +183,11 @@ Solver::Solver
 
 						m_CFD_MOC_Map[CFDID][sMocIndex] = intersectedVolume / cfdPointVolume;
 						m_MOC_CFD_Map[sMocIndex.iCellIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
-
 					}
 				};
 				futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
-
 			}
 		}
-
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
 
@@ -309,8 +303,8 @@ Solver::Solver
 void Solver::CheckMappingWeights()
 {
 	double totalMOCVolume = 0.0;
-	std::vector< SMocIndex> vSMocIndex;
-	for (int j = 0; j < m_mocMeshPtr->GetAllMocIndex(vSMocIndex); j++)
+	std::vector< SMocIndex>& vSMocIndex= m_mocMeshPtr->m_vSMocIndex;
+	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
 		if (this->materialName != mocPoint.GetMaterialName()) continue;
@@ -415,8 +409,8 @@ void Solver::Interception_fromMocToCFD
 	ValueType vt
 )
 {
-	std::vector< SMocIndex> vSMocIndex;
-	sourceMesh.GetAllMocIndex(vSMocIndex);
+	//std::vector< SMocIndex> vSMocIndex;
+	//sourceMesh.GetAllMocIndex(vSMocIndex);
 
 	std::vector<double> targetValueField = targetMesh.GetValueVec(vt);
 	//std::vector<double> sourceValueField = sourceMesh->GetValueVec(vt);
@@ -449,8 +443,8 @@ void Solver::Interception_fromCFDToMOC
 )
 {
 
-	std::vector< SMocIndex> vSMocIndex;
-	targetMesh.GetAllMocIndex(vSMocIndex);
+	std::vector< SMocIndex> vSMocIndex = targetMesh.m_vSMocIndex;
+	//targetMesh.GetAllMocIndex(vSMocIndex);
 
 	//std::vector<double> targetValueField = targetMesh.GetValueVec(vt);
 	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
@@ -499,12 +493,8 @@ void Solver::writeMapInfortoFile()
 				std::unordered_map<int, double>::iterator it;
 				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
 					MOCtoCFD_MapFile << i << " "<< j <<" "<< k <<" " << it->first << " " << it->second << std::endl;
-
-
 			}
-
 		}
-
 	}
 	CFDtoMOC_MapFile.close();
 	MOCtoCFD_MapFile.close();
@@ -514,9 +504,7 @@ void Solver::writeMapInfortoFile()
 void Solver::readMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
-
 	m_MOC_CFD_Map.resize(m_mocMeshPtr->m_vAssembly.size());
-
 	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
 	{
 		m_MOC_CFD_Map[i].resize(m_mocMeshPtr->m_vAssembly[i].pAssembly_type->v_Cell.size());

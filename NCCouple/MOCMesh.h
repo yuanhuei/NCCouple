@@ -65,25 +65,25 @@ private:
 
 struct Cell
 {
-	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //Õ¤Ôªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //0î40è6„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70Î4
 	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
 };
  struct Assembly_Type
 {
 	std::vector<Cell> v_Cell;
-	int iAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	double xLength, yLength;//ï¿½ï¿½ï¿½ï¿½
+	int iAssemblyType;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+	double xLength, yLength;//„1¤7„1¤7„1¤7„1¤7
 	Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
 
-};//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í½á¹¹ï¿½ï¿½
+};//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70É15ú5„1¤7„1¤7
 struct Assembly
 {
 	Assembly_Type* pAssembly_type;
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
-	int iAssemblyID;//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½IDï¿½ï¿½
-	int iAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    std::vector<std::vector<MocMeshField>> v_field;//ï¿½ï¿½Â¼ï¿½ï¿½Öµ
-};//ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½
+	int iAssemblyID;//„1¤7„1¤7„1¤7„1¤7„1¤70‘4„1¤7„1¤7§Ö„1¤7ID„1¤7„1¤7
+	int iAssemblyType;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7
+    std::vector<std::vector<MocMeshField>> v_field;//„1¤7„1¤70†4„1¤7„1¤70ö5
+};//„1¤7„1¤7„1¤7„1¤75ú5„1¤7„1¤7
 
 
 
@@ -216,9 +216,9 @@ public:
 	void WriteSurfaceTecplotFile(std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¤Ôªï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½id
+	//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70§00©7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤70î40è6„1¤7„1¤7„1¤70ê4„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7id
 	SMocIndex getIndex(Vector vPoint);
-	//ç§»åŠ¨meshåˆ°ç³»ç»Ÿåæ ‡
+	//ÒÆ¶¯meshµ½ÏµÍ³×ø±ê£¬·µ»Ø¸´ÖÆMeshPoint
 	MHTMocMeshPoint MoveMeshPoint(int iAssembly,int iCell,int iMoc)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
@@ -230,6 +230,7 @@ public:
 		meshPoint.Move(Vector(-x, -y, 0));
 		return meshPoint;
 	};
+	//ÒÆ¶¯ÌØ¶¨×é¼þÖÐµÄµãµ½ÏµÍ³×ø±ê
 	void MovePoint(Vector& vPoint, int iAssembly)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_ - m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
@@ -280,32 +281,11 @@ private:
 	std::stringstream m_preContext, m_sufContext;
 
 public:
-	std::vector<Assembly_Type> m_vAssemblyType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vector 
-	std::vector<Assembly> m_vAssembly;//ï¿½ï¿½ï¿½vectorï¿½ï¿½
-	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
-	bool m_bSingleCell = true;//ï¿½ï¿½ï¿½ï¿½
-	//è¿”å›žæ€»çš„mocMeshæ•°é‡å’ŒIndexå€¼
-	int GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
-	{
-		int iIndex = 0;
-		//vSMocIndex.resize(iIndex);
-		SMocIndex sTemp;
-		for (int i = 0; i < m_vAssembly.size(); i++)
-		{
-			for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
-			{
-				for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
-				{
-					sTemp.iAssemblyIndex = i;
-					sTemp.iCellIndex = j;
-					sTemp.iMocIndex =k;
-					vSMocIndex.push_back(sTemp);
-					iIndex++;
-				}
-			}
-		}
-		return iIndex;
-	};
+	std::vector<Assembly_Type> m_vAssemblyType;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7vector 
+	std::vector<Assembly> m_vAssembly;//„1¤7„1¤7„1¤7vector„1¤7„1¤7
+	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7„1¤7 
+	std::vector< SMocIndex> m_vSMocIndex;
+	bool m_bSingleCell = true;//„1¤7„1¤7„1¤7„1¤7
 	MocMeshField*  GetValueAtIndex(const SMocIndex& sIndex)
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
@@ -322,7 +302,8 @@ public:
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();
-
+	//°ÑËùÓÐindex¼ÇÂ¼µ½m_vSMocIndex
+	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
 
 };
 #endif

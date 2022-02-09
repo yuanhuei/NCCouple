@@ -22,11 +22,13 @@ public:
 		return m_cfdMeshPtr;
 	}
 	void CFDtoMOCinterception(ValueType vt) {
-		Interception(m_cfdMeshPtr, m_mocMeshPtr, vt);
+		//Interception(m_cfdMeshPtr, m_mocMeshPtr, vt);
+		Interception_fromCFDToMOC(*m_cfdMeshPtr, *m_mocMeshPtr, vt);
 		return;
 	}
 	void MOCtoCFDinterception(ValueType vt) {
-		Interception(m_mocMeshPtr, m_cfdMeshPtr, vt);
+		//Interception(m_mocMeshPtr, m_cfdMeshPtr, vt);
+		Interception_fromMocToCFD(*m_mocMeshPtr, *m_cfdMeshPtr, vt);
 		return;
 	}
 

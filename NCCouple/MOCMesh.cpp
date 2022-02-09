@@ -398,6 +398,25 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	outFile.close();
 	InitAssembly();
 	m_pAssemblyIndex->buildIndex();
+	GetAllMocIndex(m_vSMocIndex);
+}
+
+void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
+{
+	SMocIndex sTemp;
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			{
+				sTemp.iAssemblyIndex = i;
+				sTemp.iCellIndex = j;
+				sTemp.iMocIndex = k;
+				vSMocIndex.push_back(sTemp);
+			}
+		}
+	}
 }
 
 void MOCMesh::InitAssembly()
@@ -1417,5 +1436,7 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 		sideMeshID.push_back(meshIDTransfer[i]);
 	}
 }
+
+
 
 
