@@ -345,6 +345,8 @@ void Solver::CheckMappingWeights()
 	double minSumWeight = 1;
 	double maxSumWeight = 0;
 	//they are exepected to be around 1
+
+
 	int sumOfZero = 0;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
