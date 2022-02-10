@@ -31,6 +31,38 @@ int g_iProcessID = 0;
 //this example was designed for test of
 //(1) rewritting a apl file
 //(2) reading and writting of inp files
+
+void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
+	const std::vector<int> v_iCFD,const std::vector<SMocIndex>& vSMocindex,std::string fileName)
+{
+	std::string  mType;
+	std::ofstream ofile(fileName);
+	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
+	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
+	for (int i = 0; i < vSMocindex.size(); i++)
+	{
+
+		//平移坐标,
+		int iAssembly = vSMocindex[i].iAssemblyIndex;
+		double x = mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_- mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
+		double y= mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
+		
+		const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocmesh.GetMocMeshPointPtr(vSMocindex[i]));
+
+		MHTMocMeshPoint meshPoint = mocPoint;
+		meshPoint.Move(Vector(-x, -y, 0));
+		meshPoint.WriteTecplotZones(ofile);
+	}
+	for (int i = 0; i < v_iCFD.size(); i++)
+	{
+		const MHTMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMeshPoint&>(*cfdmesh.GetMeshPointPtr(v_iCFD[i]));
+		mhtPolyhedron.WriteTecplotZones(ofile);
+	}
+
+	ofile.close();
+	return;
+}
+
 void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
@@ -50,6 +82,7 @@ void MOC_APL_INP_FileTest()
 void MapTest()
 {
 	//RegisterMapper("c5g72l.apl", "c5g72l_out.apl", "PIN9Coarse.msh");
+	MOCFieldsToCFD();
 
 	std::string configFile = "MapFile_FileNames";
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
@@ -64,11 +97,17 @@ void MapTest()
 	MHTVTKReader reader(cfdMeshFile);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
-		//if (i == 0)continue;
+		if (i > 0)break;
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
+		std::vector<SMocIndex> thh;
+		for (int j = 0; j < 64; j++)
+		{
+			thh.push_back(SMocIndex(0, 51, j));
+		}
+		WriteTotecplot(mocMesh, cfdMesh, std::vector<int>{2559}, thh, "temp.plt");
 		//std::string outfilename = "mesh_" + std::to_string(i) + ".plt";
 		//cfdMesh.WriteTecplotFile(outfilename);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);

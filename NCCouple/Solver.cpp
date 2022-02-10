@@ -83,7 +83,7 @@ Solver::Solver
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
-		if (CFDID == 1560)
+		if (CFDID == 2559)
 			int kkk = 0;
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
@@ -381,6 +381,8 @@ void Solver::CheckMappingWeights()
 		{
 			sumSumWeight += iter.second;
 		}
+		if (sumSumWeight < 0.832)
+			int jj = j;
 		minSumWeight = min(minSumWeight, sumSumWeight);
 		maxSumWeight = max(maxSumWeight, sumSumWeight);
 		if (sumSumWeight < SMALL)
@@ -447,7 +449,7 @@ void Solver::Interception_fromMocToCFD
 		for (auto& pair : m_CFD_MOC_Map[i])
 		{
 			SMocIndex sMOCMeshPointID = pair.first;
-			MocMeshField* pMocField= sourceMesh.GetValueAtIndex(sMOCMeshPointID);
+			MocMeshField* pMocField= sourceMesh.GetFieldPointerAtIndex(sMOCMeshPointID);
 			double interCoe = pair.second;
 			interValue += interCoe * pMocField->GetValue(vt);
 			selfInterCoe -= interCoe;
@@ -476,7 +478,7 @@ void Solver::Interception_fromCFDToMOC
 	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
 	for (int i = 0; i < vSMocIndex.size(); i++)
 	{
-		MocMeshField mocField = *targetMesh.GetValueAtIndex(vSMocIndex[i]);
+		MocMeshField mocField = *targetMesh.GetFieldPointerAtIndex(vSMocIndex[i]);
 		double interValue = 0.0;
 		double selfInterCoe = 1.0;
 		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
@@ -488,8 +490,8 @@ void Solver::Interception_fromCFDToMOC
 			selfInterCoe -= interCoe;
 		}
 		interValue += selfInterCoe * mocField.GetValue(vt);
-		mocField.SetValue(interValue,vt);
-		targetMesh.SetValueAtIndex(vSMocIndex[i], mocField,vt);
+		//mocField.SetValue(interValue,vt);
+		targetMesh.SetValueAtIndex(vSMocIndex[i], interValue, vt);
 	}
 
 	//targetMesh.SetValueVec(targetValueField, vt);

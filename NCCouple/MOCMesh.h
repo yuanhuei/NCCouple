@@ -21,7 +21,7 @@ class AssemblyIndex;
 class MocMeshField
 {
 public:
-	MocMeshField();
+	MocMeshField() {};
 
 public:
 	void SetValue(double value, ValueType vt) {
@@ -262,13 +262,17 @@ public://multi assembly multi cell
 	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;
 	std::vector< SMocIndex> m_vSMocIndex;
 	bool m_bSingleCell = true;
-	MocMeshField*  GetValueAtIndex(const SMocIndex& sIndex)
+	MocMeshField*  GetFieldPointerAtIndex(const SMocIndex& sIndex)
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
 	};
-	void SetValueAtIndex(const SMocIndex& sIndex, const MocMeshField& mocField, ValueType vt)
+	double GetValueAtIndex(const SMocIndex& sIndex, ValueType vt) const
 	{
-		m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(mocField.GetValue(vt),vt);
+		return m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
+	};
+	void SetValueAtIndex(const SMocIndex& sIndex, double value, ValueType vt)
+	{
+		m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value,vt);
 	};
 
 	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(SMocIndex pointID) const {

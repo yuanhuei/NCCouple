@@ -411,8 +411,10 @@ void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 	SMocIndex sTemp;
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
+		//m_vAssembly[i].v_field.resize(m_vAssembly[i].pAssembly_type->v_Cell.size());
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
+			//m_vAssembly[i].v_field[j].resize(64);
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
 				sTemp.iAssemblyIndex = i;
@@ -550,6 +552,16 @@ void MOCMesh::InitAssembly()
 				});
 		}
 	}
+	//init field
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		m_vAssembly[i].v_field.resize(m_vAssembly[i].pAssembly_type->v_Cell.size());
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			m_vAssembly[i].v_field[j].resize(m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
+		}
+	}
+
 	
 }
 
@@ -1018,6 +1030,21 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 
 void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
 {
+
+	
+	std::vector<int> bIndex{ 17, 34, 51, 18, 35, 52, 19, 36, 53 };
+	//MocMeshField tempMoc;
+	//tempMoc.SetValue(1000, ValueType::HEATPOWER);
+	for(int i=0;i<bIndex.size();i++)
+	{
+		for (int j = 0; j < 64; j++)
+		{
+			SMocIndex tempMocIndex(0, bIndex[i], j);
+			this->SetValueAtIndex(tempMocIndex, 1000, ValueType::HEATPOWER);
+		}
+
+	}
+	/*
 	std::ifstream ifs(heatPowerFileName);
 	if (!ifs.is_open()) 
 	{
@@ -1036,8 +1063,8 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 	{
 		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
 	}
-
 	ifs.close();
+	*/
 }
 
 void MOCMesh::WriteTecplotFile

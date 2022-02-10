@@ -34,21 +34,27 @@ Scalar Integration
 		bSourceMoc = false;
 	}
 	Scalar integration = 0.0;
-	for (int i = 0; i < mesh.GetMeshPointNum(); i++)
+	double sourceValue = 0, pointVolume = 0;
+	if (bSourceMoc)
 	{
-		double sourceValue = 0;
-		if (bSourceMoc)
+		 const MOCMesh& mocMesh = dynamic_cast<const MOCMesh&> (mesh);
+		for (int i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
 		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mesh.GetMeshPointPtr(i));
+			const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
 			if (mocPoint.GetMaterialName() != strZoneName) continue;
-			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+			sourceValue = mocMesh.GetValueAtIndex(mocMesh.m_vSMocIndex[i],vt);
+			pointVolume = mocPoint.Volume();
+			integration += sourceValue * pointVolume;
 		}
-		else
+	}
+	else
+	{
+		for (int i = 0; i < mesh.GetMeshPointNum(); i++)
 		{
 			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+			pointVolume = mesh.GetMeshPointPtr(i)->Volume();
+			integration += sourceValue * pointVolume;
 		}
-		double pointVolume = mesh.GetMeshPointPtr(i)->Volume();
-		integration += sourceValue * pointVolume;
 	}
 	return integration;
 }
