@@ -61,25 +61,7 @@ void AssemblyIndex::buildIndex()
 		vRightUpPoint[i] = v_Assembly[i].vAssembly_RightUpPoint;		
 	}
 	getOrderXY(vLeftDownPoint, vRightUpPoint, m_x, m_y);
-	/*
 
-	//m_assemblyIndex初始化为-1,代表无燃料组件在里面
-	m_assemblyIndex.resize(m_x.size());
-	int ySize = m_y.size();
-	for (int i = 0; i < m_x.size(); i++)
-	{
-		m_assemblyIndex[i].resize(ySize);
-		std::fill(m_assemblyIndex[i].begin(), m_assemblyIndex[i].end(), -1);
-	}
-	for (int i =0 ; i < v_Assembly.size(); i++)
-	{
-		int xIndex = getindex(v_Assembly[i].vAssembly_LeftDownPoint.x_, m_x);
-		int yIndex= getindex(v_Assembly[i].vAssembly_LeftDownPoint.y_, m_y);
-		m_assemblyIndex[xIndex][yIndex] = i;
-
-	}
-	*/
-	//call v_CellIndex buildindex
 	checkAssemblyIndex();
 
 	v_CellIndex.resize(v_AssemblyType.size());
@@ -120,7 +102,7 @@ SMocIndex AssemblyIndex::getIndex(Vector vPoint)
 		exit(EXIT_FAILURE);
 	}
 
-	//坐标需要经过两次转换
+	//move coordinate to assembly type coordinate
 	Vector vPoin_on_AssemblyType = vPoint - pMOCMesh->m_vAssembly[iAssemblyIndex].vAssembly_LeftDownPoint
 		+pMOCMesh->m_vAssembly[iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint;
 	int iCell=v_CellIndex[iAsssemblyTypeIndex]->getCellIndex(vPoin_on_AssemblyType);
@@ -195,7 +177,7 @@ void AssemblyIndex::getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoi
 	for (int j = 0; j < verticeNum; j++)
 	{
 		Vector cor = cfdPoint.VerticeCoordinate(j);
-		//坐标需要经过两次转换
+		//move coordinate to assebmly type coordinate
 		cor= cor - pMOCMesh->m_vAssembly[iAssembly].vAssembly_LeftDownPoint
 			+ pMOCMesh->m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint;
 		std::tuple<int, int, int> structuredIJK = mocIndex.GetIJKWithPoint(cor.x_, cor.y_, cor.z_);
@@ -235,12 +217,10 @@ void CellIndex::buildIndex()
 	for (int i = 0; i < m_x.size()-1; i++)
 	{
 		m_cellIndex[i].resize(ySize);
-		std::fill(m_cellIndex[i].begin(), m_cellIndex[i].end(), -1);//初始值赋值为-1
+		std::fill(m_cellIndex[i].begin(), m_cellIndex[i].end(), -1);
 	}
 	for (int i =0 ; i < v_Cell.size(); i++)
 	{
-		//遍历堆中栅元，根据栅元中心坐标x获取索引 满足x>=m_x[i],且x<m_x[i+1],同样获取y，
-		//根据获得的I,J给m_cellIndex赋值
 		int xIndex = getindex((v_Cell[i].vCell_LeftDownPoint.x_+ v_Cell[i].vCell_RightUpPoint.x_)/2, m_x);
 		int yIndex = getindex((v_Cell[i].vCell_LeftDownPoint.y_ + v_Cell[i].vCell_RightUpPoint.y_) / 2, m_y);
 		m_cellIndex[xIndex][yIndex] = i;

@@ -64,6 +64,7 @@ void MapTest()
 	MHTVTKReader reader(cfdMeshFile);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
+		//if (i == 0)continue;
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver

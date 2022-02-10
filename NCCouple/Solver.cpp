@@ -83,6 +83,8 @@ Solver::Solver
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
+		if (CFDID == 1560)
+			int kkk = 0;
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
@@ -110,14 +112,14 @@ Solver::Solver
 			continue;
 		}
 		std::vector<std::future<void>> futureVec;
-		//所在栅元左下角，右上角坐标
+		//coordinate on the leftdown and rightup corner of cell
 		Vector leftdownPoint = mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vCell_LeftDownPoint;
 		Vector rightupPoint = mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vCell_RightUpPoint;
-		//坐标转换成系统坐标
+		// move system coordinate 
 		mocMesh.MovePoint(leftdownPoint, iAssembly);
 		mocMesh.MovePoint(rightupPoint, iAssembly);
 		Vector middlePoint = (leftdownPoint + rightupPoint) / 2;
-		//获取四个角中离CFD中心位置最近的一个
+		//get the corner point which is nearest to CFD center
 		Vector vNearestPoint;
 		if (P.x_ >= middlePoint.x_ && P.y_ >= middlePoint.y_)
 			vNearestPoint = rightupPoint;
@@ -133,16 +135,16 @@ Solver::Solver
 			vNearestPoint.x_ = leftdownPoint.x_;
 			vNearestPoint.y_ = rightupPoint.y_;
 		}
-		//获取四个相邻栅元
+		//get the nearby four cell
 		std::vector<SMocIndex> vMocIndex(4);
 		std::vector<Vector> vPoint{ Vector(vNearestPoint.x_ + 0.5, vNearestPoint.y_ + 0.5,0),
 			Vector(vNearestPoint.x_ + 0.5, vNearestPoint.y_ - 0.5,0),
 			Vector(vNearestPoint.x_ - 0.5, vNearestPoint.y_ + 0.5, 0),
 			Vector(vNearestPoint.x_ - 0.5, vNearestPoint.y_ - 0.5, 0) };
-		//遍历四个栅元中可能和这个CFD相交的MOC网格
+		//search this four cell
 		for(int i=0;i<vPoint.size();i++)
 		{
-			//获取栅元Index
+			//get cell Index
 			SMocIndex sMocIndex = mocMesh.getIndex(vPoint[i]);
 			if (sMocIndex == SMocIndex(-1, -1, -1))
 				continue;
@@ -153,7 +155,6 @@ Solver::Solver
 			mocMesh.MovePoint(leftdownPoint, sMocIndex.iAssemblyIndex);
 			mocMesh.MovePoint(rightupPoint, sMocIndex.iAssemblyIndex);
 			PolyhedronSet box(leftdownPoint, rightupPoint);
-			//栅元和CFD网格相交的体积几乎为0，跳过后续计算
 			if (cfdPoint.IntersectedVolume(box) <= INTERSECT_JUDGE_LIMIT)
 				continue;
 
@@ -161,11 +162,11 @@ Solver::Solver
 			mocMesh.m_pAssemblyIndex->getNearLayerMocID(vMocID, cfdPoint, sMocIndex.iAssemblyIndex,
 				sMocIndex.iCellIndex);
 
-			//遍历该栅元中所有可能相交的MOC网格
+			//search the nearby mesh in the cell
 			for (int j = 0; j < vMocID.size(); j++)
 			{
-				sMocIndex.iMocIndex = vMocID[i];
-				if (sFirstMocIndex == sMocIndex)continue;//过滤掉上面已经计算过的MOC网格
+				sMocIndex.iMocIndex = vMocID[j];
+				if (sFirstMocIndex == sMocIndex)continue;
 				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(
 					//*mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[vMocID[j]]);
 				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(sMocIndex));
@@ -189,11 +190,12 @@ Solver::Solver
 						m_MOC_CFD_Map[sMocIndex.iAssemblyIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
 					}
 				};
-				futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
+				fun();
+				//futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 			}
 		}
-		for (size_t j = 0; j < futureVec.size(); j++)
-			futureVec[j].get();
+		//for (size_t j = 0; j < futureVec.size(); j++)
+			//futureVec[j].get();
 
 		if (CFDID % 100 == 0 || CFDID == cfdMesh.GetMeshPointNum())
 		{

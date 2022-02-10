@@ -26,7 +26,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	string line;
 	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
 
-	int xDirection_Number = 0, yDirection_Number = 0;//x,y方向上的组件个数
+	int xDirection_Number = 0, yDirection_Number = 0;//assembly numble on x,y direction
 	int iNt_Assembly_index = 0;
 	std::streampos strpos, assembly_pos;
 	bool bNextAssembly = false;
@@ -179,7 +179,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						m_vAssemblyType[iNt_Assembly_index].yLength = std::stod(token)/10;
 
 					}
-					if (token == "*Mesh_number_of_each_coarse_mesh")//多棒需要解析，单棒不需要
+					if (token == "*Mesh_number_of_each_coarse_mesh")//only on multi  cell 
 					{
 						std::streampos pos;
 						while (getline(infile, line))
@@ -328,7 +328,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				}
 
-				//生成每一个组件类型的网格
+				//generate mesh for every assembly type
 				
 				int iTotalMeshNum = 0;
 				for (int i = 0; i < vNumber_of_each_coarse_mesh.size(); i++)
@@ -353,7 +353,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				m_vAssemblyType[iNt_Assembly_index].v_Cell.resize(vNumber_of_each_coarse_mesh.size());
 				//m_meshPointPtrVec.resize(axialNum * layerMeshNum);
-				//按照栅元组织生成meshpoint
 				int iMeshID_index = 0;
 				for (int k = 0; k < vNumber_of_each_coarse_mesh.size(); k++)
 				{
@@ -427,10 +426,10 @@ void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 
 void MOCMesh::InitAssembly()
 {
-    //计算组件类型高度
+    //caculate the height of assebmly
 	std::pair<int, Scalar> mocAxial = GetAxialInformation();
 	double mocHeight = mocAxial.first * mocAxial.second;
-	//计算组件类型左下角右上角坐标，坐标系为数据文件中读取出来的原始坐标系
+	//caculate the leftdown and rightup corner of assembly on original coordinate from datafile
 	for(int i=0;i<m_vAssemblyType.size();i++)
 	{
 		double xAssembly_Min = 10000, yAssembly_Min = 10000,xAssembly_Max = -10000, yAssembly_Max = -10000;
@@ -449,7 +448,7 @@ void MOCMesh::InitAssembly()
 					yMax = max(yMax, mocPoint.VerticeCoordinate(m).y_);
 				}
 			}
-			//栅元左下角右上角坐标
+			// coordinate of leftdown and rightup corner of cell
 			m_vAssemblyType[i].v_Cell[j].vCell_LeftDownPoint = Vector(xMin, yMin,0);
 			m_vAssemblyType[i].v_Cell[j].vCell_RightUpPoint = Vector(xMax, yMax, mocHeight);
 
@@ -466,12 +465,11 @@ void MOCMesh::InitAssembly()
 		m_vAssemblyType[i].vAssemblyType_LeftDownPoint = Vector(xAssembly_Min, yAssembly_Min, 0);
 		m_vAssemblyType[i].vAssemblyType_RightUpPoint = Vector(xAssembly_Max, yAssembly_Max, mocHeight);
 	}
-	//初始化组件指针
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
 		m_vAssembly[i].pAssembly_type = GetAssemblyTypePointer(m_vAssembly[i].iAssemblyType);
 	}
-	//计算组件左下角坐标和右上角坐标，坐标系为以组件矩阵左下角为原点的坐标系
+	//caculate the leftdown and rightup corner of assembly on system coordinate
 	if (m_bSingleCell)
 	{
 			m_vAssembly[0].vAssembly_LeftDownPoint = Vector(0, 0, 0);
@@ -541,7 +539,7 @@ void MOCMesh::InitAssembly()
 			}
 		}
 	}
-	//meshpoint 按照poinid排序
+	//sort meshpoint on pointid from apl file
 	
 	for (int i = 0;i < m_vAssemblyType.size();i++)
 	{
@@ -714,7 +712,6 @@ void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, st
 			index0++;
 
 			//filename = filename + ".off";		
-			//g_iProcessID进程ID，在输出临时文件时加到文件名里面，不然MPI多进程跑起来会出错		
 			filename = filename  + ".off";
 			
 			//fileNameTransfer.push_back(filename);

@@ -66,25 +66,25 @@ private:
 
 struct Cell
 {
-	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; //դԪ������Ϣ
+	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; 
 	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
 };
  struct Assembly_Type
 {
 	std::vector<Cell> v_Cell;
-	int iAssemblyType;//�������
-	double xLength, yLength;//����
+	int iAssemblyType;
+	double xLength, yLength;
 	Vector vAssemblyType_LeftDownPoint, vAssemblyType_RightUpPoint;
 
-};//������ͽṹ��
+};
 struct Assembly
 {
 	Assembly_Type* pAssembly_type;
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
-	int iAssemblyID;//�����ļ��е�ID��
-	int iAssemblyType;//�������
-    std::vector<std::vector<MocMeshField>> v_field;//��¼��ֵ
-};//����ṹ��
+	int iAssemblyID;
+	int iAssemblyType;
+    std::vector<std::vector<MocMeshField>> v_field;
+};
 
 
 
@@ -215,9 +215,9 @@ public:
 	void WriteSurfaceTecplotFile(std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
-	//���������ȡȼ�������դԪ���Լ������id
+	//
 	SMocIndex getIndex(Vector vPoint);
-	//移动mesh到系统坐标，返回复制MeshPoint
+	//move coppied mesh to system coordinate 
 	MHTMocMeshPoint MoveMeshPoint(int iAssembly,int iCell,int iMoc)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
@@ -229,7 +229,7 @@ public:
 		meshPoint.Move(Vector(-x, -y, 0));
 		return meshPoint;
 	};
-	//移动特定组件中的点到系统坐标
+	//move point to system coordinate
 	void MovePoint(Vector& vPoint, int iAssembly)
 	{
 		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_ - m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
@@ -256,12 +256,12 @@ private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
 
-public://支持多栅元多组件
-	std::vector<Assembly_Type> m_vAssemblyType;//�������vector 
-	std::vector<Assembly> m_vAssembly;//���vector��
-	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//������� 
+public://multi assembly multi cell 
+	std::vector<Assembly_Type> m_vAssemblyType;
+	std::vector<Assembly> m_vAssembly;
+	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;
 	std::vector< SMocIndex> m_vSMocIndex;
-	bool m_bSingleCell = true;//����
+	bool m_bSingleCell = true;
 	MocMeshField*  GetValueAtIndex(const SMocIndex& sIndex)
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
@@ -278,7 +278,7 @@ public://支持多栅元多组件
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();
-	//把所有index记录到m_vSMocIndex
+	//put all index in m_vSMocIndex
 	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
 
 };

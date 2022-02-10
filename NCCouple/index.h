@@ -57,7 +57,6 @@ public:
 		return m_assemblyIndex[xIndex][yIndex];
 	};
 
-	//根据坐标获取燃料组件，栅元，以及网格的id
 	SMocIndex getIndex(Vector vPoint);
 	void checkAssemblyIndex();
 	void getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell);
