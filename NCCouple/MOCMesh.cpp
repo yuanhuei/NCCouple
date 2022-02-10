@@ -1278,6 +1278,30 @@ void MOCMesh::WriteHeatPowerTxtFile()
 	ofile.close();
 	return;
 }
+
+void MOCMesh::Display()
+{
+	std::cout << "m_coarseMeshInfo:" << std::endl;
+	for (int i = 0; i < m_coarseMeshInfo.size(); i++)
+	{
+		std::cout << "i = " << i << std::endl;
+		for (int j = 0; j < m_coarseMeshInfo[i].size(); i++)
+		{
+			std::cout << m_coarseMeshInfo[i][j] << std::endl;
+		}
+	}
+	std::cout << "layerMeshNum = " << layerMeshNum << std::endl;
+	std::cout << "EdgeNum = " << EdgeNum << std::endl;
+	std::cout << "coarseMeshNum = " << coarseMeshNum << std::endl;
+	std::cout << "axialNum = " << axialNum << std::endl;
+	std::cout << "axialInformation:" << std::endl;
+	for (int i = 0; i < axialInformation.size(); i++)
+	{
+		std::cout << "i = " << i << std::endl;
+		std::cout << axialInformation[i].first << "," << axialInformation[i].second << std::endl;
+	}
+}
+
 Assembly_Type* MOCMesh::GetAssemblyTypePointer(int iAssemblyType)
 {
 	for (int i = 0; i < m_vAssemblyType.size(); i++)

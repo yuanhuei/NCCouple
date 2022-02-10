@@ -186,7 +186,7 @@ Solver::Solver
 						//m_MOC_CFD_Map[MOCID][CFDID] = intersectedVolume / mocPointVolume;
 
 						m_CFD_MOC_Map[CFDID][sMocIndex] = intersectedVolume / cfdPointVolume;
-						m_MOC_CFD_Map[sMocIndex.iCellIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
+						m_MOC_CFD_Map[sMocIndex.iAssemblyIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
 					}
 				};
 				futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
@@ -306,8 +306,24 @@ Solver::Solver
 */
 void Solver::CheckMappingWeights()
 {
+	std::vector< SMocIndex> vSMocIndex;
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	{
+		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
+		{
+			for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
+			{
+				std::unordered_map<int, double>::iterator it;
+				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
+					vSMocIndex.push_back(SMocIndex(i,j,k));
+			}
+		}
+	}
+
+
+
 	double totalMOCVolume = 0.0;
-	std::vector< SMocIndex>& vSMocIndex= m_mocMeshPtr->m_vSMocIndex;
+	//std::vector< SMocIndex>& vSMocIndex= m_mocMeshPtr->m_vSMocIndex;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
@@ -320,8 +336,8 @@ void Solver::CheckMappingWeights()
 		const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(j));
 		totalCFDVolume += cfdPoint.Volume();
 	}
-	Logger::LogInfo(FormatStr("Total volume of MOC is %.6lf", totalMOCVolume));
-	Logger::LogInfo(FormatStr("Total volume of CFD is %.6lf", totalCFDVolume));
+	Logger::LogInfo(FormatStr("Total cell number of MOC is %d,Total volume of MOC is %.6lf", vSMocIndex.size(),totalMOCVolume));
+	Logger::LogInfo(FormatStr("Total cell number of CFD is %d,Total volume of CFD is %.6lf", m_cfdMeshPtr->GetMeshPointNum(), totalCFDVolume));
 	//compute the maximum and the minimum of weights of CFD->MOC mapping
 	double minSumWeight = 1;
 	double maxSumWeight = 0;

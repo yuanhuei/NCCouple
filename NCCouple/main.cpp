@@ -49,6 +49,8 @@ void MOC_APL_INP_FileTest()
 }
 void MapTest()
 {
+	//RegisterMapper("c5g72l.apl", "c5g72l_out.apl", "PIN9Coarse.msh");
+
 	std::string configFile = "MapFile_FileNames";
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 	std::vector<std::string>& materialList = matches[0];
@@ -60,12 +62,14 @@ void MapTest()
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
 
 	MHTVTKReader reader(cfdMeshFile);
-	for (size_t i = 0; i < matches.size(); i++)
+	for (size_t i = 0; i < regionList.size(); i++)
 	{
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
+		//std::string outfilename = "mesh_" + std::to_string(i) + ".plt";
+		//cfdMesh.WriteTecplotFile(outfilename);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);
 		solverMapper.CheckMappingWeights();
 	}

@@ -202,7 +202,6 @@ public:
 		std::vector<std::function<double(double)>> eleDensCalcFunVec;
 	};
 
-public:
 	MOCMesh() = delete;
 	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType= MeshKernelType::MHT_KERNEL);
 
@@ -211,7 +210,6 @@ public:
 	void InitMOCFromInputFile(std::string inputFileName);
 	void InitMOCHeatPower(std::string heatPowerFileName);
 
-public:
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string, std::string);
 	void WriteSurfaceTecplotFile(std::string);
@@ -240,28 +238,7 @@ public:
 		vPoint.x_ = vPoint.x_ - x;
 		vPoint.y_ = vPoint.y_ - y;
 	};
-	void Display()
-	{
-		std::cout << "m_coarseMeshInfo:" << std::endl;
-		for (int i = 0;i < m_coarseMeshInfo.size();i++)
-		{
-			std::cout << "i = " << i << std::endl;
-			for (int j = 0;j < m_coarseMeshInfo[i].size();i++)
-			{
-				std::cout << m_coarseMeshInfo[i][j] << std::endl;
-			}
-		}
-		std::cout << "layerMeshNum = " << layerMeshNum << std::endl;
-		std::cout << "EdgeNum = " << EdgeNum << std::endl;
-		std::cout << "coarseMeshNum = " << coarseMeshNum << std::endl;
-		std::cout << "axialNum = " << axialNum << std::endl;
-		std::cout << "axialInformation:" << std::endl;
-		for (int i = 0;i < axialInformation.size();i++)
-		{
-			std::cout << "i = " << i << std::endl;
-			std::cout << axialInformation[i].first<< "," << axialInformation[i].second << std::endl;
-		}
-	}
+	void Display();
 
 private:
 	void setMeshInformation(std::string line); //set mesh information
@@ -269,7 +246,6 @@ private:
 	void setEdgeInformation(std::string lineType, std::string linePosition, int edgeIDTemperary, std::vector<MOCEdge>& allEdges, int nFineMesh);//set edge objects
 	void setMeshFaceInformation(std::vector<int> meshIDTransfer, std::vector<std::string> meshFaceTypeTransfer, std::vector<std::string> meshFaceTemperatureNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<MOCEdge>& allEdges);  //set surface objects
 
-private:
 	std::vector<std::vector<int>> m_coarseMeshInfo;
 	int layerMeshNum;          //fine mesh number
 	int EdgeNum;            //edge number
@@ -277,11 +253,10 @@ private:
 	int axialNum;
 	std::vector<std::pair<int, double>> axialInformation;
 
-private:
 	std::unordered_map<std::string, Medium> m_mediumMap;
 	std::stringstream m_preContext, m_sufContext;
 
-public:
+public://支持多栅元多组件
 	std::vector<Assembly_Type> m_vAssemblyType;//�������vector 
 	std::vector<Assembly> m_vAssembly;//���vector��
 	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;//������� 
