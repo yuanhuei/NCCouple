@@ -315,7 +315,10 @@ void Solver::CheckMappingWeights()
 			{
 				std::unordered_map<int, double>::iterator it;
 				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
+				{
 					vSMocIndex.push_back(SMocIndex(i,j,k));
+					break;
+				}
 			}
 		}
 	}
