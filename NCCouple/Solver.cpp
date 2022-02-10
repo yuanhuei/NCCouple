@@ -144,6 +144,8 @@ Solver::Solver
 		{
 			//获取栅元Index
 			SMocIndex sMocIndex = mocMesh.getIndex(vPoint[i]);
+			if (sMocIndex == SMocIndex(-1, -1, -1))
+				continue;
 			vMocIndex[i] = sMocIndex;
 
 			Vector leftdownPoint = mocMesh.m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->v_Cell[sMocIndex.iCellIndex].vCell_LeftDownPoint;
@@ -164,8 +166,10 @@ Solver::Solver
 			{
 				sMocIndex.iMocIndex = vMocID[i];
 				if (sFirstMocIndex == sMocIndex)continue;//过滤掉上面已经计算过的MOC网格
-				const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(
-					*mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[vMocID[j]]);
+				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(
+					//*mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[vMocID[j]]);
+				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(sMocIndex));
+				MHTMocMeshPoint localMOCPoint = m_mocMeshPtr->MoveMeshPoint(sMocIndex.iAssemblyIndex, sMocIndex.iCellIndex, sMocIndex.iMocIndex);
 				if (materialName != localMOCPoint.GetMaterialName()) continue;
 				auto fun = [this, &mtx, CFDID, sMocIndex, localMOCPoint,cfdPoint]()
 				{

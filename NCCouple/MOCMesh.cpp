@@ -436,7 +436,7 @@ void MOCMesh::InitAssembly()
 		double xAssembly_Min = 10000, yAssembly_Min = 10000,xAssembly_Max = -10000, yAssembly_Max = -10000;
 		for (int j=0;j < m_vAssemblyType[i].v_Cell.size(); j++)
 		{
-			double xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000;
+			double xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000, zMin=1000, zMax=-1000;
 			for (int k = 0; k < m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
 				const MeshPoint& mocPoint = *m_vAssemblyType[i].v_Cell[j].vMeshPointPtrVec[k];
@@ -451,12 +451,17 @@ void MOCMesh::InitAssembly()
 			}
 			//栅元左下角右上角坐标
 			m_vAssemblyType[i].v_Cell[j].vCell_LeftDownPoint = Vector(xMin, yMin,0);
-			m_vAssemblyType[i].v_Cell[j].vCell_RightUpPoint = Vector(xMax, yMax, 0);
+			m_vAssemblyType[i].v_Cell[j].vCell_RightUpPoint = Vector(xMax, yMax, mocHeight);
 
 			xAssembly_Min = min(xAssembly_Min, xMin);
 			yAssembly_Min = min(yAssembly_Min,yMin);
 			xAssembly_Max = max(xAssembly_Max, xMax);
 			yAssembly_Max = max(yAssembly_Max, yMax);
+			if (m_bSingleCell)
+			{
+				m_vAssemblyType[i].xLength = xAssembly_Max - xAssembly_Min;
+				m_vAssemblyType[i].yLength = yAssembly_Max - yAssembly_Min;
+			}
 		}
 		m_vAssemblyType[i].vAssemblyType_LeftDownPoint = Vector(xAssembly_Min, yAssembly_Min, 0);
 		m_vAssemblyType[i].vAssemblyType_RightUpPoint = Vector(xAssembly_Max, yAssembly_Max, mocHeight);
