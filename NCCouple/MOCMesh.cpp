@@ -901,7 +901,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 			p_currentContext = &m_sufContext;
 			if (token == MATERIAL_DEFINITION) {
 				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('\w+')"))) {
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
 					std::string materialName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
@@ -957,7 +957,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 			}
 			else if (token == TEMPERATURE_DEFINITION) {
 				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('\w+')"))) {
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
 					std::string tempName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
