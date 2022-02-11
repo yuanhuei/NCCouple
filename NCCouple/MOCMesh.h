@@ -206,7 +206,7 @@ public:
 	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType= MeshKernelType::MHT_KERNEL);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
-	void ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
+	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void InitMOCFromInputFile(std::string inputFileName);
 	void InitMOCHeatPower(std::string heatPowerFileName);
 
@@ -223,8 +223,8 @@ public:
 		double x = m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[sMocIndex.iAssemblyIndex].vAssembly_LeftDownPoint.x_;
 		double y= m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[sMocIndex.iAssemblyIndex].vAssembly_LeftDownPoint.y_;
 		ptrMocMesh = std::make_shared<MHTMocMeshPoint>(*std::dynamic_pointer_cast<MHTMocMeshPoint> (GetMocMeshPointPtr(sMocIndex)));
-
-		ptrMocMesh->Move(Vector(-x, -y, 0));
+		Vector vPoint(-x, -y, 0);
+		ptrMocMesh->Move(vPoint);
 	};
 	//move point to system coordinate
 	void MovePoint(Vector& vPoint, int iAssembly)

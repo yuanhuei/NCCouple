@@ -24,7 +24,8 @@ Scalar Integration
 (
 	const GeneralMesh& mesh,
 	ValueType vt,
-	std::string strZoneName
+	std::string strZoneName,
+	Solver& solverMapper
 )
 {
 	bool bSourceMoc = true;
@@ -38,11 +39,14 @@ Scalar Integration
 	if (bSourceMoc)
 	{
 		 const MOCMesh& mocMesh = dynamic_cast<const MOCMesh&> (mesh);
-		for (int i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
+		 std::vector< SMocIndex> vSMocIndex;
+		 solverMapper.GetMocIndexByMapValue(vSMocIndex);
+
+		for (int i = 0; i < vSMocIndex.size(); i++)
 		{
-			const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
+			const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(vSMocIndex[i]));
 			if (mocPoint.GetMaterialName() != strZoneName) continue;
-			sourceValue = mocMesh.GetValueAtIndex(mocMesh.m_vSMocIndex[i],vt);
+			sourceValue = mocMesh.GetValueAtIndex(vSMocIndex[i],vt);
 			pointVolume = mocPoint.Volume();
 			integration += sourceValue * pointVolume;
 		}
@@ -64,12 +68,13 @@ void ConservationValidation
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
 	ValueType vt,
-	std::string strZoneName
+	std::string strZoneName,
+	Solver& solverMapper
 )
 {
 	std::string valueName = NameOfValueType(vt);
-	double sourceIntegralValue = Integration(sourceMesh, vt, strZoneName);
-	double targetIntegralValue = Integration(targetMesh, vt, strZoneName);
+	double sourceIntegralValue = Integration(sourceMesh, vt, strZoneName, solverMapper);
+	double targetIntegralValue = Integration(targetMesh, vt, strZoneName, solverMapper);
 	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
 	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
 	return;
@@ -262,7 +267,7 @@ void MOCFieldsToCFD()
 		RenameFile(strOutput_inpName, GetFileNameOfPrevious(strOutput_inpName,"vtk"));
 		Logger::LogInfo("Writing CFD vtk file: " + strOutput_inpName);
 		heatpower.WriteVTK_Field(strOutput_inpName);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER, materialList[i]);
+		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER, materialList[i], solverMapper);
 	}
 	return;
 }
@@ -303,7 +308,10 @@ void CFDFieldsToMOC()
 	{
 		Logger::LogError("in CFDFieldsToMOC, " + outMocFieldFile + " is not an .inp file");
 	}
+	Logger::LogInfo("MOCMesh generation begin");
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
+	Logger::LogInfo("MOCMesh generation ends");
+
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;
 	fieldName.push_back("T");
@@ -341,8 +349,8 @@ void CFDFieldsToMOC()
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
 		solverMapper.CFDtoMOCinterception(ValueType::DENSITY);
 		solverMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i]);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i]);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i], solverMapper);
+		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i], solverMapper);
 	}
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);

@@ -6,11 +6,10 @@
 #include <regex>
 #include <unordered_set>
 #include "Logger.h"
-#include "Index.h"
+#include "index.h"
 using namespace std;
 
-#define PI 3.14159265358979323846
-#define PI 3.14159265358979323846
+//#define PI 3.14159265358979323846
 #define NA 6.022e23
 #define BARN 1.0e-24
 
@@ -143,7 +142,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				vector<string> meshFaceTypeTemperary;
 				vector<string> meshFaceTemperatureNameTemperary;
 				vector<string> fileNameTemperary;
-				vector< std::stringstream> vStreamTemperay;
+				vector< shared_ptr<stringstream>> vStreamTemperay;
 				vector<int> meshIDTemperary;
 				int nFineMesh = kernelType == MeshKernelType::CGAL_KERNEL ? 4 : 1;  //fine mesh
 				std::vector<Surface>allMeshFaces;   //all face objects
@@ -375,7 +374,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									}
 								}
 								//std::ifstream ifs(fileNameTemperary[index]);
-								std::stringstream& ifs = vStreamTemperay[index];
+								std::stringstream& ifs = *vStreamTemperay[index];
 								m_vAssemblyType[iNt_Assembly_index].v_Cell[k].vMeshPointPtrVec[iMeshpointIndex++] = std::make_shared<MHTMocMeshPoint>(
 									meshIDtemp_, ifs, allMeshFaces[iMeshID_index+i].curveInfo, point, norm,
 									meshFaceTypeTemperary[index], meshFaceTemperatureNameTemperary[index]);
@@ -691,7 +690,7 @@ void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> 
 	}
 }
 
-void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
+void MOCMesh::ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
 {
 	string filename = "";
 	int H0 = 0, H1 = 0;
@@ -710,7 +709,9 @@ void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, st
 		}
 		for (int i = 0; i < layerMeshNum; i++)
 		{
-			std::stringstream& outFile= vStreamTemperay[index0];
+			vStreamTemperay[index0] = make_shared< stringstream>();
+
+			std::stringstream& outFile= *vStreamTemperay[index0];// vStreamTemperay[index0];
 			stringstream ssID;
 			stringstream ssaxialID;
 			string sID;
@@ -803,6 +804,7 @@ void MOCMesh::ThreeDemMeshOutput(vector< std::stringstream>& vStreamTemperay, st
 				}
 			}
 			//outFile.close();  //close iostream
+			//vStreamTemperay.push_back(outFile);
 		}
 	}
 }
@@ -985,7 +987,46 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	}
 
 	ifs.close();
+	for (auto sMocIndex : m_vSMocIndex)
+	{
+		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
+		{
+			std::smatch m;
+			std::string materialName = p_mocMeshPoint->GetMaterialName();
+			auto iter1 = materialDensityMap.find(materialName);
+			if (iter1 != materialDensityMap.end())
+				SetValueAtIndex(sMocIndex, iter1->second, ValueType::DENSITY);
+			//p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
 
+			if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+				std::string materialMetaName = m.prefix().str();
+				auto iter2 = materialDensityMap.find(materialMetaName);
+				if (iter2 != materialDensityMap.end()) {
+					//p_mocMeshPoint->SetValue(iter2->second, ValueType::DENSITY);
+					SetValueAtIndex(sMocIndex, iter2->second, ValueType::DENSITY);
+				}
+			}
+		}
+		{
+			std::smatch m;
+			std::string temperatureName = p_mocMeshPoint->GetTemperatureName();
+			auto iter1 = temperatureMap.find(temperatureName);
+			if (iter1 != temperatureMap.end())
+				//p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
+				SetValueAtIndex(sMocIndex, iter1->second, ValueType::TEMPERAURE);
+
+			if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
+				std::string tempMetaName = m.prefix().str();
+				auto iter2 = temperatureMap.find(tempMetaName);
+				if (iter2 != temperatureMap.end()) {
+					//p_mocMeshPoint->SetValue(iter2->second, ValueType::TEMPERAURE);
+					SetValueAtIndex(sMocIndex, iter2->second, ValueType::TEMPERAURE);
+				}
+			}
+
+		}
+	}
+	/*
 	for (auto meshPointPtr : m_meshPointPtrVec) {
 		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
 		if (p_mocMeshPoint) {
@@ -1021,7 +1062,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 				}
 			}
 		}
-	}
+	}*/
 
 
 	return;
@@ -1107,7 +1148,8 @@ void MOCMesh::WriteTecplotFile
 				//处理平移
 				
 				MHTMocMeshPoint meshPoint = mhtPolyhedron;
-				meshPoint.Move(Vector(-x, -y, 0));
+				Vector vPoint(-x, -y, 0);
+				meshPoint.Move(vPoint);
 				meshPoint.WriteTecplotZones(ofile);
 			}
 		}

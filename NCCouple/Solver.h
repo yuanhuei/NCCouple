@@ -13,6 +13,7 @@ public:
 	//Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, MOCIndex& mocIndex, std::string mName);
 	Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh, std::string mName,bool bFirstCreated=false);
 	void CheckMappingWeights();
+	void GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex);
 
 public:
 	const MOCMesh* GetMOCMeshPtr() const {
@@ -34,13 +35,13 @@ public:
 
 private:
 	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
-	void Solver::Interception_fromMocToCFD
+	void Interception_fromMocToCFD
 	(
 		MOCMesh& sourceMesh,
 		CFDMesh& targetMesh,
 		ValueType vt
 	);
-	void Solver::Interception_fromCFDToMOC
+	void Interception_fromCFDToMOC
 	(
 		CFDMesh& sourceMesh,
 		MOCMesh& targetMesh,
@@ -58,6 +59,6 @@ private:
 	//std::vector<std::unordered_map<int, double>> m_CFD_MOC_Map;
 	//std::vector<std::unordered_map<int, double>> m_MOC_CFD_Map;
 	std::vector<std::vector<std::vector<std::unordered_map<int, double>>>> m_MOC_CFD_Map;
-	std::vector<std::unordered_map<SMocIndex, double, hash_name>> m_CFD_MOC_Map;
+	std::vector<std::unordered_map<SMocIndex, double>> m_CFD_MOC_Map;
 
 };

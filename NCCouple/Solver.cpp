@@ -3,7 +3,7 @@
 #include <future>
 #include <mutex>
 #include<algorithm>
-#include "Index.h"
+#include "index.h"
 #include "MOCMesh.h"
 
 //extern int g_iProcessID;
@@ -305,9 +305,8 @@ Solver::Solver
 	writeMapInfortoFile();
 }
 */
-void Solver::CheckMappingWeights()
+void Solver::GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex)
 {
-	std::vector< SMocIndex> vSMocIndex;
 	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
 	{
 		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
@@ -317,14 +316,17 @@ void Solver::CheckMappingWeights()
 				std::unordered_map<int, double>::iterator it;
 				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
 				{
-					vSMocIndex.push_back(SMocIndex(i,j,k));
+					vSMocIndex.push_back(SMocIndex(i, j, k));
 					break;
 				}
 			}
 		}
 	}
-
-
+}
+void Solver::CheckMappingWeights()
+{
+	std::vector< SMocIndex> vSMocIndex;
+	GetMocIndexByMapValue(vSMocIndex);
 
 	double totalMOCVolume = 0.0;
 	for (int j = 0; j < vSMocIndex.size(); j++)

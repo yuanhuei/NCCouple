@@ -8,7 +8,6 @@ project (${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
@@ -27,6 +26,7 @@ if(WIN32)
 	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
 	add_definitions(-D_BasePlatformLinux_ )
+	
 	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR})

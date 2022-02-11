@@ -50,7 +50,8 @@ void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
 		const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocmesh.GetMocMeshPointPtr(vSMocindex[i]));
 
 		MHTMocMeshPoint meshPoint = mocPoint;
-		meshPoint.Move(Vector(-x, -y, 0));
+		Vector vPoint(-x, -y, 0);
+		meshPoint.Move(vPoint);
 		meshPoint.WriteTecplotZones(ofile);
 	}
 	for (int i = 0; i < v_iCFD.size(); i++)
@@ -82,7 +83,7 @@ void MOC_APL_INP_FileTest()
 void MapTest()
 {
 	//RegisterMapper("c5g72l.apl", "c5g72l_out.apl", "PIN9Coarse.msh");
-	MOCFieldsToCFD();
+	//MOCFieldsToCFD();
 
 	std::string configFile = "MapFile_FileNames";
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
@@ -291,8 +292,10 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
-		//MapTest();
+		//CFDFieldsToMOC();
+		MapTest();
+		//MOCMesh mocmesh = MOCMesh();
+		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		return 0;
 	}
 	else

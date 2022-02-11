@@ -18,7 +18,8 @@ void ConservationValidation
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
 	ValueType vt,
-	std::string strZoneName
+	std::string strZoneName,
+	Solver& solverMapper
 );
 
 void RegisterMapper

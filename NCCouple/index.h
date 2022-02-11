@@ -1,6 +1,7 @@
 #ifndef INDEX_HEADER
 #define INDEX_HEADER
 
+#include <memory>
 #include <vector>
 #include <tuple>
 #include <string>
@@ -8,6 +9,7 @@
 #include "MHT_common/Vector.h"
 #include "MOCIndex.h"
 #include"Structure.h"
+
 
 class MOCMesh;
 struct Assembly;
