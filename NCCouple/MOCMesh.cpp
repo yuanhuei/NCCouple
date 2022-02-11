@@ -909,12 +909,12 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 					std::string matInfo = outer_match.str(0);
 					std::smatch innerMatch;
 					Medium& medium = m_mediumMap[materialName];
-					while (std::regex_search(matInfo, innerMatch, std::regex(R"([\d\.]+)"))) {
+					while (std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"))) {
 						int eleFlag = std::stoi(innerMatch.str(0));
 						medium.eleFlagVec.push_back(eleFlag);
 
 						matInfo = innerMatch.suffix().str();
-						std::regex_search(matInfo, innerMatch, std::regex(R"([\d\.]+)"));
+						std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
 						double eleDens = std::stod(innerMatch.str(0));
 						medium.eleDensCalcFunVec.push_back([eleDens](double) {return eleDens; });
 
@@ -964,7 +964,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 					std::regex_search(detailDef, outer_match, std::regex(R"(TEMP[^\)]+\))"));
 					std::string tempInfo = outer_match.str(0);
 					std::smatch innerMatch;
-					std::regex_search(tempInfo, innerMatch, std::regex(R"([\d\.]+)"));
+					std::regex_search(tempInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
 					double tempValue = std::stod(innerMatch.str(0));
 
 					temperatureMap[tempName] = tempValue;
