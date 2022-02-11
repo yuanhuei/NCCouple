@@ -34,21 +34,27 @@ Scalar Integration
 		bSourceMoc = false;
 	}
 	Scalar integration = 0.0;
-	for (int i = 0; i < mesh.GetMeshPointNum(); i++)
+	double sourceValue = 0, pointVolume = 0;
+	if (bSourceMoc)
 	{
-		double sourceValue = 0;
-		if (bSourceMoc)
+		 const MOCMesh& mocMesh = dynamic_cast<const MOCMesh&> (mesh);
+		for (int i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
 		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mesh.GetMeshPointPtr(i));
+			const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
 			if (mocPoint.GetMaterialName() != strZoneName) continue;
-			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+			sourceValue = mocMesh.GetValueAtIndex(mocMesh.m_vSMocIndex[i],vt);
+			pointVolume = mocPoint.Volume();
+			integration += sourceValue * pointVolume;
 		}
-		else
+	}
+	else
+	{
+		for (int i = 0; i < mesh.GetMeshPointNum(); i++)
 		{
 			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
+			pointVolume = mesh.GetMeshPointPtr(i)->Volume();
+			integration += sourceValue * pointVolume;
 		}
-		double pointVolume = mesh.GetMeshPointPtr(i)->Volume();
-		integration += sourceValue * pointVolume;
 	}
 	return integration;
 }
@@ -126,19 +132,21 @@ void RegisterMapper
 	}
 	MOCMesh mocMesh(strInput_aplFileName, strOutput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	mocIndex.Initialization();
-	mocIndex.BuildUpIndex();
-	mocIndex.CheckIndex();
+	//MOCIndex mocIndex(mocMesh);
+	//mocIndex.Initialization();
+	//mocIndex.BuildUpIndex();
+	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
 	MHTVTKReader reader(strInput_meshFileName);
 	std::vector<std::string> MOCRegionList;
 	std::vector<std::string> CFDRegionList;
 	//collect region names from MOC mesh
-	for (size_t i = 0;i < mocMesh.GetMeshPointNum();i++)
+	for (size_t i = 0;i < mocMesh.m_vSMocIndex.size(); i++)
 	{
-		MOCMeshPoint* mocPoint = dynamic_cast<MOCMeshPoint*>(mocMesh.GetMeshPointPtr(i));
-		std::string thisName = mocPoint->GetMaterialName();
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
+
+		//std::shared_ptr<MOCMeshPoint> mocPoint = dynamic_cast<MOCMeshPoint*>(mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
+		std::string thisName = mocPoint.GetMaterialName();
 		InsertWhenNotFound(MOCRegionList, thisName);
 	}
 	//collect region names from CFD mesh
@@ -176,10 +184,10 @@ void CreateMapper()
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
-	MOCIndex mocIndex(mocMesh);
-	mocIndex.Initialization();
-	mocIndex.BuildUpIndex();
-	mocIndex.CheckIndex();
+	//MOCIndex mocIndex(mocMesh);
+	//mocIndex.Initialization();
+	//mocIndex.BuildUpIndex();
+	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + cfdMeshFile);
 	MHTVTKReader reader(cfdMeshFile);
 	for (size_t i = 0; i < matches.size(); i++)
@@ -188,7 +196,7 @@ void CreateMapper()
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
-		Solver solverMapper(mocMesh, cfdMesh, mocIndex, materialList[i]);
+		Solver solverMapper(mocMesh, cfdMesh, materialList[i],true);
 		solverMapper.CheckMappingWeights();
 	}
 	return;

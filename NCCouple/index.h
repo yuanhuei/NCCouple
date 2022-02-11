@@ -7,39 +7,44 @@
 #include <set>
 #include "MHT_common/Vector.h"
 #include "MOCIndex.h"
+#include"Structure.h"
+
 class MOCMesh;
 struct Assembly;
+struct Assembly_Type;
+class CFDMeshPoint;
 
 class CellIndex {
 
 public:
-	CellIndex(Assembly& mocAssembly) :pAssembly(&mocAssembly) {};
-	CellIndex() {};
-	~CellIndex() {};
+	CellIndex(Assembly_Type& mocAssemblyType, MOCMesh* mocMesh);
+
 private:
 	std::vector<double> m_x;
 	std::vector<double> m_y;
 
 	std::vector<std::vector<int>> m_cellIndex;
-	Assembly* pAssembly = nullptr;
-	std::vector<MOCIndex> v_MocIndex;
+	Assembly_Type* pAssemblyType = nullptr;
+	MOCMesh* pMOCMesh = nullptr;
 
 public:
+	std::vector<std::shared_ptr<MOCIndex>> v_MocIndex;
+
+	int iAssembly_type;
 	void buildIndex();
 	int getCellIndex(Vector vPoint);
 	int getMeshID(int iCellID, Vector vPoint);
+	void checkCellIndex();
 };
 
 class AssemblyIndex {
 
 public:
-	AssemblyIndex(MOCMesh& mocMesh);
-	//AssemblyIndex() {};
-	~AssemblyIndex() {};
+	AssemblyIndex(MOCMesh& mocMesh) :pMOCMesh(&mocMesh) {};
 private:
 
 	MOCMesh* pMOCMesh = nullptr;
-	std::vector<CellIndex> v_CellIndex;
+	std::vector<std::shared_ptr<CellIndex>> v_CellIndex;
 public:
 	std::vector<double> m_x;
 	std::vector<double> m_y;
@@ -52,7 +57,8 @@ public:
 		return m_assemblyIndex[xIndex][yIndex];
 	};
 
-	//根据坐标获取燃料组件，栅元，以及网格的id
-	std::tuple<int, int, int> getIndex(Vector vPoint);
+	SMocIndex getIndex(Vector vPoint);
+	void checkAssemblyIndex();
+	void getNearLayerMocID(std::vector<int>& vMocID, const CFDMeshPoint& cfdPoint, int iAssembly, int iCell);
 };
 #endif

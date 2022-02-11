@@ -8,13 +8,14 @@
 //#include "MOCMesh.h"
 class MOCMesh;
 class MeshPoint;
+struct Cell;
 //An index build up for fast seaching when building up Solver
 class MOCIndex
 {
 public:
 	//pointer to the MOC mesh
 	MOCMesh* pMOCMesh = nullptr;
-	std::vector<std::shared_ptr<MeshPoint>>* pVMeshPoint = nullptr;
+	Cell* m_pCell = nullptr;
 	//index for MOC IDs written in an array
 	std::vector<std::vector<std::vector<int> > > v_MOCID;
 
@@ -38,8 +39,7 @@ public:
 public:
 	//Constructor with a given MOC mesh
 	MOCIndex(MOCMesh&);
-	MOCIndex(std::vector<std::shared_ptr<MeshPoint>>&vMesh) :pVMeshPoint(&vMesh){};
-	MOCIndex() {};
+	MOCIndex(MOCMesh&, Cell&);
 	//extract information from MOC mesh
 	void Initialization();
 	//estimate a tolerance
@@ -62,32 +62,7 @@ public:
 
 	void CheckIndex();
 	//a member function written for test
-	void Display()
-	{
-		std::cout << "axisPoint = " << axisPoint << std::endl;
-		std::cout << "axisNorm = " << axisNorm << std::endl;
-		std::cout << "theetaStartNorm = " << theetaStartNorm << std::endl;
-		std::cout << "circularCellNum = " << circularCellNum << std::endl;
-		std::cout << "axialCellSize = " << axialCellSize << std::endl;
-		std::cout << "axialCellNum = " << axialCellNum << std::endl;
-		std::cout << "scaleTolerance = " << scaleTolerance << std::endl;
-		for (int i = 0;i < this->v_radius.size();i++)
-		{
-			std::cout << "v_radius[" << i << "] = " << v_radius[i] << std::endl;
-		}
-		for (int k = 0; k < axialCellNum;k++)
-		{
-			for (int i = 0;i < this->v_MOCID.size();i++)
-			{
-				for (int j = 0;j < this->v_MOCID[i].size();j++)
-				{
-					std::cout << i << "\t" << j << "\t" << k << "\t" << this->v_MOCID[i][j][k] << std::endl;
-				}
-			}
-		}
-		
-		return;
-	}
+	void Display();
 };
 
 #endif

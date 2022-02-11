@@ -47,6 +47,60 @@ namespace MHT
 		return;
 	}
 
+	Polyhedron::Polyhedron(Vector minVertice, Vector maxVertice)
+	{
+		Scalar xmin = minVertice.x_;
+		Scalar xmax = maxVertice.x_;
+		Scalar ymin = minVertice.y_;
+		Scalar ymax = maxVertice.y_;
+		Scalar zmin = minVertice.z_;
+		Scalar zmax = maxVertice.z_;
+		if (xmax <= xmin || ymax <= ymin || zmax <= zmin)
+		{
+			stringstream ss;
+			ss << "invalid vertice: " << minVertice << " and " << maxVertice;
+			FatalError(ss.str());
+		}
+		//create the 8 vertices
+		this->v_point.resize(8);
+		v_point[0] = Vector(xmin, ymin, zmin);
+		v_point[1] = Vector(xmax, ymin, zmin);
+		v_point[2] = Vector(xmax, ymax, zmin);
+		v_point[3] = Vector(xmin, ymax, zmin);
+		v_point[4] = Vector(xmin, ymin, zmax);
+		v_point[5] = Vector(xmax, ymin, zmax);
+		v_point[6] = Vector(xmax, ymax, zmax);
+		v_point[7] = Vector(xmin, ymax, zmax);
+		//create the 6 faces
+		this->v_facePointID.resize(6);
+		v_facePointID[0].push_back(0);
+		v_facePointID[0].push_back(3);
+		v_facePointID[0].push_back(2);
+		v_facePointID[0].push_back(1);
+		v_facePointID[1].push_back(0);
+		v_facePointID[1].push_back(1);
+		v_facePointID[1].push_back(5);
+		v_facePointID[1].push_back(4);
+		v_facePointID[2].push_back(0);
+		v_facePointID[2].push_back(4);
+		v_facePointID[2].push_back(7);
+		v_facePointID[2].push_back(3);
+		v_facePointID[3].push_back(2);
+		v_facePointID[3].push_back(3);
+		v_facePointID[3].push_back(7);
+		v_facePointID[3].push_back(6);
+		v_facePointID[4].push_back(1);
+		v_facePointID[4].push_back(2);
+		v_facePointID[4].push_back(6);
+		v_facePointID[4].push_back(5);
+		v_facePointID[5].push_back(4);
+		v_facePointID[5].push_back(5);
+		v_facePointID[5].push_back(6);
+		v_facePointID[5].push_back(7);
+		//calculate geomety
+		this->CalculateVolume();
+	}
+
 	void Polyhedron::ReadGeometry(ifstream& infile)
 	{
 		int numPoints;
@@ -180,7 +234,16 @@ namespace MHT
 			{
 				cout << v_facePointID[i][j] << " ";
 			}
+			if (geometryCalculated)
+			{
+				cout << " center" << this->v_faceCenter[i] << ", area" << this->v_faceArea[i];
+			}
 			cout << endl;
+		}
+		if (geometryCalculated)
+		{
+			cout << "polyhedron center: " << this->center << endl;
+			cout << "polyhedron volume: " << this->volume << endl;
 		}
 		return;
 	}
@@ -280,6 +343,63 @@ namespace MHT
 		{
 			return this->center;
 		}
+	}
+
+	Polygon Polyhedron::GetFace(int faceID) const
+	{
+		if (faceID < 0 || faceID >= this->v_facePointID.size())
+		{
+			FatalError("in Polyhedron::GetFace(), face ID " + std::to_string(faceID) + " is out of range.");
+		}
+		Polygon result;
+		for (size_t i = 0;i < v_facePointID[faceID].size();i++)
+		{
+			int nodeID = v_facePointID[faceID][i];
+			Vector vertice = v_point[nodeID];
+			result.v_point.push_back(vertice);
+		}
+		result.center = this->v_faceCenter[faceID];
+		result.area = this->v_faceArea[faceID];
+		return result;
+	}
+
+	//collect all faces on boundaries of a box
+	std::vector<Polygon> Polyhedron::GetFacesOnBoxBoundary
+	(
+		Vector verticeMin,//xmin, ymin, zmin
+		Vector verticeMax,//xmax, ymax, zmax
+		Scalar tolerance
+	) const
+	{
+		std::vector<Polygon> faceList;
+		for (size_t i = 0;i < v_faceCenter.size();i++)
+		{
+			Scalar xCenter = v_faceCenter[i].x_;
+			Scalar yCenter = v_faceCenter[i].y_;
+			Scalar zCenter = v_faceCenter[i].z_;
+			bool isOnBoundary = false;
+			if (xCenter - verticeMin.x_ < -tolerance) continue;
+			if (xCenter - verticeMax.x_ > tolerance) continue;
+			if (yCenter - verticeMin.y_ < -tolerance) continue;
+			if (yCenter - verticeMax.y_ > tolerance) continue;
+			if (zCenter - verticeMin.z_ < -tolerance) continue;
+			if (zCenter - verticeMax.z_ > tolerance) continue;
+			if (fabs(xCenter - verticeMin.x_) < tolerance || fabs(xCenter - verticeMax.x_) < tolerance) isOnBoundary = true;
+			if (fabs(yCenter - verticeMin.y_) < tolerance || fabs(yCenter - verticeMax.y_) < tolerance) isOnBoundary = true;
+			if (fabs(zCenter - verticeMin.z_) < tolerance || fabs(zCenter - verticeMax.z_) < tolerance) isOnBoundary = true;
+			if (isOnBoundary)
+			{
+				//std::cout << "face center = " << v_faceCenter[i] << ", box range = " << verticeMin << " ~ " << verticeMax << std::endl;
+				Polygon face = this->GetFace(i);
+				//for (int j = 0;j < face.v_point.size();j++)
+				//{
+				//	std::cout << "point coordinate = " << face.v_point[j] << std::endl;
+				//}
+				faceList.push_back(face);
+				//system("pause");
+			}
+		}
+		return faceList;
 	}
 
 	void Polyhedron::WriteDataFile(ofstream& outfile) const
@@ -465,6 +585,33 @@ namespace MHT
 		{
 			return false;
 		}
+	}
+
+	void Polyhedron::Move(Vector& translation)
+	{
+		//move vertices
+		for (size_t i = 0;i < this->v_point.size();i++)
+		{
+			this->v_point[i] += translation;
+		}
+		if (geometryCalculated)
+		{
+			//move face centers
+			for (size_t i = 0;i < this->v_faceCenter.size();i++)
+			{
+				this->v_faceCenter[i] += translation;
+			}
+			//move polyhedron center
+			this->center += translation;
+		}
+		return;
+	}
+
+	Polyhedron Polyhedron::Copy(Vector& translation) const
+	{
+		Polyhedron result = *(this);
+		result.Move(translation);
+		return result;
 	}
 
 	Polyhedron Polyhedron::ClipByPlane

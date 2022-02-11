@@ -1,5 +1,6 @@
 #include "PolyhedronSet.h"
 #include "../MHT_common/Tensor.h"
+#include "../MHT_common/SystemControl.h"
 
 PolyhedronSet::PolyhedronSet()
 	:MHT::Polyhedron()
@@ -41,6 +42,7 @@ PolyhedronSet::PolyhedronSet(std::string filename)
 	infile.close();
 	this->ClipIntoSubPolygons(maxDegree);
 	this->CalculateVolume();
+
 	return;
 }
 
@@ -88,7 +90,12 @@ PolyhedronSet::PolyhedronSet
 	{
 		this->ClipIntoSubPolygons(maxDegree);
 	}
+
 }
+
+PolyhedronSet::PolyhedronSet(Vector vec1, Vector vec2)
+	:MHT::Polyhedron(vec1,vec2)
+{}
 
 void PolyhedronSet::ReadCurveFaces(ifstream& infile)
 {
@@ -485,6 +492,29 @@ bool PolyhedronSet::IsContaining(Vector& point) const
 	return contain;
 }
 
+void PolyhedronSet::Move(Vector& translation)
+{
+	this->Polyhedron::Move(translation);
+	//if clipped, all sub polyhedron also need to be moved
+	if (this->clipped)
+	{
+		for (size_t i = 0;i < this->v_subPolyhedron.size();i++)
+		{
+			this->v_subPolyhedron[i].MHT::Polyhedron::Move(translation);
+		}
+	}
+	//move the axis center
+	this->axisCenter += translation;
+	return;
+}
+
+PolyhedronSet PolyhedronSet::Copy(Vector& translation) const
+{
+	PolyhedronSet result = *this;
+	result.Move(translation);
+	return result;
+}
+
 Scalar PolyhedronSet::IntersectionVolumeWithPolyhedron
 (
 	const MHT::Polyhedron& poly
@@ -576,6 +606,30 @@ std::pair<bool, Vector> PolyhedronSet::GetAxisCenter() const
 	}
 	info.first = hasCurvdFace;
 	return info;
+}
+
+std::vector<MHT::Polygon> PolyhedronSet::GetFacesOnBoxBoundary
+(
+	Vector verticeMin,//xmin, ymin, zmin
+	Vector verticeMax,//xmax, ymax, zmax
+	Scalar tolerance
+) const
+{
+	if (!clipped)
+	//if (clipped)
+	{
+		return Polyhedron::GetFacesOnBoxBoundary(verticeMin, verticeMax, tolerance);
+	}
+	else
+	{
+		std::vector<MHT::Polygon> faceList;
+		for (size_t i = 0;i < this->v_subPolyhedron.size();i++)
+		{
+			std::vector<MHT::Polygon> subFaceList = this->v_subPolyhedron[i].GetFacesOnBoxBoundary(verticeMin, verticeMax, tolerance);
+			faceList.insert(faceList.end(), subFaceList.begin(), subFaceList.end());
+		}
+		return faceList;
+	}
 }
 
 void PolyhedronSet::WriteTecplotFile(std::string filename) const

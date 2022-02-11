@@ -48,6 +48,8 @@ namespace MHT
 
 		Polyhedron(std::istream& is);
 
+		Polyhedron(Vector, Vector);
+
 		void Display() const;
 
 		void Check() const;
@@ -55,6 +57,10 @@ namespace MHT
 		Scalar GetVolume() const;
 
 		Vector GetCenter() const;
+
+		Polygon GetFace(int) const;
+
+		std::vector<Polygon> GetFacesOnBoxBoundary(Vector, Vector, Scalar) const;
 
 		void CalculateVolume();
 
@@ -71,6 +77,10 @@ namespace MHT
 		bool IsContaining(Vector&) const;
 
 		bool IsExisting() const;
+
+		void Move(Vector&);
+
+		Polyhedron Copy(Vector&) const;
 
 		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 
