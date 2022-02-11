@@ -216,7 +216,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 							}
 						}
 					}
-
 					if (line.find("EDGE")!=std::string::npos && line.find("*EDGE_")==std::string::npos)
 					{
 						if (m_bSingleCell)
@@ -1129,6 +1128,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 	}
 	//Sort other edges and points anticlockwise
 
+	double RoundingError0 = 1.0e-6;
 	MOCEdge presentEdge = mostLeftEdge;
 	for (int i = 1; i < face_edge_num; i++)
 	{
@@ -1138,7 +1138,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 			{
 				continue;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[0][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[0][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[1];
@@ -1156,7 +1156,7 @@ void Surface::faceEdgeOrder(int nodeID)  //save the edge in the anticlockwise
 				faceEdgesTemporary.erase(faceEdgesTemporary.begin() + j);
 				break;
 			}
-			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError)
+			if (fabs(faceEdgesTemporary[j].edgePoints[1][0] - connectPoint[0]) < RoundingError0 && fabs(faceEdgesTemporary[j].edgePoints[1][1] - connectPoint[1]) < RoundingError0)
 			{
 				presentEdge = faceEdgesTemporary[j];
 				connectPoint = faceEdgesTemporary[j].edgePoints[0];
