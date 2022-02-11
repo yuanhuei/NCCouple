@@ -218,16 +218,13 @@ public:
 	//
 	SMocIndex getIndex(Vector vPoint);
 	//move coppied mesh to system coordinate 
-	MHTMocMeshPoint MoveMeshPoint(int iAssembly,int iCell,int iMoc)
+	void MoveMeshToSysCoordinate(shared_ptr<MHTMocMeshPoint>& ptrMocMesh, const SMocIndex& sMocIndex)
 	{
-		double x = m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
-		double y= m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
-		
-		const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>
-					(*m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[iMoc]);
-		MHTMocMeshPoint meshPoint = mhtPolyhedron;
-		meshPoint.Move(Vector(-x, -y, 0));
-		return meshPoint;
+		double x = m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[sMocIndex.iAssemblyIndex].vAssembly_LeftDownPoint.x_;
+		double y= m_vAssembly[sMocIndex.iAssemblyIndex].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[sMocIndex.iAssemblyIndex].vAssembly_LeftDownPoint.y_;
+		ptrMocMesh = std::make_shared<MHTMocMeshPoint>(*std::dynamic_pointer_cast<MHTMocMeshPoint> (GetMocMeshPointPtr(sMocIndex)));
+
+		ptrMocMesh->Move(Vector(-x, -y, 0));
 	};
 	//move point to system coordinate
 	void MovePoint(Vector& vPoint, int iAssembly)

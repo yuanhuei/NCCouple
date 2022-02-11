@@ -102,12 +102,14 @@ void MapTest()
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
+		/*
 		std::vector<SMocIndex> thh;
 		for (int j = 0; j < 64; j++)
 		{
 			thh.push_back(SMocIndex(0, 51, j));
 		}
 		WriteTotecplot(mocMesh, cfdMesh, std::vector<int>{2559}, thh, "temp.plt");
+		*/
 		//std::string outfilename = "mesh_" + std::to_string(i) + ".plt";
 		//cfdMesh.WriteTecplotFile(outfilename);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);
@@ -289,7 +291,8 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		MapTest();
+		CFDFieldsToMOC();
+		//MapTest();
 		return 0;
 	}
 	else

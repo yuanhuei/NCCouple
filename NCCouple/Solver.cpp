@@ -83,17 +83,18 @@ Solver::Solver
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
-		if (CFDID == 2559)
-			int kkk = 0;
+		//if (CFDID == 2559)
+			//int kkk = 0;
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
 		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
 
-		//int iMocIndex = mocIndex.GetMOCIDWithPoint(P.x_, P.y_, P.z_);
 		const MHTCFDMeshPoint& cfdPoint = dynamic_cast<const MHTCFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
-		//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(iMocIndex));
-		MHTMocMeshPoint mocPoint = m_mocMeshPtr->MoveMeshPoint(iAssembly, iCell, iMoc);
+
+		shared_ptr<MHTMocMeshPoint> ptrMocMesh;
+		m_mocMeshPtr->MoveMeshToSysCoordinate(ptrMocMesh, sFirstMocIndex);
+		MHTMocMeshPoint& mocPoint =*ptrMocMesh;
 
 		double cfdPointVolume = cfdPoint.Volume();
 		double mocPointVolume = mocPoint.Volume();
@@ -167,35 +168,33 @@ Solver::Solver
 			{
 				sMocIndex.iMocIndex = vMocID[j];
 				if (sFirstMocIndex == sMocIndex)continue;
-				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(
-					//*mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vMeshPointPtrVec[vMocID[j]]);
-				//const MHTMocMeshPoint& localMOCPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(sMocIndex));
-				MHTMocMeshPoint localMOCPoint = m_mocMeshPtr->MoveMeshPoint(sMocIndex.iAssemblyIndex, sMocIndex.iCellIndex, sMocIndex.iMocIndex);
+				const MOCMeshPoint& localMOCPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(sMocIndex));
 				if (materialName != localMOCPoint.GetMaterialName()) continue;
-				auto fun = [this, &mtx, CFDID, sMocIndex, localMOCPoint,cfdPoint]()
+				auto fun = [this, &mtx, CFDID, sMocIndex]() 
 				{
-					//const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
-					//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(MOCID));
+					const CFDMeshPoint& cfdPoint = dynamic_cast<const CFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
+					shared_ptr<MHTMocMeshPoint> ptrMocMesh;
+					m_mocMeshPtr->MoveMeshToSysCoordinate(ptrMocMesh, sMocIndex);
+					MHTMocMeshPoint& mocPoint = *ptrMocMesh;
+
 					double cfdPointVolume = cfdPoint.Volume();
-					double mocPointVolume = localMOCPoint.Volume();
+					double mocPointVolume = mocPoint.Volume();
 					double intersectedVolume = 0.0;
-					intersectedVolume = cfdPoint.IntersectedVolume(localMOCPoint);
+					intersectedVolume = cfdPoint.IntersectedVolume(mocPoint);
 					if (intersectedVolume > INTERSECT_JUDGE_LIMIT)
 					{
 						std::lock_guard<std::mutex> lg(mtx);
-						//m_CFD_MOC_Map[CFDID][MOCID] = intersectedVolume / cfdPointVolume;
-						//m_MOC_CFD_Map[MOCID][CFDID] = intersectedVolume / mocPointVolume;
 
 						m_CFD_MOC_Map[CFDID][sMocIndex] = intersectedVolume / cfdPointVolume;
 						m_MOC_CFD_Map[sMocIndex.iAssemblyIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
 					}
 				};
-				fun();
-				//futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
+				//fun();
+				futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 			}
 		}
-		//for (size_t j = 0; j < futureVec.size(); j++)
-			//futureVec[j].get();
+		for (size_t j = 0; j < futureVec.size(); j++)
+			futureVec[j].get();
 
 		if (CFDID % 100 == 0 || CFDID == cfdMesh.GetMeshPointNum())
 		{
@@ -328,7 +327,6 @@ void Solver::CheckMappingWeights()
 
 
 	double totalMOCVolume = 0.0;
-	//std::vector< SMocIndex>& vSMocIndex= m_mocMeshPtr->m_vSMocIndex;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
@@ -352,7 +350,6 @@ void Solver::CheckMappingWeights()
 	int sumOfZero = 0;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
-		//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMeshPointPtr(j));
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
 		if (mocPoint.GetMaterialName() != materialName) continue;
 		double sumSumWeight = 0.0;
@@ -381,8 +378,6 @@ void Solver::CheckMappingWeights()
 		{
 			sumSumWeight += iter.second;
 		}
-		if (sumSumWeight < 0.832)
-			int jj = j;
 		minSumWeight = min(minSumWeight, sumSumWeight);
 		maxSumWeight = max(maxSumWeight, sumSumWeight);
 		if (sumSumWeight < SMALL)

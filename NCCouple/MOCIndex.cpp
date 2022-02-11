@@ -290,3 +290,28 @@ void MOCIndex::CheckIndex()
 	}
 	return;
 }
+void MOCIndex::Display()
+{
+	std::cout << "axisPoint = " << axisPoint << std::endl;
+	std::cout << "axisNorm = " << axisNorm << std::endl;
+	std::cout << "theetaStartNorm = " << theetaStartNorm << std::endl;
+	std::cout << "circularCellNum = " << circularCellNum << std::endl;
+	std::cout << "axialCellSize = " << axialCellSize << std::endl;
+	std::cout << "axialCellNum = " << axialCellNum << std::endl;
+	std::cout << "scaleTolerance = " << scaleTolerance << std::endl;
+	for (int i = 0; i < this->v_radius.size(); i++)
+	{
+		std::cout << "v_radius[" << i << "] = " << v_radius[i] << std::endl;
+	}
+	for (int k = 0; k < axialCellNum; k++)
+	{
+		for (int i = 0; i < this->v_MOCID.size(); i++)
+		{
+			for (int j = 0; j < this->v_MOCID[i].size(); j++)
+			{
+				std::cout << i << "\t" << j << "\t" << k << "\t" << this->v_MOCID[i][j][k] << std::endl;
+			}
+		}
+	}
+	return;
+}
