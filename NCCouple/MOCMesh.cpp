@@ -8,7 +8,7 @@
 #include "Logger.h"
 #include "index.h"
 #include "Solver.h"
-//#include "boost/regex.hpp"
+#include "boost/regex.hpp"
 //using namespace std;
 
 //#define PI 3.14159265358979323846
@@ -854,8 +854,8 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		if (iter1 != m_mediumMap.end())
 			p_medium = &(iter1->second);
 		
-		std::smatch m;
-		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)")) && materialName == "H2O") {
+		boost::smatch m;
+		if (!boost::regex_search(materialName, m, boost::regex(R"(_\d+)")) && materialName == "H2O") {
 			materialName += "_" + std::to_string(p_mocMeshPoint->PointID());
 			if (!p_medium) {
 				auto iter2 = m_mediumMap.find(materialName);
@@ -886,8 +886,8 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		ofs << std::endl;
 		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
 		std::string tempName = p_mocMeshPoint->GetTemperatureName();
-		std::smatch m;
-		if (!std::regex_search(tempName, m, std::regex(R"(_\d+)")))
+		boost::smatch m;
+		if (!boost::regex_search(tempName, m, boost::regex(R"(_\d+)")))
 			tempName += "_" + std::to_string(p_mocMeshPoint->PointID());
 		
 		ofs << FormatStr("\t\t\t '%s' = TEMP(%.6lf)", tempName.c_str(), p_mocMeshPoint->GetValue(ValueType::TEMPERAURE)) << std::endl;
@@ -923,31 +923,31 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 		std::string line;
 		std::getline(ifs, line);
 		TOKEN nextToken = token;
-		if (std::regex_search(line, std::regex(R"(\*\s*material\s+definition)")))
+		if (boost::regex_search(line, boost::regex(R"(\*\s*material\s+definition)")))
 			nextToken = MATERIAL_DEFINITION;
-		if (std::regex_search(line, std::regex(R"(\*\s*temperature\s+definition)")))
+		if (boost::regex_search(line, boost::regex(R"(\*\s*temperature\s+definition)")))
 			nextToken = TEMPERATURE_DEFINITION;
-		if (std::regex_search(line, std::regex(R"(MODULE)")))
+		if (boost::regex_search(line, boost::regex(R"(MODULE)")))
 			nextToken = OTHER_DEFINITION;
 
 		if (nextToken != token) {
 			p_currentContext = &m_sufContext;
 			if (token == MATERIAL_DEFINITION) {
-				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
+				boost::smatch outer_match;
+				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
 					std::string materialName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					std::regex_search(detailDef, outer_match, std::regex(R"(MAT[^\)]+\))"));
+					boost::regex_search(detailDef, outer_match, boost::regex(R"(MAT[^\)]+\))"));
 					std::string matInfo = outer_match.str(0);
-					std::smatch innerMatch;
+					boost::smatch innerMatch;
 					Medium& medium = m_mediumMap[materialName];
-					while (std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"))) {
+					while (boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"))) {
 						int eleFlag = std::stoi(innerMatch.str(0));
 						medium.eleFlagVec.push_back(eleFlag);
 
 						matInfo = innerMatch.suffix().str();
-						std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
+						boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
 						double eleDens = std::stod(innerMatch.str(0));
 						medium.eleDensCalcFunVec.push_back([eleDens](double) {return eleDens; });
 
@@ -989,15 +989,15 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 				}
 			}
 			else if (token == TEMPERATURE_DEFINITION) {
-				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
+				boost::smatch outer_match;
+				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
 					std::string tempName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					std::regex_search(detailDef, outer_match, std::regex(R"(TEMP[^\)]+\))"));
+					boost::regex_search(detailDef, outer_match, boost::regex(R"(TEMP[^\)]+\))"));
 					std::string tempInfo = outer_match.str(0);
-					std::smatch innerMatch;
-					std::regex_search(tempInfo, innerMatch, std::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
+					boost::smatch innerMatch;
+					boost::regex_search(tempInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(.{0}|.\d+))[Ee]?([\+|-]?\d+))"));
 					double tempValue = std::stod(innerMatch.str(0));
 
 					temperatureMap[tempName] = tempValue;
@@ -1022,14 +1022,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	{
 		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
 		{
-			std::smatch m;
+			boost::smatch m;
 			std::string materialName = GetMaterialNameAtIndex(sMocIndex);
 			auto iter1 = materialDensityMap.find(materialName);
 			if (iter1 != materialDensityMap.end())
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::DENSITY);
 			//p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
 
-			if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+			if (boost::regex_search(materialName, m, boost::regex(R"(_\d+)"))) {
 				std::string materialMetaName = m.prefix().str();
 				auto iter2 = materialDensityMap.find(materialMetaName);
 				if (iter2 != materialDensityMap.end()) {
@@ -1039,14 +1039,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 			}
 		}
 		{
-			std::smatch m;
+			boost::smatch m;
 			std::string temperatureName = GetTemperatureNameAtIndex(sMocIndex);
 			auto iter1 = temperatureMap.find(temperatureName);
 			if (iter1 != temperatureMap.end())
 				//p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::TEMPERAURE);
 
-			if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
+			if (boost::regex_search(temperatureName, m, boost::regex(R"(_\d+)"))) {
 				std::string tempMetaName = m.prefix().str();
 				auto iter2 = temperatureMap.find(tempMetaName);
 				if (iter2 != temperatureMap.end()) {

@@ -23,6 +23,7 @@ set(SOURCE_FILE ${SOURCE_FILE1} ${SOURCE_FILE2} ${SOURCE_FILE3} ${SOURCE_FILE4} 
 set(INCLUDE_DIR 
 	./NCCoouple 
 	./tools
+	/usr/code/include
 	)
 
 if(WIN32)
@@ -32,8 +33,8 @@ if(WIN32)
 elseif(UNIX)
 	add_definitions(-D_BasePlatformLinux_ )
 #	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-	set(STATIC_LIBRARY_DIR )
-	set(STATIC_LIBRARY_NAME "pthread")
+	set(STATIC_LIBRARY_DIR "/usr/code/lib")
+	set(STATIC_LIBRARY_NAME "pthread" "boost_regex") 
 	set(INCLUDE_DIR ${INCLUDE_DIR})
 endif()
 
