@@ -446,9 +446,9 @@ void Solver::Interception_fromMocToCFD
 		for (auto& pair : m_CFD_MOC_Map[i])
 		{
 			SMocIndex sMOCMeshPointID = pair.first;
-			MocMeshField* pMocField= sourceMesh.GetFieldPointerAtIndex(sMOCMeshPointID);
+			//MocMeshField* pMocField= sourceMesh.GetFieldPointerAtIndex(sMOCMeshPointID);
 			double interCoe = pair.second;
-			interValue += interCoe * pMocField->GetValue(vt);
+			interValue += interCoe * sourceMesh.GetValueAtIndex(sMOCMeshPointID,vt);
 			selfInterCoe -= interCoe;
 		}
 		interValue += selfInterCoe * targetValueField[i];
@@ -505,9 +505,14 @@ void Solver::writeMapInfortoFile()
 	{
 		std::unordered_map<SMocIndex, double>::iterator it;
 		for (it = m_CFD_MOC_Map[i].begin(); it != m_CFD_MOC_Map[i].end(); it++)
+		{
+			SMocIndex sTemp(it->first.iAssemblyIndex, it->first.iCellIndex, it->first.iMocIndex);
+			std::shared_ptr<MeshPoint>pMeshPoint = m_mocMeshPtr->GetMocMeshPointPtr(sTemp);
+			
 			CFDtoMOC_MapFile << i << " " << it->first.iAssemblyIndex
-			<<" "<< it->first.iCellIndex<<" "<< it->first.iMocIndex << " " << it->second << std::endl;
-
+				<< " " << it->first.iCellIndex << " " << it->first.iMocIndex << " " << it->second 
+				<<" "<< pMeshPoint->Volume() << std::endl;
+		}
 	}
 	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
 	{

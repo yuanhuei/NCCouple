@@ -9,7 +9,7 @@
 #include "MOCMesh.h"
 
 
-void readMapFile(std::vector<std::string>& materialList)
-{
-}
+
+
+
 

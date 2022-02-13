@@ -44,10 +44,10 @@ Scalar Integration
 
 		for (int i = 0; i < vSMocIndex.size(); i++)
 		{
-			const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(vSMocIndex[i]));
-			if (mocPoint.GetMaterialName() != strZoneName) continue;
+			//const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(vSMocIndex[i]));
+			if (mocMesh.GetMaterialNameAtIndex(vSMocIndex[i]) != strZoneName) continue;
 			sourceValue = mocMesh.GetValueAtIndex(vSMocIndex[i],vt);
-			pointVolume = mocPoint.Volume();
+			pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex[i]);
 			integration += sourceValue * pointVolume;
 		}
 	}
@@ -241,7 +241,9 @@ void MOCFieldsToCFD()
 			Logger::LogError("in MOCFieldsToCFD, " + outputVtkList[i] + " is not given as .vtk file");
 		}
 	}
-	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+	//MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh(materialList);
+	mocMesh.InitMOCHeatPower(mocPowerFile);
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
 	//reading available region IDs
@@ -260,7 +262,7 @@ void MOCFieldsToCFD()
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, RegionID);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
-		mocMesh.InitMOCHeatPower(mocPowerFile, solverMapper);
+		//mocMesh.InitMOCHeatPower(mocPowerFile, solverMapper);
 		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
@@ -309,7 +311,8 @@ void CFDFieldsToMOC()
 	{
 		Logger::LogError("in CFDFieldsToMOC, " + outMocFieldFile + " is not an .inp file");
 	}
-	MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
+	//MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh(materialList);
 
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;

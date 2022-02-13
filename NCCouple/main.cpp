@@ -293,11 +293,11 @@ int main(int argc, char** argv)
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
 		//CFDFieldsToMOC();
-		MOCFieldsToCFD();
-		//MapTest();
+		//MOCFieldsToCFD();
+		MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
-		//CreateMapper();
+		CreateMapper();
 		return 0;
 	}
 	else

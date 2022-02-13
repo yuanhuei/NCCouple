@@ -15,6 +15,13 @@
 #define NA 6.022e23
 #define BARN 1.0e-24
 
+
+MOCMesh::MOCMesh(const std::vector<std::string>& vMaterailName)
+{
+		m_firstCreated = false;
+		readMapFile(vMaterailName);
+}
+
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
 	Logger::LogInfo("MOCMesh generation begin");
@@ -1074,7 +1081,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	return;
 }
 
-void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName,Solver& mSlover) 
+void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
 {
 	std::ifstream ifs(heatPowerFileName);
 	if (!ifs.is_open())
@@ -1096,35 +1103,18 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName,Solver& mSlover)
 		exit(EXIT_FAILURE);
 	}
 	*/
-	std::vector< SMocIndex> vSMocIndex;
-	mSlover.GetMocIndexByMapValue(vSMocIndex);
-	for (int i = 0; i < vSMocIndex.size(); i++)
+	int kk = 0;
+	for (int i = 0; i < m_vAssemblyField.size(); i++)
 	{
-		SetValueAtIndex(vSMocIndex[i], powerInput[i], ValueType::HEATPOWER);
-	}
-	ifs.close();
-
-	/*
-	std::vector<int> bIndex{ 17, 34, 51, 18, 35, 52, 19, 36, 53 };
-	//MocMeshField tempMoc;
-	//tempMoc.SetValue(1000, ValueType::HEATPOWER);
-	for(int i=0;i<bIndex.size();i++)
-	{
-		for (int j = 0; j < 64; j++)
+		for (int j = 0; j < m_vAssemblyField[i].size(); j++)
 		{
-			SMocIndex tempMocIndex(0, bIndex[i], j);
-			this->SetValueAtIndex(tempMocIndex, 1000, ValueType::HEATPOWER);
+			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+			{
+				SetValueAtIndex(SMocIndex(i,j,k), powerInput[kk++], ValueType::HEATPOWER);
+			}
 		}
-
 	}
-	
-	
-	for (auto p_meshPoint : m_meshPointPtrVec)
-	{
-		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
-	}
-	*/
-	
+	ifs.close();	
 }
 
 void MOCMesh::WriteTecplotFile
@@ -1556,6 +1546,75 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 		sideMeshID.push_back(meshIDTransfer[i]);
 	}
 }
+
+void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
+{
+	struct IndexAndVaule
+	{
+		int iCFD;
+		SMocIndex iMoc;
+		double volume;
+		std::string strMaterailName;
+	};
+	std::vector<IndexAndVaule> vIndexValue;
+	int iMax_iAssembly = 0, iMax_iCell = 0, iMax_iMoc = 0;
+
+	for (int kk = 0; kk < materialList.size(); kk++)
+	{
+		std::string fileName = "MapFile_" + materialList[kk] + "_CFDtoMOC";
+		ifstream infile(fileName);
+		if (!infile.is_open())
+		{
+			Logger::LogError("cannot find the CFD to MOC map file: " + fileName);
+			exit(EXIT_FAILURE);
+			return;
+		}
+		Logger::LogInfo("reading CFD to MOC map file in material: " + materialList[kk]);
+
+		std::string line;
+
+		while (getline(infile, line))
+		{
+			int i, j, k, m;
+			double value, vaulueVolume;
+			stringstream stringline(line);
+			stringline >> i >> j >> k >> m >> value>>vaulueVolume;
+			IndexAndVaule sTemp;
+			sTemp.iCFD = i;
+			sTemp.iMoc.iAssemblyIndex = j;
+			sTemp.iMoc.iCellIndex = k;
+			sTemp.iMoc.iMocIndex = m;
+			sTemp.volume = vaulueVolume;
+			sTemp.strMaterailName = materialList[kk];
+			vIndexValue.push_back(sTemp);
+			//m_CFD_MOC_Map[i][sTemp] = value;
+			iMax_iAssembly = max(iMax_iAssembly, j);
+			iMax_iCell = max(iMax_iCell, k);
+			iMax_iMoc = max(iMax_iMoc, m);
+		}
+		infile.close();
+	}
+
+	m_vAssemblyField.resize(iMax_iAssembly);
+	for (int i = 0; i < iMax_iAssembly; i++)
+	{
+		m_vAssemblyField[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j ++ )
+		{
+			m_vAssemblyField[i][j].resize(iMax_iMoc);
+		}
+	}
+
+	for (int i = 0; i < vIndexValue.size(); i++)
+	{
+		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].SetVolume(vIndexValue[i].volume);
+		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].SetMaterialName(vIndexValue[i].strMaterailName);
+	}
+	return;
+}
+
 
 
 

@@ -58,17 +58,11 @@ public:
 		}
 		return 0.0;
 	}
-	double GetVolume() const{ return m_volume; };
-	void SetVolume(double volume) { m_volume = volume; };
-	std::string GetMaterialName() const{ return m_materialName; };
-	void SetMaterialName(std::string strName) { m_materialName = strName; };
+
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
 	double m_heatPower = 0.0;
-	//add 
-	double m_volume = 0;
-	std::string  m_materialName;
 };
 
 struct Cell
@@ -210,14 +204,12 @@ public:
 	};
 
 	MOCMesh() = delete;
-	MOCMesh(const std::vector<std::string>& vMaterailName);
-	MOCMesh(std::string meshFileName, std::string outAplFileName,
-		MeshKernelType kernelType = MeshKernelType::MHT_KERNEL);
+	MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType= MeshKernelType::MHT_KERNEL);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void InitMOCFromInputFile(std::string inputFileName);
-	void InitMOCHeatPower(std::string heatPowerFileName);
+	void InitMOCHeatPower(std::string heatPowerFileName,Solver& mSlover);
 
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string, std::string);
@@ -267,86 +259,24 @@ public://multi assembly multi cell
 	std::vector<Assembly> m_vAssembly;
 	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;
 	std::vector< SMocIndex> m_vSMocIndex;
-
-	std::vector<std::vector<std::vector<MocMeshField>>>m_vAssemblyField;
-
 	bool m_bSingleCell = true;
-	bool m_firstCreated = true;
 	MocMeshField*  GetFieldPointerAtIndex(const SMocIndex& sIndex)
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
 	};
-	/*
-	std::string GetMaterailNameAtIndex(const SMocIndex sIndex) const
-	{
-		if (m_firstCreated)
-		{
-			std::shared_ptr<MeshPoint> pMeshpoint = GetMocMeshPointPtr(sIndex);
-			return pMeshpoint->GetMaterialName();
-		else
-		{
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetMaterialName();
-		}
-
-	};
-	
 	double GetValueAtIndex(const SMocIndex& sIndex, ValueType vt) const
 	{
-		if (m_firstCreated)
-			return m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
-		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
-
+		return m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
 	};
 	void SetValueAtIndex(const SMocIndex& sIndex, double value, ValueType vt)
 	{
-		if (m_firstCreated)
-			m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
-		else
-			m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
+		m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value,vt);
 	};
-	*/
-	double GetVolumeAtIndex(const SMocIndex& sIndex)const
-	{
-		if (m_firstCreated)
-		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*GetMocMeshPointPtr(sIndex));
-			return mocPoint.Volume();
-		}
-		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetVolume();
 
-	}
-	std::string GetMaterialNameAtIndex(const SMocIndex sIndex)const
-	{
-		if (m_firstCreated)
-		{
-			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*GetMocMeshPointPtr(sIndex));
-			return mocPoint.GetMaterialName();
-		}
-		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetMaterialName();
-	}
-	double GetValueAtIndex(const SMocIndex& sIndex, ValueType vt) const
-	{
-		if (m_firstCreated)
-			return m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
-		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
-
-	};
-	void SetValueAtIndex(const SMocIndex& sIndex, double value, ValueType vt)
-	{
-		if (m_firstCreated)
-			m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
-		else
-			m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
-	};
-	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(const SMocIndex pointID) const {
+	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(SMocIndex pointID) const {
 		return m_vAssembly[pointID.iAssemblyIndex].pAssembly_type->v_Cell[pointID.iCellIndex].vMeshPointPtrVec[pointID.iMocIndex];
 	};
-	
-	void readMapFile(const std::vector<std::string>& materialList);
+
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();
