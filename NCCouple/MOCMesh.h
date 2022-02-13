@@ -9,6 +9,7 @@
 #include"Structure.h"
 
 //#define nFineMesh 4
+class Solver;
 class AssemblyIndex;
 //extern int g_iProcessID;
 //enum class MaterialType {
@@ -208,7 +209,7 @@ public:
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void InitMOCFromInputFile(std::string inputFileName);
-	void InitMOCHeatPower(std::string heatPowerFileName);
+	void InitMOCHeatPower(std::string heatPowerFileName,Solver& mSlover);
 
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string, std::string);

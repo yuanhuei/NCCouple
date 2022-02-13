@@ -7,7 +7,9 @@
 #include <unordered_set>
 #include "Logger.h"
 #include "index.h"
-using namespace std;
+#include "Solver.h"
+//#include "boost/regex.hpp"
+//using namespace std;
 
 //#define PI 3.14159265358979323846
 #define NA 6.022e23
@@ -15,6 +17,8 @@ using namespace std;
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
+	Logger::LogInfo("MOCMesh generation begin");
+
 	ofstream outFile(outAplFileName);
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
@@ -402,6 +406,8 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	InitAssembly();
 	m_pAssemblyIndex->buildIndex();
 	GetAllMocIndex(m_vSMocIndex);
+
+	Logger::LogInfo("MOCMesh generation ends");
 }
 
 void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
@@ -822,7 +828,7 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		auto iter1 = m_mediumMap.find(materialName);
 		if (iter1 != m_mediumMap.end())
 			p_medium = &(iter1->second);
-
+		
 		std::smatch m;
 		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)")) && materialName == "H2O") {
 			materialName += "_" + std::to_string(p_mocMeshPoint->PointID());
@@ -1068,10 +1074,37 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	return;
 }
 
-void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
+void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName,Solver& mSlover) 
 {
+	std::ifstream ifs(heatPowerFileName);
+	if (!ifs.is_open())
+	{
+		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
+		exit(EXIT_FAILURE);
+	}
+	std::vector<double> powerInput;
+	while (!ifs.eof())
+	{
+		double thisHeatPower = 0.0;
+		ifs >> thisHeatPower;
+		powerInput.push_back(thisHeatPower);
+	}
+	/*
+	if (powerInput.size() != m_vSMocIndex.size())
+	{
+		Logger::LogError("Wrong number in heatpower.txt");
+		exit(EXIT_FAILURE);
+	}
+	*/
+	std::vector< SMocIndex> vSMocIndex;
+	mSlover.GetMocIndexByMapValue(vSMocIndex);
+	for (int i = 0; i < vSMocIndex.size(); i++)
+	{
+		SetValueAtIndex(vSMocIndex[i], powerInput[i], ValueType::HEATPOWER);
+	}
+	ifs.close();
 
-	
+	/*
 	std::vector<int> bIndex{ 17, 34, 51, 18, 35, 52, 19, 36, 53 };
 	//MocMeshField tempMoc;
 	//tempMoc.SetValue(1000, ValueType::HEATPOWER);
@@ -1084,27 +1117,14 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		}
 
 	}
-	/*
-	std::ifstream ifs(heatPowerFileName);
-	if (!ifs.is_open()) 
-	{
-		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
-		exit(EXIT_FAILURE);
-	}
-	std::vector<double> powerInput;
-	while (!ifs.eof())
-	{
-		double thisHeatPower = 0.0;
-		ifs >> thisHeatPower;
-		powerInput.push_back(thisHeatPower);
-	}
-
+	
+	
 	for (auto p_meshPoint : m_meshPointPtrVec)
 	{
 		p_meshPoint->SetValue(powerInput.at(p_meshPoint->PointID() - 1) * 1e6, ValueType::HEATPOWER);
 	}
-	ifs.close();
 	*/
+	
 }
 
 void MOCMesh::WriteTecplotFile

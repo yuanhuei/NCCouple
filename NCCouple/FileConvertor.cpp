@@ -242,7 +242,6 @@ void MOCFieldsToCFD()
 		}
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
-	mocMesh.InitMOCHeatPower(mocPowerFile);
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
 	//reading available region IDs
@@ -261,7 +260,9 @@ void MOCFieldsToCFD()
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, RegionID);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
+		mocMesh.InitMOCHeatPower(mocPowerFile, solverMapper);
 		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
+
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = outputVtkList[i];
 		RenameFile(strOutput_inpName, GetFileNameOfPrevious(strOutput_inpName,"vtk"));
@@ -308,9 +309,7 @@ void CFDFieldsToMOC()
 	{
 		Logger::LogError("in CFDFieldsToMOC, " + outMocFieldFile + " is not an .inp file");
 	}
-	Logger::LogInfo("MOCMesh generation begin");
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
-	Logger::LogInfo("MOCMesh generation ends");
 
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;

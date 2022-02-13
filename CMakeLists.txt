@@ -4,6 +4,11 @@
 set(PROJECT_NAME NCCouple)
 project (${PROJECT_NAME})
 
+#设置gdb调试
+#SET(CMAKE_BUILD_TYPE "Debug")  # 定义编译类型
+#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb") # 定义Debug编译参数
+#SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall") # 定义Release编译参数
+
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -26,7 +31,7 @@ if(WIN32)
 	set(STATIC_LIBRARY_NAME)
 elseif(UNIX)
 	add_definitions(-D_BasePlatformLinux_ )
-	
+#	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME "pthread")
 	set(INCLUDE_DIR ${INCLUDE_DIR})

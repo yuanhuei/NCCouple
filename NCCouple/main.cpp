@@ -98,7 +98,7 @@ void MapTest()
 	MHTVTKReader reader(cfdMeshFile);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
-		if (i > 0)break;
+		//if (i > 0)break;
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
@@ -293,9 +293,11 @@ int main(int argc, char** argv)
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
 		//CFDFieldsToMOC();
-		MapTest();
+		MOCFieldsToCFD();
+		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
+		//CreateMapper();
 		return 0;
 	}
 	else

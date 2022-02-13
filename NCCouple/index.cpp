@@ -118,24 +118,24 @@ SMocIndex AssemblyIndex::getIndex(Vector vPoint)
 void AssemblyIndex::checkAssemblyIndex()
 {
 	std::vector<Assembly>& v_Assembly = pMOCMesh->m_vAssembly;
-	std::cout << "AssemblyIndex" << std::endl;
+	//std::cout << "AssemblyIndex" << std::endl;
 	std::set<int> setAssembly;
 	for (int i = 0; i < m_assemblyIndex.size(); i++)
 	{
 		for (int j = 0; j < m_assemblyIndex[i].size(); j++)
 		{
 			setAssembly.insert(m_assemblyIndex[i][j]);
-			std::cout << "i=" << i << " j=" << j << " m_assemblyIndex=" << m_assemblyIndex[i][j] << std::endl;
+			//std::cout << "i=" << i << " j=" << j << " m_assemblyIndex=" << m_assemblyIndex[i][j] << std::endl;
 		}
 	}
-	std::cout << "number of Assembly: " << v_Assembly.size() << std::endl;
-	std::cout << "number of m_assemblyIndex:" << setAssembly.size() << std::endl;
-	for (int i = 0; i < v_Assembly.size(); i++)
-	{
-		std::cout << "Assembly " << i << " leftdownpoint=" << v_Assembly[i].vAssembly_LeftDownPoint << std::endl;
-		std::cout << "Assembly " << i << " rightuppoint=" << v_Assembly[i].vAssembly_RightUpPoint << std::endl;
+	//std::cout << "number of Assembly: " << v_Assembly.size() << std::endl;
+	//std::cout << "number of m_assemblyIndex:" << setAssembly.size() << std::endl;
+	//for (int i = 0; i < v_Assembly.size(); i++)
+	//{
+		//std::cout << "Assembly " << i << " leftdownpoint=" << v_Assembly[i].vAssembly_LeftDownPoint << std::endl;
+		//std::cout << "Assembly " << i << " rightuppoint=" << v_Assembly[i].vAssembly_RightUpPoint << std::endl;
 
-	}
+	//}
 	if (v_Assembly.size() != setAssembly.size())
 	{
 		FatalError("wrong Assembly index");
@@ -239,18 +239,18 @@ void CellIndex::buildIndex()
 void CellIndex::checkCellIndex()
 {
 	std::vector<Cell>& v_Cell = pAssemblyType->v_Cell;
-	std::cout << "CellIndex" << std::endl;
+	//std::cout << "CellIndex" << std::endl;
 	std::set<int> setCell;
 	for (int i = 0; i < m_cellIndex.size(); i++)
 	{
 		for (int j = 0; j < m_cellIndex[i].size(); j++)
 		{
 			setCell.insert(m_cellIndex[i][j]);
-			std::cout << "i=" << i << " j=" << j << " m_cellIndex=" << m_cellIndex[i][j] << std::endl;
+			//std::cout << "i=" << i << " j=" << j << " m_cellIndex=" << m_cellIndex[i][j] << std::endl;
 		}
 	}
-	std::cout << "number of cell: " << v_Cell.size() << std::endl;
-	std::cout << "number of m_cellIndex:" << setCell.size() << std::endl;
+	//std::cout << "number of cell: " << v_Cell.size() << std::endl;
+	//std::cout << "number of m_cellIndex:" << setCell.size() << std::endl;
 	if (v_Cell.size() != setCell.size())
 	{
 		FatalError("wrong cell index");
