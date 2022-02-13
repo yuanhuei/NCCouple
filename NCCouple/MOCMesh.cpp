@@ -20,6 +20,7 @@ MOCMesh::MOCMesh(const std::vector<std::string>& vMaterailName)
 {
 		m_firstCreated = false;
 		readMapFile(vMaterailName);
+		GetAllMocIndex(m_vSMocIndex);
 }
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
@@ -420,18 +421,35 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 {
 	SMocIndex sTemp;
-	for (int i = 0; i < m_vAssembly.size(); i++)
+	if (m_firstCreated)
 	{
-		//m_vAssembly[i].v_field.resize(m_vAssembly[i].pAssembly_type->v_Cell.size());
-		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		for (int i = 0; i < m_vAssembly.size(); i++)
 		{
-			//m_vAssembly[i].v_field[j].resize(64);
-			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+			//m_vAssembly[i].v_field.resize(m_vAssembly[i].pAssembly_type->v_Cell.size());
+			for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 			{
-				sTemp.iAssemblyIndex = i;
-				sTemp.iCellIndex = j;
-				sTemp.iMocIndex = k;
-				vSMocIndex.push_back(sTemp);
+				//m_vAssembly[i].v_field[j].resize(64);
+				for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+				{
+					sTemp.iAssemblyIndex = i;
+					sTemp.iCellIndex = j;
+					sTemp.iMocIndex = k;
+					vSMocIndex.push_back(sTemp);
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < m_vAssemblyField.size(); i++)
+		{
+			for (int j = 0; j < m_vAssemblyField[i].size(); j++)
+			{
+				for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+				{
+					if (m_vAssemblyField[i][j][k].GetMaterialName() != "")
+						vSMocIndex.push_back(SMocIndex(i, j, k));
+				}
 			}
 		}
 	}
@@ -1002,10 +1020,10 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	ifs.close();
 	for (auto sMocIndex : m_vSMocIndex)
 	{
-		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
+		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
 		{
 			std::smatch m;
-			std::string materialName = p_mocMeshPoint->GetMaterialName();
+			std::string materialName = GetMaterialNameAtIndex(sMocIndex);
 			auto iter1 = materialDensityMap.find(materialName);
 			if (iter1 != materialDensityMap.end())
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::DENSITY);
@@ -1022,7 +1040,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 		}
 		{
 			std::smatch m;
-			std::string temperatureName = p_mocMeshPoint->GetTemperatureName();
+			std::string temperatureName = GetTemperatureNameAtIndex(sMocIndex);
 			auto iter1 = temperatureMap.find(temperatureName);
 			if (iter1 != temperatureMap.end())
 				//p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
@@ -1110,7 +1128,8 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		{
 			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
 			{
-				SetValueAtIndex(SMocIndex(i,j,k), powerInput[kk++], ValueType::HEATPOWER);
+				if(m_vAssemblyField[i][j][k].GetMaterialName()!="")
+					SetValueAtIndex(SMocIndex(i,j,k), powerInput[kk++], ValueType::HEATPOWER);
 			}
 		}
 	}
@@ -1555,6 +1574,7 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 		SMocIndex iMoc;
 		double volume;
 		std::string strMaterailName;
+		std::string strTemptureName;
 	};
 	std::vector<IndexAndVaule> vIndexValue;
 	int iMax_iAssembly = 0, iMax_iCell = 0, iMax_iMoc = 0;
@@ -1576,17 +1596,18 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 		while (getline(infile, line))
 		{
 			int i, j, k, m;
-			double value, vaulueVolume;
+			double value, valueVolume, valueTempture;
 			stringstream stringline(line);
-			stringline >> i >> j >> k >> m >> value>>vaulueVolume;
+			stringline >> i >> j >> k >> m >> value>>valueVolume>>valueTempture;
 			IndexAndVaule sTemp;
 			sTemp.iCFD = i;
 			sTemp.iMoc.iAssemblyIndex = j;
 			sTemp.iMoc.iCellIndex = k;
 			sTemp.iMoc.iMocIndex = m;
-			sTemp.volume = vaulueVolume;
+			sTemp.volume = valueVolume;
 			sTemp.strMaterailName = materialList[kk];
-			vIndexValue.push_back(sTemp);
+			sTemp.strTemptureName = valueTempture;
+			vIndexValue.push_back(sTemp);;
 			//m_CFD_MOC_Map[i][sTemp] = value;
 			iMax_iAssembly = max(iMax_iAssembly, j);
 			iMax_iCell = max(iMax_iCell, k);
@@ -1595,13 +1616,13 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 		infile.close();
 	}
 
-	m_vAssemblyField.resize(iMax_iAssembly);
-	for (int i = 0; i < iMax_iAssembly; i++)
+	m_vAssemblyField.resize(iMax_iAssembly+1);
+	for (int i = 0; i <= iMax_iAssembly; i++)
 	{
-		m_vAssemblyField[i].resize(iMax_iCell);
-		for (int j = 0; j < iMax_iCell; j ++ )
+		m_vAssemblyField[i].resize(iMax_iCell+1);
+		for (int j = 0; j <= iMax_iCell; j ++ )
 		{
-			m_vAssemblyField[i][j].resize(iMax_iMoc);
+			m_vAssemblyField[i][j].resize(iMax_iMoc+1);
 		}
 	}
 

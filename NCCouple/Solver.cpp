@@ -475,7 +475,7 @@ void Solver::Interception_fromCFDToMOC
 	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
 	for (int i = 0; i < vSMocIndex.size(); i++)
 	{
-		MocMeshField mocField = *targetMesh.GetFieldPointerAtIndex(vSMocIndex[i]);
+		//MocMeshField mocField = *targetMesh.GetFieldPointerAtIndex(vSMocIndex[i]);
 		double interValue = 0.0;
 		double selfInterCoe = 1.0;
 		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
@@ -486,7 +486,7 @@ void Solver::Interception_fromCFDToMOC
 			interValue += interCoe * sourceValueField[iCFDMeshPointID];
 			selfInterCoe -= interCoe;
 		}
-		interValue += selfInterCoe * mocField.GetValue(vt);
+		interValue += selfInterCoe * targetMesh.GetValueAtIndex(vSMocIndex[i],vt);
 		//mocField.SetValue(interValue,vt);
 		targetMesh.SetValueAtIndex(vSMocIndex[i], interValue, vt);
 	}
@@ -507,11 +507,13 @@ void Solver::writeMapInfortoFile()
 		for (it = m_CFD_MOC_Map[i].begin(); it != m_CFD_MOC_Map[i].end(); it++)
 		{
 			SMocIndex sTemp(it->first.iAssemblyIndex, it->first.iCellIndex, it->first.iMocIndex);
-			std::shared_ptr<MeshPoint>pMeshPoint = m_mocMeshPtr->GetMocMeshPointPtr(sTemp);
+			//std::shared_ptr<MeshPoint>pMeshPoint = m_mocMeshPtr->GetMocMeshPointPtr(sTemp);
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(sTemp));
 			
 			CFDtoMOC_MapFile << i << " " << it->first.iAssemblyIndex
 				<< " " << it->first.iCellIndex << " " << it->first.iMocIndex << " " << it->second 
-				<<" "<< pMeshPoint->Volume() << std::endl;
+				<<" "<< mocPoint.Volume()<<" "<<mocPoint.GetTemperatureName() << std::endl;
+
 		}
 	}
 	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
@@ -534,6 +536,7 @@ void Solver::writeMapInfortoFile()
 void Solver::readMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
+	/*
 	m_MOC_CFD_Map.resize(m_mocMeshPtr->m_vAssembly.size());
 	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
 	{
@@ -543,6 +546,17 @@ void Solver::readMapInfor()
 			m_MOC_CFD_Map[i][j].resize(m_mocMeshPtr->m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
 		}
 	}
+	*/
+	m_MOC_CFD_Map.resize(m_mocMeshPtr->m_vAssemblyField.size());
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	{
+		m_MOC_CFD_Map[i].resize(m_mocMeshPtr->m_vAssemblyField[i].size());
+		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
+		{
+			m_MOC_CFD_Map[i][j].resize(m_mocMeshPtr->m_vAssemblyField[i][j].size());
+		}
+	}
+
 	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC";
 	ifstream infile(fileName);
 	if (!infile.is_open())
