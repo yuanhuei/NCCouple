@@ -63,6 +63,8 @@ public:
 	std::string GetMaterialName() const{ return m_materialName; };
 	void SetMaterialName(std::string strName) { m_materialName = strName; };
 	std::string GetTemperatureName() const { return m_temperatureName; };
+	int m_iPointID = -1;
+	std::string m_temperatureName;
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
@@ -70,7 +72,9 @@ private:
 	//add 
 	double m_volume = 0;
 	std::string  m_materialName;
-	std::string m_temperatureName;
+	//std::string m_temperatureName;
+	
+
 };
 
 struct Cell
@@ -278,6 +282,17 @@ public://multi assembly multi cell
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
 	};
+	int GetPointIDAtIndex(const SMocIndex& sIndex)const
+	{
+		if (m_firstCreated)
+		{
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*GetMocMeshPointPtr(sIndex));
+			return mocPoint.PointID();
+		}
+		else
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].m_iPointID;
+
+	}
 	double GetVolumeAtIndex(const SMocIndex& sIndex)const
 	{
 		if (m_firstCreated)

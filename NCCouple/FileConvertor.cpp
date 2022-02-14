@@ -195,7 +195,7 @@ void CreateMapper()
 	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + cfdMeshFile);
 	MHTVTKReader reader(cfdMeshFile);
-	for (size_t i = 0; i < matches.size(); i++)
+	for (size_t i = 0; i < regionList.size(); i++)
 	{
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];

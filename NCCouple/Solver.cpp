@@ -512,7 +512,8 @@ void Solver::writeMapInfortoFile()
 			
 			CFDtoMOC_MapFile << i << " " << it->first.iAssemblyIndex
 				<< " " << it->first.iCellIndex << " " << it->first.iMocIndex << " " << it->second 
-				<<" "<< mocPoint.Volume()<<" "<<mocPoint.GetTemperatureName() << std::endl;
+				<<" "<< mocPoint.Volume()<<" "<<mocPoint.GetTemperatureName() 
+				<<" "<< mocPoint.PointID() << std::endl;
 
 		}
 	}
