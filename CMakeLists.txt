@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
@@ -43,8 +42,9 @@ elseif(UNIX)
 	add_definitions(-D_BasePlatformLinux_ )
 #	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 	set(STATIC_LIBRARY_DIR "/usr/code/lib")
-	set(STATIC_LIBRARY_NAME "pthread" "boost_regex") 
+	set(STATIC_LIBRARY_NAME "pthread" "boost_regex.a") 
 	set(INCLUDE_DIR ${INCLUDE_DIR})
+
 endif()
 
 if (${CMAKE_VERSION} VERSION_LESS 3.8)
