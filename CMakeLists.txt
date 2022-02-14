@@ -13,6 +13,8 @@ project (${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+
+
 aux_source_directory(./NCCouple SOURCE_FILE1)
 aux_source_directory(./NCCouple/MHT_common SOURCE_FILE2)
 aux_source_directory(./NCCouple/MHT_polyhedron SOURCE_FILE3)
@@ -27,6 +29,13 @@ set(INCLUDE_DIR
 	)
 
 if(WIN32)
+	#set(Boost_INCLUDE_DIR ${PROJECT_SOURCE_DIR}./tools/boost)
+	set(Boost_DIR ${PROJECT_SOURCE_DIR}./tools/boost/lib64-msvc-14.2/lib/cmake/Boost-1.72.0)
+	#set(Boost_USE_STATIC_LIBS ON)
+	#set(Boost_USE_STATIC_RUNTIME OFF)
+	find_package(Boost 1.72.0 COMPONENTS regex)	
+	include_directories(include ${Boost_INCLUDE_DIR})
+	link_libraries(${Boost_LIBRARIES})
 	add_definitions(-D_BasePlatformWinddows_ )
 	set(STATIC_LIBRARY_DIR )
 	set(STATIC_LIBRARY_NAME)
