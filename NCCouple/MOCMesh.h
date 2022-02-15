@@ -64,14 +64,14 @@ public:
 	void SetMaterialName(std::string strName) { m_materialName = strName; };
 	std::string GetTemperatureName() const { return m_temperatureName; };
 	int m_iPointID = -1;
-	std::string m_temperatureName;
+	std::string m_temperatureName="";
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
 	double m_heatPower = 0.0;
 	//add 
 	double m_volume = 0;
-	std::string  m_materialName;
+	std::string  m_materialName="";
 	//std::string m_temperatureName;
 	
 
@@ -109,6 +109,7 @@ public:
 		m_materialName(materialName), m_temperatureName(temperatureName) {}
 
 public:
+	
 	void SetValue(double value, ValueType vt) override {
 		switch (vt)
 		{
@@ -142,7 +143,7 @@ public:
 		}
 		return 0.0;
 	}
-
+	
 	std::string GetMaterialName() const {
 		return m_materialName;
 	}
@@ -274,7 +275,7 @@ public://multi assembly multi cell
 	std::shared_ptr<AssemblyIndex>  m_pAssemblyIndex;
 	std::vector< SMocIndex> m_vSMocIndex;
 
-	std::vector<std::vector<std::vector<MocMeshField>>>m_vAssemblyField;
+	std::vector<std::vector<std::vector<std::shared_ptr<MocMeshField>>>>m_vAssemblyField;
 
 	bool m_bSingleCell = true;
 	bool m_firstCreated = true;
@@ -290,7 +291,7 @@ public://multi assembly multi cell
 			return mocPoint.PointID();
 		}
 		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].m_iPointID;
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->m_iPointID;
 
 	}
 	double GetVolumeAtIndex(const SMocIndex& sIndex)const
@@ -301,7 +302,7 @@ public://multi assembly multi cell
 			return mocPoint.Volume();
 		}
 		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetVolume();
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetVolume();
 
 	}
 	std::string GetMaterialNameAtIndex(const SMocIndex sIndex)const
@@ -312,7 +313,7 @@ public://multi assembly multi cell
 			return mocPoint.GetMaterialName();
 		}
 		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetMaterialName();
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetMaterialName();
 	}
 	std::string GetTemperatureNameAtIndex(const SMocIndex sIndex)const
 	{
@@ -322,14 +323,14 @@ public://multi assembly multi cell
 			return mocPoint.GetTemperatureName();
 		}
 		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetTemperatureName();
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetTemperatureName();
 	}
 	double GetValueAtIndex(const SMocIndex& sIndex, ValueType vt) const
 	{
 		if (m_firstCreated)
 			return m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
 		else
-			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].GetValue(vt);
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetValue(vt);
 
 	};
 	void SetValueAtIndex(const SMocIndex& sIndex, double value, ValueType vt)
@@ -337,7 +338,7 @@ public://multi assembly multi cell
 		if (m_firstCreated)
 			m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
 		else
-			m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex].SetValue(value, vt);
+			m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->SetValue(value, vt);
 	};
 	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(const SMocIndex pointID) const {
 		return m_vAssembly[pointID.iAssemblyIndex].pAssembly_type->v_Cell[pointID.iCellIndex].vMeshPointPtrVec[pointID.iMocIndex];

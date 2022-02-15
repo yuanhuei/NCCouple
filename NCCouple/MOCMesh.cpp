@@ -451,7 +451,7 @@ void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 			{
 				for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
 				{
-					if (m_vAssemblyField[i][j][k].GetMaterialName() != "")
+					if (m_vAssemblyField[i][j][k])
 						vSMocIndex.push_back(SMocIndex(i, j, k));
 				}
 			}
@@ -1133,7 +1133,7 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		{
 			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
 			{
-				if(m_vAssemblyField[i][j][k].GetMaterialName()!="")
+				if(m_vAssemblyField[i][j][k])
 					SetValueAtIndex(SMocIndex(i,j,k), powerInput[kk++], ValueType::HEATPOWER);
 			}
 		}
@@ -1637,13 +1637,15 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 	for (int i = 0; i < vIndexValue.size(); i++)
 	{
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
-			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].SetVolume(vIndexValue[i].volume);
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex] = std::make_shared<MocMeshField>();
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
-			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].SetMaterialName(vIndexValue[i].strMaterailName);
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->SetVolume(vIndexValue[i].volume);
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
-			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].m_iPointID = vIndexValue[i].iPointID;
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->SetMaterialName(vIndexValue[i].strMaterailName);
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
-			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex].m_temperatureName = vIndexValue[i].strTemptureName;
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->m_iPointID = vIndexValue[i].iPointID;
+		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->m_temperatureName = vIndexValue[i].strTemptureName;
 
 
 	}
