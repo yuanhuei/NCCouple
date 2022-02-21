@@ -1,34 +1,76 @@
 #include "VTKIO.h"
 
 MHTVTKReader::MHTVTKReader()
+	:scaleRatio(1.0),translation(Vector(0.0,0.0,0.0))
 {
 }
 
 
-MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string> vVTKFileName, std::vector<std::string>& vFiedNameList)
+MHTVTKReader::MHTVTKReader
+(
+	std::string MshFileName, 
+	std::vector<std::string> vVTKFileName, 
+	std::vector<std::string>& vFiedNameList,
+	Scalar ratio
+)
+	:translation(Vector(0.0, 0.0, 0.0))
 {
-
-
 	ReadMSHFile(MshFileName);
-
+	if (ratio < 0)
+	{
+		FatalError("invalid scale ratio: " + std::to_string(ratio));
+	}
+	else
+	{
+		this->scaleRatio = ratio;
+	}
+	this->GetTranslation();
+	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
-
 	ReadVTKFile(vVTKFileName, vFiedNameList);
 }
 
-MHTVTKReader::MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList)
+MHTVTKReader::MHTVTKReader
+(
+	std::string MshFileName, 
+	std::vector<std::string>& vFiedNameList,
+	Scalar ratio
+)
+	:scaleRatio(1.0), translation(Vector(0.0, 0.0, 0.0))
 {
 	ReadMSHFile(MshFileName);
-
+	if (ratio < 0)
+	{
+		FatalError("invalid scale ratio: " + std::to_string(ratio));
+	}
+	else
+	{
+		this->scaleRatio = ratio;
+	}
+	this->GetTranslation();
+	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
-
 	InitializeEmptyField(vFiedNameList);
 }
 
-MHTVTKReader::MHTVTKReader(std::string MshFileName)
+MHTVTKReader::MHTVTKReader
+(
+	std::string MshFileName,
+	Scalar ratio
+)
+	:translation(Vector(0.0, 0.0, 0.0))
 {
 	ReadMSHFile(MshFileName);
-
+	if (ratio < 0)
+	{
+		FatalError("invalid scale ratio: " + std::to_string(ratio));
+	}
+	else
+	{
+		this->scaleRatio = ratio;
+	}
+	this->GetTranslation();
+	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
@@ -39,6 +81,49 @@ MHTVTKReader::~MHTVTKReader()
 	std::vector<StandardMeshBlock>().swap(v_stdMesh);
 	std::vector<Mesh*>().swap(v_pmesh);
 	std::vector<int>().swap(v_meshID);
+}
+
+void MHTVTKReader::GetTranslation()
+{
+	Scalar xmin = 1e10;
+	Scalar ymin = 1e10;
+	Scalar zmin = 1e10;
+	for (size_t i = 0;i < this->v_pmesh.size();i++)
+	{
+		Mesh* pmesh = v_pmesh[i];
+		for (int j = 0;j < pmesh->v_node.size();j++)
+		{
+			Vector node = pmesh->v_node[j];
+			xmin = Min(xmin, node.x_);
+			ymin = Min(ymin, node.y_);
+			zmin = Min(zmin, node.z_);
+		}
+	}
+	this->translation = -Vector(xmin, ymin, zmin);
+	return;
+}
+
+void MHTVTKReader::TransformToMOC()
+{
+	this->GetTranslation();
+	for (size_t i = 0;i < this->v_pmesh.size();i++)
+	{
+		Mesh* pmesh = v_pmesh[i];
+		pmesh->Translate(this->translation);
+		pmesh->Scale(this->scaleRatio);
+	}
+	return;
+}
+
+void MHTVTKReader::TransformBack()
+{
+	for (size_t i = 0;i < this->v_pmesh.size();i++)
+	{
+		Mesh* pmesh = v_pmesh[i];
+		pmesh->Scale(1.0 / this->scaleRatio);
+		pmesh->Translate(-this->translation);
+	}
+	return;
 }
 
 int MHTVTKReader::GetIDOfRegion(std::string regionName)

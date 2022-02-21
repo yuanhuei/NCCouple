@@ -19,11 +19,14 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList);
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList);
-	MHTVTKReader(std::string MshFileName);
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
+	MHTVTKReader(std::string MshFileName, Scalar ratio);
 
 	~MHTVTKReader();
+	void GetTranslation();
+	void TransformToMOC();
+	void TransformBack();
 	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
 	FieldIO GetFieldIO(int num) { return v_FieldIO[num]; }
 	std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
@@ -36,7 +39,8 @@ public:
 	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);		//read total region field
 	void ReadVTKFile(std::vector<std::string>, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList);		//read field by mesh ID
 private:
-
+	Vector translation;
+	Scalar scaleRatio;
 	std::vector < std::vector<Field<Scalar> > > vv_scalarFieldList;			//size same like region in mesh
 	std::vector<FieldIO> v_FieldIO;
 	std::vector<StandardMeshBlock> v_stdMesh;

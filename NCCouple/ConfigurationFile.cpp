@@ -115,6 +115,11 @@ void WriteConfigurationFile
 	}
 	config << ")" << std::endl << std::endl;
 
+	//write material-region match list
+	config << "------scaleRatio------" << std::endl;
+	config << "(" << std::endl;
+	config << "\t[write CFD->MOC scale ratio]" << std::endl;
+	config << ")" << std::endl << std::endl;
 
 	//write material-region match list
 	config << "------matchList------" << std::endl;
@@ -180,6 +185,43 @@ std::string GetFileName
 		Logger::LogError("in GetFileName(), symbol " + symbol + " is not found");
 	}
 	return result;
+}
+
+double GetValueInFile
+(
+	std::string configFile,
+	std::string symbol
+)
+{
+	std::ifstream file(configFile);
+	if (!file.is_open())
+	{
+		Logger::LogError("configuration file MapFile_FileNames is not existing");
+	}
+	bool found = false;
+	std::string oneLine;
+	double value = 0.0;
+	while (!file.eof())
+	{
+		std::getline(file, oneLine);
+		if (std::string::npos != oneLine.find(symbol))
+		{
+			found = true;
+			break;
+		}
+	}
+	if (found == true)
+	{
+		std::stringstream ss;
+		GetBySymbol(file, ss, '(', ')');
+		file.close();
+		ss >> value;
+	}
+	else
+	{
+		Logger::LogError("in GetFileName(), symbol " + symbol + " is not found");
+	}
+	return value;
 }
 
 std::vector<std::string> GetFileNameList

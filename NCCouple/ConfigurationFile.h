@@ -37,6 +37,12 @@ std::string GetFileName
 	std::string symbol
 );
 
+double GetValueInFile
+(
+	std::string configFile,
+	std::string symbol
+);
+
 std::vector<std::string> GetFileNameList
 (
 	std::string configFile,

@@ -142,7 +142,7 @@ void RegisterMapper
 	//mocIndex.BuildUpIndex();
 	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
-	MHTVTKReader reader(strInput_meshFileName);
+	MHTVTKReader reader(strInput_meshFileName,1.0);
 	std::vector<std::string> MOCRegionList;
 	std::vector<std::string> CFDRegionList;
 	//collect region names from MOC mesh
@@ -189,12 +189,9 @@ void CreateMapper()
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
-	//MOCIndex mocIndex(mocMesh);
-	//mocIndex.Initialization();
-	//mocIndex.BuildUpIndex();
-	//mocIndex.CheckIndex();
 	Logger::LogInfo("Reading CFD mesh file: " + cfdMeshFile);
-	MHTVTKReader reader(cfdMeshFile);
+	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(cfdMeshFile, ratio);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
 		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
@@ -245,7 +242,8 @@ void MOCFieldsToCFD()
 	MOCMesh mocMesh(materialList);
 	mocMesh.InitMOCHeatPower(mocPowerFile);
 	//initialize with meshFile
-	MHTVTKReader reader(cfdMeshFile);
+	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(cfdMeshFile, ratio);
 	//reading available region IDs
 	std::vector<int> regionIDList;
 	regionIDList.resize(regionList.size());
@@ -319,7 +317,8 @@ void CFDFieldsToMOC()
 	fieldName.push_back("T");
 	fieldName.push_back("Rho");
 	//initialize with meshFile
-	MHTVTKReader reader(cfdMeshFile);
+	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(cfdMeshFile, ratio);
 	//reading available region IDs
 	std::vector<int> regionIDList;
 	regionIDList.resize(regionList.size());

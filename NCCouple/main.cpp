@@ -94,8 +94,8 @@ void MapTest()
 	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
 
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
-
-	MHTVTKReader reader(cfdMeshFile);
+	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(cfdMeshFile, ratio);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
 		//if (i > 0)break;
@@ -162,7 +162,7 @@ Scalar initialHeatPower(Scalar x, Scalar y, Scalar z)
 
 void VTKReaderTest()
 {
-	MHTVTKReader reader("pinWR.msh");
+	MHTVTKReader reader("pinWR.msh",1.0);
 	std::vector<std::string> fileName;
 	fileName.push_back("H2O.vtk");
 	fileName.push_back("Zr4.vtk");
