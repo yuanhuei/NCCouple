@@ -309,6 +309,68 @@ void GetFaceVerticeList
 )
 {
 	//假设网格没有存储face
+
+	Element curElement = pmesh->v_elem[elemID];
+
+	if (curElement.est_shapeType == Element::ElemShapeType::estTetrahedral)
+	{
+		verticeList.resize(4);
+		//face 0
+		verticeList[0].push_back(curElement.v_nodeID[0]);
+		verticeList[0].push_back(curElement.v_nodeID[1]);
+		verticeList[0].push_back(curElement.v_nodeID[2]);
+		//face 1
+		verticeList[1].push_back(curElement.v_nodeID[0]);
+		verticeList[1].push_back(curElement.v_nodeID[1]);
+		verticeList[1].push_back(curElement.v_nodeID[3]);
+		//face 2
+		verticeList[2].push_back(curElement.v_nodeID[0]);
+		verticeList[2].push_back(curElement.v_nodeID[2]);
+		verticeList[2].push_back(curElement.v_nodeID[3]);
+		//face 3
+		verticeList[3].push_back(curElement.v_nodeID[1]);
+		verticeList[3].push_back(curElement.v_nodeID[2]);
+		verticeList[3].push_back(curElement.v_nodeID[3]);
+	}
+	else if (curElement.est_shapeType == Element::ElemShapeType::estHexahedral)
+	{
+		verticeList.resize(6);
+		//face 0
+		verticeList[0].push_back(curElement.v_nodeID[0]);
+		verticeList[0].push_back(curElement.v_nodeID[1]);
+		verticeList[0].push_back(curElement.v_nodeID[2]);
+		verticeList[0].push_back(curElement.v_nodeID[3]);
+		//face 1
+		verticeList[1].push_back(curElement.v_nodeID[0]);
+		verticeList[1].push_back(curElement.v_nodeID[1]);
+		verticeList[1].push_back(curElement.v_nodeID[5]);
+		verticeList[1].push_back(curElement.v_nodeID[4]);
+
+		//face 2
+		verticeList[2].push_back(curElement.v_nodeID[0]);
+		verticeList[2].push_back(curElement.v_nodeID[3]);
+		verticeList[2].push_back(curElement.v_nodeID[7]);
+		verticeList[2].push_back(curElement.v_nodeID[4]);
+
+		//face 3
+		verticeList[3].push_back(curElement.v_nodeID[1]);
+		verticeList[3].push_back(curElement.v_nodeID[2]);
+		verticeList[3].push_back(curElement.v_nodeID[6]);
+		verticeList[3].push_back(curElement.v_nodeID[5]);
+
+		//face 4
+		verticeList[4].push_back(curElement.v_nodeID[2]);
+		verticeList[4].push_back(curElement.v_nodeID[3]);
+		verticeList[4].push_back(curElement.v_nodeID[7]);
+		verticeList[4].push_back(curElement.v_nodeID[6]);
+
+		//face 5
+		verticeList[5].push_back(curElement.v_nodeID[4]);
+		verticeList[5].push_back(curElement.v_nodeID[5]);
+		verticeList[5].push_back(curElement.v_nodeID[6]);
+		verticeList[5].push_back(curElement.v_nodeID[7]);
+
+	}
 	return;
 }
 
