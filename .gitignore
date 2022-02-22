@@ -354,3 +354,8 @@ healthchecksdb
 /NCCouple/NCCouple.tar
 /.VSCodeCounter/2022-01-26_09-51-29
 /.vscode
+/build-release-2019
+/run.sbatch
+/NCCouple2.0.tar.gz
+/NCCouple2.0.tar
+/NCCouple/pin_c2.apl

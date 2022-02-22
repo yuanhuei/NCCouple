@@ -22,7 +22,7 @@ public:
 	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	MHTVTKReader(std::string MshFileName, Scalar ratio);
-
+	MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio);
 	~MHTVTKReader();
 	void GetTranslation();
 	void TransformToMOC();
@@ -48,9 +48,13 @@ private:
 	std::vector<int> v_meshID;
 
 	void ReadMSHFile(std::string MeshFileName);
+	void VTKMeshEstablishVertice(Mesh *pmeh);
+	
+	void ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);
 	void ReadVTKMeshFormat(std::ifstream &inFile);
+	void ReadVTKMeshFormat(std::ifstream& inFile,Mesh *pmesh);
 };
 
 

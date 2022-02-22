@@ -74,6 +74,25 @@ MHTVTKReader::MHTVTKReader
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
+MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio)
+	:translation(Vector(0.0, 0.0, 0.0))
+{
+	ReadMSHFromVTKFile(vtkFileNameList);
+
+	//because of haven't face info,can't run these code
+//	if (ratio < 0)
+//	{
+//		FatalError("invalid scale ratio: " + std::to_string(ratio));
+//	}
+//	else
+//	{
+//		this->scaleRatio = ratio;
+//	}
+//	this->GetTranslation();
+//	this->TransformToMOC();
+	this->vv_scalarFieldList.resize(this->v_pmesh.size());
+}
+
 MHTVTKReader::~MHTVTKReader()
 {
 	std::vector < std::vector<Field<Scalar>>>().swap(vv_scalarFieldList);
@@ -268,6 +287,34 @@ void MHTVTKReader::ReadMSHFile(std::string MeshFileName)
 	return;
 }
 
+void MHTVTKReader::VTKMeshEstablishVertice(Mesh* pmeh)
+{
+	int nodeNum = (int)pmeh->v_node.size();
+	pmeh->v_vertice.resize(nodeNum);
+	for (int i = 0; i < (int)pmeh->v_elem.size(); i++)
+	{
+		//visiting one element
+		for (int j = 0; j < (int)pmeh->v_elem[i].v_nodeID.size(); j++)
+		{
+			int verticeNum = pmeh->v_elem[i].v_nodeID[j];
+			pmeh->v_vertice[verticeNum].v_elemID.push_back(i);
+		}
+	}	
+}
+
+void MHTVTKReader::ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList)
+{
+	v_stdMesh.resize(vtkFileNameList.size());
+	for (size_t i = 0; i < vtkFileNameList.size(); i++)
+	{
+		v_pmesh.push_back(&v_stdMesh[i]);
+		std::ifstream inFile(vtkFileNameList[i]);
+		ReadVTKMeshFormat(inFile, v_pmesh[i]);
+		this->VTKMeshEstablishVertice(v_pmesh[i]);
+	}
+	std::cout<<"end of read vtk mesh file" << std::endl;
+}
+
 void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList)
 {
 	std::cout << "start Read Data Field" << std::endl;
@@ -400,6 +447,161 @@ void MHTVTKReader::ReadVTKMeshFormat(std::ifstream& inFile)
 			{
 				inFile >> nCellType;
 			}
+			return;
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+void MHTVTKReader::ReadVTKMeshFormat(std::ifstream& inFile, Mesh* pmesh)
+{
+	pmesh->md_meshDim = Mesh::md3D;
+
+	std::string comment;
+	getline(inFile, comment);
+
+
+	std::string WriterName;
+	getline(inFile, WriterName);
+
+
+	std::string codingFormat;
+	inFile >> codingFormat;
+
+
+	std::string DataSet;
+	inFile >> DataSet;
+	inFile >> DataSet;
+
+
+	while (true)
+	{
+		std::string dataComment;
+		inFile >> dataComment;
+
+		if (dataComment == "POINTS")
+		{
+
+			int pointNum;
+			std::string  pointNumType;
+
+			inFile >> pointNum >> pointNumType;
+			pmesh->n_nodeNum = pointNum;
+			pmesh->v_node.resize(pointNum);
+			for (size_t i = 0; i < pointNum; i++)
+			{
+				Scalar point_x, point_y, point_z;
+				inFile >> point_x >> point_y >> point_z;
+				
+				pmesh->v_node[i].x_ = point_x;
+				pmesh->v_node[i].y_ = point_y;
+				pmesh->v_node[i].z_ = point_z;
+			}
+		}
+		else if (dataComment == "CELLS")
+		{
+		
+			int nCellNum, nCellTotalNum;
+			inFile >> nCellNum >> nCellTotalNum;
+			pmesh->n_elemNum = nCellNum;
+			pmesh->v_elem.resize(nCellNum);
+
+			for (size_t i = 0; i < nCellNum; i++)
+			{
+				int nCellNodeNum, nNodeID;
+				inFile >> nCellNodeNum;
+				pmesh->v_elem[i].v_nodeID.resize(nCellNodeNum);
+				for (size_t j = 0; j < nCellNodeNum; j++)
+				{
+					inFile >> nNodeID;
+					pmesh->v_elem[i].v_nodeID[j] = nNodeID;
+				}
+			}
+		}
+		else if (dataComment == "CELL_TYPES")
+		{
+
+			int nCellTypeNum, nCellType,firstCellType;
+			bool ifMix(false);
+			inFile >> nCellTypeNum;
+		
+			for (size_t i = 0; i < nCellTypeNum; i++)
+			{
+				inFile >> nCellType;
+
+				if (i==0)
+				{
+					firstCellType = nCellType;
+				}
+				else
+				{
+					if (firstCellType != nCellType)
+					{
+						ifMix = true;
+					}
+				}
+
+				if (nCellType == 5)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estTetrahedral;
+				}
+				else if (nCellType == 9)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estQuadrilateral;
+				}
+				else if (nCellType == 10)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estTetrahedral;
+				}
+				else if (nCellType == 14)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estPyramid;
+				}
+				else if (nCellType == 13)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estWedge;
+				}
+				else if (nCellType == 12)
+				{
+					pmesh->v_elem[i].est_shapeType = Element::ElemShapeType::estHexahedral;
+				}
+			}
+		
+			if (ifMix)
+			{
+				pmesh->est_shapeType = Element::ElemShapeType::estMixed;
+			}
+			else
+			{
+				if (nCellType == 5)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estTetrahedral;
+				}
+				else if (nCellType == 9)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estQuadrilateral;
+				}
+				else if (nCellType == 10)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estTetrahedral;
+				}
+				else if (nCellType == 14)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estPyramid;
+				}
+				else if (nCellType == 13)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estWedge;
+				}
+				else if (nCellType == 12)
+				{
+					pmesh->est_shapeType = Element::ElemShapeType::estHexahedral;
+				}
+			}
+
 			return;
 		}
 		else

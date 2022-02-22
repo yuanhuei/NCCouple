@@ -283,6 +283,20 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	return;
 }
 
+void VTKReadMeshTest()
+{
+	std::vector<std::string> vVTKname;
+	vVTKname.push_back("WATER.vtk");
+
+	MHTVTKReader mhtvtkreader(vVTKname, 1.0);
+	Mesh* pmesh = mhtvtkreader.GetMeshListPtr()[0];
+	pmesh->WriteTecplotMesh("water.plt");
+	for (int i = 0; i < pmesh->v_vertice[0].v_elemID.size(); i++)
+	{
+		std::cout << "v_vertice[0] element ID: " << pmesh->v_vertice[0].v_elemID[i] << std::endl;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	//get processor ID
@@ -292,12 +306,13 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
+		//CFDFieldsToMOC();
 		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
+		VTKReadMeshTest();
 		return 0;
 	}
 	else
