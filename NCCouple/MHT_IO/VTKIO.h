@@ -49,7 +49,7 @@ private:
 
 	void ReadMSHFile(std::string MeshFileName);
 	void VTKMeshEstablishVertice(Mesh *pmeh);
-	
+	void VTKCreateFaces(Mesh* pmesh);
 	void ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);

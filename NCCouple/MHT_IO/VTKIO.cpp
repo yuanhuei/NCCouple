@@ -78,7 +78,6 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	:translation(Vector(0.0, 0.0, 0.0))
 {
 	ReadMSHFromVTKFile(vtkFileNameList);
-
 	//because of haven't face info,can't run these code
 //	if (ratio < 0)
 //	{
@@ -302,6 +301,61 @@ void MHTVTKReader::VTKMeshEstablishVertice(Mesh* pmeh)
 	}	
 }
 
+void GetFaceVerticeList
+(
+	Mesh* pmesh,
+	int elemID,
+	std::vector<std::vector<int> >& verticeList
+)
+{
+	//假设网格没有存储face
+	return;
+}
+
+void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
+{
+	std::cout << "elemNum = " << pmesh->v_elem.size() << std::endl;
+	std::cout << "faceNum = " << pmesh->v_face.size() << std::endl;
+	std::cout << "nodeNum = " << pmesh->v_node.size() << std::endl;
+	std::cout << "verticeNum = " << pmesh->v_vertice.size() << std::endl;
+	/*
+	for (int i = 0;i < pmesh->v_elem.size();i++)
+	{
+		std::cout << "element #" << i << " is composed of faces" << std::endl;
+		for (int j = 0;j < pmesh->v_elem[i].v_faceID.size();j++)
+		{
+			std::cout << pmesh->v_elem[i].v_faceID[j] << "\t";
+		}
+		std::cout << std::endl;
+		std::cout << "and nodes" << std::endl;
+		for (int j = 0;j < pmesh->v_elem[i].v_nodeID.size();j++)
+		{
+			std::cout << pmesh->v_elem[i].v_nodeID[j] << "\t";
+		}
+		std::cout << std::endl;
+		system("pause");
+	}
+	*/
+	for (int i = 0;i < pmesh->v_vertice.size();i++)
+	{
+		if (pmesh->v_vertice[i].v_elemID.size() <= 4) continue;
+		std::cout << "node #" << i << " is composed of faces" << std::endl;
+		for (int j = 0;j < pmesh->v_vertice[i].v_faceID.size();j++)
+		{
+			std::cout << pmesh->v_vertice[i].v_faceID[j] << "\t";
+		}
+		std::cout << std::endl;
+		std::cout << "and elements" << std::endl;
+		for (int j = 0;j < pmesh->v_vertice[i].v_elemID.size();j++)
+		{
+			std::cout << pmesh->v_vertice[i].v_elemID[j] << "\t";
+		}
+		std::cout << std::endl;
+		system("pause");
+	}
+	return;
+}
+
 void MHTVTKReader::ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList)
 {
 	v_stdMesh.resize(vtkFileNameList.size());
@@ -311,6 +365,7 @@ void MHTVTKReader::ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList)
 		std::ifstream inFile(vtkFileNameList[i]);
 		ReadVTKMeshFormat(inFile, v_pmesh[i]);
 		this->VTKMeshEstablishVertice(v_pmesh[i]);
+		this->VTKCreateFaces(v_pmesh[i]);
 	}
 	std::cout<<"end of read vtk mesh file" << std::endl;
 }

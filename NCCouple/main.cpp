@@ -286,7 +286,7 @@ void RunWithParameters(std::vector<std::string>& parameters)
 void VTKReadMeshTest()
 {
 	std::vector<std::string> vVTKname;
-	vVTKname.push_back("WATER.vtk");
+	vVTKname.push_back("pinWR_1.vtk");
 
 	MHTVTKReader mhtvtkreader(vVTKname, 1.0);
 	Mesh* pmesh = mhtvtkreader.GetMeshListPtr()[0];
