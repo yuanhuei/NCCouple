@@ -282,6 +282,21 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	}
 	return;
 }
+void writeheatpower()
+{
+	std::ofstream ofs("heatpower_1cm.txt");
+	int iNumber_Assembly=9;
+	for (int i = 1; i <= iNumber_Assembly; i++)
+	{
+		int iNum = 48;
+		int iValue = 1000;
+		ofs <<i <<"_" << iNum << std::endl;
+		for (int j = 0; j < iNum; j++)
+		{
+			ofs << iValue << std::endl;
+		}
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -292,12 +307,13 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
-		//MOCFieldsToCFD();
+		//CFDFieldsToMOC();
+		MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
+		//writeheatpower();
 		return 0;
 	}
 	else

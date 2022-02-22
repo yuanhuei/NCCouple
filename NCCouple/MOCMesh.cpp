@@ -1112,12 +1112,27 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
 		exit(EXIT_FAILURE);
 	}
-	std::vector<double> powerInput;
-	while (!ifs.eof())
+	std::vector<std::vector<double>> vHeatPowerValue;
+	//vHeatPowerValue.resize(m_vAssemblyField.size());
+	
+	string line;
+	while (getline(ifs, line))  //read mesh data
 	{
-		double thisHeatPower = 0.0;
-		ifs >> thisHeatPower;
-		powerInput.push_back(thisHeatPower);
+		int iPos = line.find("_");
+		if (iPos != std::string::npos)
+		{
+			int iAssembly_index = stod(line.substr(0, iPos));
+			int iNumb_Value = stod(line.substr(iPos + 1, line.length()));
+			std::vector<double> vValue;
+			vValue.resize(iNumb_Value);
+			for (int i = 0; i < iNumb_Value;i++)
+			{
+
+				getline(ifs, line);
+				vValue[i] = stod(line);
+			}
+			vHeatPowerValue.push_back(vValue);
+		}
 	}
 	/*
 	if (powerInput.size() != m_vSMocIndex.size())
@@ -1133,8 +1148,12 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		{
 			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
 			{
-				if(m_vAssemblyField[i][j][k])
-					SetValueAtIndex(SMocIndex(i,j,k), powerInput[kk++], ValueType::HEATPOWER);
+				if (m_vAssemblyField[i][j][k])
+				{
+					double value = vHeatPowerValue[i][m_vAssemblyField[i][j][k]->m_iPointID - 1];
+					//SetValueAtIndex(SMocIndex(i, j, k), powerInput[kk++], ValueType::HEATPOWER);
+					SetValueAtIndex(SMocIndex(i, j, k), value, ValueType::HEATPOWER);
+				}
 			}
 		}
 	}

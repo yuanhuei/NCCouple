@@ -88,6 +88,11 @@ Solver::Solver
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
+		if (sFirstMocIndex == SMocIndex(-1, -1, -1)) 
+		{
+			Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
+			continue;
+		}
 		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
 
 		const MHTCFDMeshPoint& cfdPoint = dynamic_cast<const MHTCFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
