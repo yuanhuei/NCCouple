@@ -340,16 +340,16 @@ void GetFaceVerticeList
 		}
 		//face 0
 		verticeList[0].push_back(curElement.v_nodeID[0]);
-		verticeList[0].push_back(curElement.v_nodeID[1]);
 		verticeList[0].push_back(curElement.v_nodeID[2]);
+		verticeList[0].push_back(curElement.v_nodeID[1]);
 		//face 1
 		verticeList[1].push_back(curElement.v_nodeID[0]);
 		verticeList[1].push_back(curElement.v_nodeID[1]);
 		verticeList[1].push_back(curElement.v_nodeID[3]);
 		//face 2
 		verticeList[2].push_back(curElement.v_nodeID[0]);
-		verticeList[2].push_back(curElement.v_nodeID[2]);
 		verticeList[2].push_back(curElement.v_nodeID[3]);
+		verticeList[2].push_back(curElement.v_nodeID[2]);
 		//face 3
 		verticeList[3].push_back(curElement.v_nodeID[1]);
 		verticeList[3].push_back(curElement.v_nodeID[2]);
@@ -364,9 +364,9 @@ void GetFaceVerticeList
 		}
 		//face 0
 		verticeList[0].push_back(curElement.v_nodeID[0]);
-		verticeList[0].push_back(curElement.v_nodeID[1]);
-		verticeList[0].push_back(curElement.v_nodeID[2]);
 		verticeList[0].push_back(curElement.v_nodeID[3]);
+		verticeList[0].push_back(curElement.v_nodeID[2]);
+		verticeList[0].push_back(curElement.v_nodeID[1]);
 		//face 1
 		verticeList[1].push_back(curElement.v_nodeID[0]);
 		verticeList[1].push_back(curElement.v_nodeID[1]);
@@ -375,9 +375,9 @@ void GetFaceVerticeList
 
 		//face 2
 		verticeList[2].push_back(curElement.v_nodeID[0]);
-		verticeList[2].push_back(curElement.v_nodeID[3]);
-		verticeList[2].push_back(curElement.v_nodeID[7]);
 		verticeList[2].push_back(curElement.v_nodeID[4]);
+		verticeList[2].push_back(curElement.v_nodeID[7]);
+		verticeList[2].push_back(curElement.v_nodeID[3]);
 
 		//face 3
 		verticeList[3].push_back(curElement.v_nodeID[1]);
