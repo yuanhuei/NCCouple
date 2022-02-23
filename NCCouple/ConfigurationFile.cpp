@@ -118,7 +118,7 @@ void WriteConfigurationFile
 	//write material-region match list
 	config << "------scaleRatio------" << std::endl;
 	config << "(" << std::endl;
-	config << "\t[write CFD->MOC scale ratio]" << std::endl;
+	config << "\t1.0" << std::endl;
 	config << ")" << std::endl << std::endl;
 
 	//write material-region match list

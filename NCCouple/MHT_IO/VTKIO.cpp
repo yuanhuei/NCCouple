@@ -531,6 +531,22 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 			}
 		}
 		int numToCompare = LocalfaceIDs.size();
+
+		int elemNumInCompare = pmesh->v_vertice[i].v_elemID.size();
+		/*
+		std::cout << "number of cell in compare = " << elemNumInCompare << std::endl;
+		std::cout << "number of faces in compare = " << numToCompare << std::endl;
+		for (int j = 0;j < numToCompare;j++)
+		{
+			int localFaceID = LocalfaceIDs[j];
+			for (int k = 0;k < faceVerticeList[localFaceID].size();k++)
+			{
+				std::cout << faceVerticeList[localFaceID][k] << "\t";
+			}
+			std::cout << std::endl;
+		}
+		*/
+		//int numOfMatchFound = 0;
 		for (int j = 0;j < numToCompare - 1;j++)
 		{
 			int ID1 = LocalfaceIDs[j];
@@ -543,9 +559,13 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 				{
 					matchFaceIDList[ID1] = ID2;
 					matchFaceIDList[ID2] = ID1;
+					//numOfMatchFound++;
 				}
 			}
 		}
+
+		//std::cout << "number match found = " << numOfMatchFound << std::endl;
+		//system("pause");
 	}
 	//create faces in mesh, face IDs are also written in elements and FaceZones
 	pmesh->v_face.clear();
@@ -634,7 +654,18 @@ void MHTVTKReader::ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList)
 		this->VTKMeshEstablishVertice(v_pmesh[i]);
 		this->VTKCreateFaces(v_pmesh[i]);
 	}
-	std::cout<<"end of read vtk mesh file" << std::endl;
+
+	for (size_t i = 0;i < v_pmesh.size();i++)
+	{
+		v_pmesh[i]->CalculateCenterAndVolume();
+		Scalar totalVolume = 0;
+		for (int j = 0;j < v_pmesh[i]->v_elem.size();j++)
+		{
+			totalVolume += v_pmesh[i]->v_elem[j].volume;
+		}
+		std::cout << "total volume of mesh #" << i << " = " << totalVolume << std::endl;
+	}
+	std::cout << "end of read vtk mesh file" << std::endl;
 }
 
 void MHTVTKReader::ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList)
