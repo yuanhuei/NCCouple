@@ -78,17 +78,16 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	:translation(Vector(0.0, 0.0, 0.0))
 {
 	ReadMSHFromVTKFile(vtkFileNameList);
-	//because of haven't face info,can't run these code
-//	if (ratio < 0)
-//	{
-//		FatalError("invalid scale ratio: " + std::to_string(ratio));
-//	}
-//	else
-//	{
-//		this->scaleRatio = ratio;
-//	}
-//	this->GetTranslation();
-//	this->TransformToMOC();
+	if (ratio < 0)
+	{
+		FatalError("invalid scale ratio: " + std::to_string(ratio));
+	}
+	else
+	{
+		this->scaleRatio = ratio;
+	}
+	this->GetTranslation();
+	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
@@ -400,50 +399,6 @@ void GetFaceVerticeList
 	return;
 }
 
-int GetPreviousInLoop
-(
-	std::vector<int>& IDList,
-	int& i
-)
-{
-	if (i < 0 || i >= IDList.size())
-	{
-		FatalError("out of range in GetPreviousInLoop, i = " + std::to_string(i));
-	}
-	if (0 == i)
-	{
-		i = IDList.size() - 1;
-		return IDList[i];
-	}
-	else
-	{
-		i = i - 1;
-		return IDList[i];
-	}
-}
-
-int GetNextInLoop
-(
-	std::vector<int>& IDList,
-	int& i
-)
-{
-	if (i < 0 || i >= IDList.size())
-	{
-		FatalError("out of range in GetNextInLoop, i = " +std::to_string(i));
-	}
-	if (IDList.size() - 1 == i)
-	{
-		i = 0;
-		return IDList[i];
-	}
-	else
-	{
-		i = i + 1;
-		return IDList[i];
-	}
-}
-
 bool CompareFaceVertice
 (
 	std::vector<std::vector<int> >& verticeList,
@@ -457,13 +412,13 @@ bool CompareFaceVertice
 	bool found = false;
 	int startID = list1[0];
 	//first, startID must be found in list2: if found, we can preset it true
-	int locationInList2 = -1;
+	int startIDInList2 = -1;
 	for (int i = 0;i < list2.size();i++)
 	{
 		if (startID == list2[i])
 		{
 			found = true;
-			locationInList2 = i;
+			startIDInList2 = i;
 			break;
 		}
 	}
@@ -472,7 +427,9 @@ bool CompareFaceVertice
 	for (int i = 1;i < list1.size();i++)
 	{
 		int verticeID1 = list1[i];
-		int verticeID2 = GetPreviousInLoop(list2, locationInList2);
+		//find the corresponding ID in list2 by the rule that IDs in list2 are inversedly saved
+		int correspondingID = (startIDInList2 - i) % list2.size();
+		int verticeID2 = list2[correspondingID];
 		if (verticeID1 != verticeID2)
 		{
 			found = false;
@@ -480,6 +437,24 @@ bool CompareFaceVertice
 		}
 	}
 	return found;
+}
+
+void InsertWhenNotFound(std::vector<int>& IDList, int newID)
+{
+	bool found = false;
+	for (int j = 0;j < IDList.size();j++)
+	{
+		if (newID == IDList[j])
+		{
+			found = true;
+			break;
+		}
+	}
+	if (false == found)
+	{
+		IDList.push_back(newID);
+	}
+	return;
 }
 
 void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
@@ -525,12 +500,11 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 			faceVerticeList[j]= localFaceVerticeID[j- startIDs[i]];
 		}
 	}
-
+	//search coincident faces and mark
 	for (int i = 0;i < pmesh->v_vertice.size();i++)
 	{
 		std::vector<int> LocalfaceIDs;
 		//collect local face IDs
-		std::cout << "collected elem number = " << pmesh->v_vertice[i].v_elemID.size() << std::endl;
 		for (int j = 0;j < pmesh->v_vertice[i].v_elemID.size();j++)
 		{
 			int elemID = pmesh->v_vertice[i].v_elemID[j];
@@ -539,50 +513,67 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 				LocalfaceIDs.push_back(k);
 			}
 		}
-		std::cout << "collected face number = " << LocalfaceIDs.size() << std::endl;
 		int numToCompare = LocalfaceIDs.size();
-		for (int j = 0;j < numToCompare;j++)
-		{
-			int faceID = LocalfaceIDs[j];
-			for (int k = 0;k < faceVerticeList[faceID].size();k++)
-			{
-				std::cout << faceVerticeList[faceID][k] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		int matchfoundNum = 0;
 		for (int j = 0;j < numToCompare - 1;j++)
 		{
 			int ID1 = LocalfaceIDs[j];
-			//if (-1 != matchFaceIDList[ID1]) continue;
+			if (-1 != matchFaceIDList[ID1]) continue;
 			for (int k = j + 1;k < numToCompare;k++)
 			{
 				int ID2 = LocalfaceIDs[k];
-				//if (-1 != matchFaceIDList[ID2]) continue;
+				if (-1 != matchFaceIDList[ID2]) continue;
 				if (CompareFaceVertice(faceVerticeList, ID1, ID2))
 				{
-					/*
-					std::cout << "match found" << std::endl;
-					for (int i = 0;i < faceVerticeList[ID1].size();i++)
-					{
-						std::cout << faceVerticeList[ID1][i] << "\t";
-					}
-					std::cout << std::endl;
-					for (int i = 0;i < faceVerticeList[ID2].size();i++)
-					{
-						std::cout << faceVerticeList[ID2][i] << "\t";
-					}
-					std::cout << std::endl;
-					system("pause");
-					*/
-					matchfoundNum++;
 					matchFaceIDList[ID1] = ID2;
 					matchFaceIDList[ID2] = ID1;
 				}
 			}
 		}
-		std::cout << "found match number = " << matchfoundNum << std::endl;
-		system("pause");
+	}
+	//create faces in mesh, face IDs are also written in elements and FaceZones
+	pmesh->v_face.clear();
+	pmesh->v_boundaryFaceZone.resize(1);
+	pmesh->v_boundaryFaceZone[0].name = "BOUNDARY";
+	for (int i = 0;i < totalFaceNum;i++)
+	{
+		int twinID = matchFaceIDList[i];
+		if (twinID == -1)
+		{
+			Face newFace;
+			int ownerID = ownerElemIDList[i];
+			newFace.v_nodeID = faceVerticeList[i];
+			newFace.n_owner = ownerID;
+			newFace.n_neighbor = -1;
+			pmesh->v_face.push_back(newFace);
+			int faceID = pmesh->v_face.size() - 1;
+			InsertWhenNotFound(pmesh->v_elem[ownerID].v_faceID, faceID);
+			pmesh->v_boundaryFaceZone[0].v_faceID.push_back(faceID);
+		}
+		else if (i < twinID)
+		{
+			Face newFace;
+			int ownerID = ownerElemIDList[i];
+			int nbID = ownerElemIDList[twinID];
+			newFace.v_nodeID = faceVerticeList[i];
+			newFace.n_owner = ownerID;
+			newFace.n_neighbor = nbID;
+			pmesh->v_face.push_back(newFace);
+			int faceID = pmesh->v_face.size() - 1;
+			InsertWhenNotFound(pmesh->v_elem[ownerID].v_faceID, faceID);
+			InsertWhenNotFound(pmesh->v_elem[nbID].v_faceID, faceID);
+			pmesh->fz_interiorFaceZone.v_faceID.push_back(faceID);
+		}
+	}
+	pmesh->n_faceNum = pmesh->v_face.size();
+
+	//write faceIDs in v_vertice
+	for (int faceID = 0;faceID < pmesh->n_faceNum;faceID++)
+	{
+		for (int i = 0;i < pmesh->v_face[faceID].v_nodeID.size();i++)
+		{
+			int nodeID = pmesh->v_face[faceID].v_nodeID[i];
+			InsertWhenNotFound(pmesh->v_vertice[nodeID].v_faceID, faceID);
+		}
 	}
 
 	int isolatedFace = 0;
@@ -602,51 +593,7 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 		}
 	}
 	std::cout << "isolatedFace number = " << isolatedFace << std::endl;
-	/*
-	for (int i = 0;i < faceVerticeList.size();i++)
-	{
-		for (int j = 0;j < faceVerticeList[i].size();j++)
-		{
-			std::cout << faceVerticeList[i][j] << "\t";
-		}
-		std::cout << std::endl;
-	}
-	
-	for (int i = 0;i < pmesh->v_elem.size();i++)
-	{
-		std::cout << "element #" << i << " is composed of faces" << std::endl;
-		for (int j = 0;j < pmesh->v_elem[i].v_faceID.size();j++)
-		{
-			std::cout << pmesh->v_elem[i].v_faceID[j] << "\t";
-		}
-		std::cout << std::endl;
-		std::cout << "and nodes" << std::endl;
-		for (int j = 0;j < pmesh->v_elem[i].v_nodeID.size();j++)
-		{
-			std::cout << pmesh->v_elem[i].v_nodeID[j] << "\t";
-		}
-		std::cout << std::endl;
-		system("pause");
-	}
-	
-	for (int i = 0;i < pmesh->v_vertice.size();i++)
-	{
-		if (pmesh->v_vertice[i].v_elemID.size() <= 4) continue;
-		std::cout << "node #" << i << " is composed of faces" << std::endl;
-		for (int j = 0;j < pmesh->v_vertice[i].v_faceID.size();j++)
-		{
-			std::cout << pmesh->v_vertice[i].v_faceID[j] << "\t";
-		}
-		std::cout << std::endl;
-		std::cout << "and elements" << std::endl;
-		for (int j = 0;j < pmesh->v_vertice[i].v_elemID.size();j++)
-		{
-			std::cout << pmesh->v_vertice[i].v_elemID[j] << "\t";
-		}
-		std::cout << std::endl;
-		system("pause");
-	}
-	*/
+	std::cout << "face number in mesh = " << pmesh->v_face.size() << std::endl;
 	return;
 }
 
