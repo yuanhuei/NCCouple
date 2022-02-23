@@ -87,31 +87,17 @@ void RenameFile
 void WriteConfigurationFile
 (
 	std::string configFile,
-	std::string& mshFile,
 	std::string& aplFile,
 	std::string& outAplFile,
-	std::vector<std::string>& MOCMaterials,
-	std::vector<std::string>& CFDRegions
+	std::vector<std::string>& MOCMaterials
 )
 {
 	std::ofstream config(configFile);
-	//write msh file name
-	config << "------inputMsh------" << std::endl;
-	config << "(" << mshFile << ")" << std::endl << std::endl;
-
 	config << "******MOC materials******" << std::endl;
 	config << "(" << std::endl;
 	for (size_t i = 0;i < MOCMaterials.size();i++)
 	{
 		config << MOCMaterials[i] << std::endl;
-	}
-	config << ")" << std::endl << std::endl;
-
-	config << "******CFD Regions******" << std::endl;
-	config << "(" << std::endl;
-	for (size_t i = 0;i < CFDRegions.size();i++)
-	{
-		config << CFDRegions[i] << std::endl;
 	}
 	config << ")" << std::endl << std::endl;
 
@@ -128,7 +114,6 @@ void WriteConfigurationFile
 	{
 		config << "(" << std::endl;
 		config << "\t" << MOCMaterials[i] << std::endl;
-		config << "\t[write CFD region]" << std::endl;
 		config << "\t[write input file].vtk" << std::endl;
 		config << "\t[write output file].vtk" << std::endl;
 		config << ")" << std::endl << std::endl;
@@ -276,8 +261,8 @@ std::vector<std::vector<std::string> > GetMatchList
 )
 {
 	std::vector<std::vector<std::string> > matchList;
-	//1. MOC material, 2. CFD region, 3. input vtk, 4. output vtk
-	matchList.resize(4);
+	//1. MOC material, 2. input vtk, 3. output vtk
+	matchList.resize(3);
 	std::ifstream file(configFile);
 	if (!file.is_open())
 	{
@@ -304,7 +289,7 @@ std::vector<std::vector<std::string> > GetMatchList
 			std::stringstream oneMatch;
 			//extract one match with no brackets
 			GetBySymbol(fullList, oneMatch, '(', ')');
-			//members of one match shoule be 1. MOC material, 2. CFD region, 3. input vtk, 4. output vtk
+			//members of one match shoule be 1. MOC material, 2. input vtk, 3. output vtk
 			std::vector<std::string> strList;
 			while (!oneMatch.eof())
 			{
@@ -316,11 +301,11 @@ std::vector<std::vector<std::string> > GetMatchList
 				}
 			}
 			if (0 == strList.size()) continue;
-			if (4 != strList.size())
+			if (3 != strList.size())
 			{
 				Logger::LogError("incorrect match list: " + oneMatch.str());
 			}
-			for (int i = 0;i < 4;i++)
+			for (int i = 0;i < 3;i++)
 			{
 				matchList[i].push_back(strList[i]);
 			}
