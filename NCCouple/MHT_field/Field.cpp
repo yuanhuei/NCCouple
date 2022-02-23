@@ -481,12 +481,6 @@ void Field<Scalar>::ElementToNode()
 			//an element center is of course not on the boundary; 
 			isBoundary.push_back(false);
 		}
-		std::cout << i << " , " << p_blockMesh->v_vertice[i].v_elemID.size() << std::endl;
-		if (relativePos.size() == 0)
-		{
-			std::cout<< i <<" , "<< p_blockMesh->v_vertice[i].v_elemID.size() << std::endl;
-			system("pause");
-		}
 
 		//step 3.2: if existing, collect toplogical information from boundary face field
 		if (BaseField<Scalar>::fsAssigned == faceField.fs_status)
@@ -536,6 +530,10 @@ void Field<Scalar>::ElementToNode()
 			}
 		}
 		//step 3.4: use interpolation tools and write values
+		if (relativePos.size() ==0)
+		{
+			continue;
+		}
 		Scalar interpolatedValue = Interpolation(relativePos, value);
 		nodeField.SetValue(i, interpolatedValue);
 	}

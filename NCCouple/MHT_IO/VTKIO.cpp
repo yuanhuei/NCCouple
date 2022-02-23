@@ -561,6 +561,15 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 			newFace.v_nodeID = faceVerticeList[i];
 			newFace.n_owner = ownerID;
 			newFace.n_neighbor = -1;
+			if (newFace.v_nodeID.size() == 3)
+			{
+				newFace.ft_faceType = Face::ftTrangular;
+			}
+			else if (newFace.v_nodeID.size() == 4)
+			{
+				newFace.ft_faceType = Face::ftQuadrilateral;
+			}
+
 			pmesh->v_face.push_back(newFace);
 			int faceID = pmesh->v_face.size() - 1;
 			InsertWhenNotFound(pmesh->v_elem[ownerID].v_faceID, faceID);

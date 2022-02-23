@@ -293,6 +293,15 @@ void VTKReadMeshTest()
 	vFieldName.push_back("temperature");
 	MHTVTKReader mhtvtkreader(vVTKname, vFieldName, 1.0);
 
+	std::cout<<"mhtvtkreader.GetMeshListPtr()[0]->v_vertice.size() :" << mhtvtkreader.GetMeshListPtr()[0]->v_vertice.size()<<std::endl;
+
+/*
+	for (size_t i = 0; i < mhtvtkreader.GetMeshListPtr()[0]->v_vertice.size(); i++)
+	{
+		std::cout<<i<<" , "<< mhtvtkreader.GetMeshListPtr()[0]->v_vertice[i].v_elemID.size() << std::endl;
+	}*/
+
+
 	mhtvtkreader.GetFieldIO(0).WriteTecplotField("temperature_0.plt");
 	mhtvtkreader.GetFieldIO(1).WriteTecplotField("temperature_1.plt");
 }
