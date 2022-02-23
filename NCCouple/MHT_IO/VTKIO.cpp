@@ -91,6 +91,23 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
+MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio)
+{
+	ReadMSHFromVTKFile(vtkFileNameList);
+	if (ratio < 0)
+	{
+		FatalError("invalid scale ratio: " + std::to_string(ratio));
+	}
+	else
+	{
+		this->scaleRatio = ratio;
+	}
+	this->GetTranslation();
+	this->TransformToMOC();
+	this->vv_scalarFieldList.resize(this->v_pmesh.size());
+	ReadVTKFile(vtkFileNameList, vFiedNameList);
+}
+
 MHTVTKReader::~MHTVTKReader()
 {
 	std::vector < std::vector<Field<Scalar>>>().swap(vv_scalarFieldList);

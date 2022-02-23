@@ -286,15 +286,15 @@ void RunWithParameters(std::vector<std::string>& parameters)
 void VTKReadMeshTest()
 {
 	std::vector<std::string> vVTKname;
-	vVTKname.push_back("pinWR_2.vtk");
+	vVTKname.push_back("1_PART-FLUID_couple.vtk");
+	vVTKname.push_back("2_solid.vtk");
 
-	MHTVTKReader mhtvtkreader(vVTKname, 1.0);
-	Mesh* pmesh = mhtvtkreader.GetMeshListPtr()[0];
-	pmesh->WriteTecplotMesh("pinWR_2.plt");
-	for (int i = 0; i < pmesh->v_vertice[0].v_elemID.size(); i++)
-	{
-		std::cout << "v_vertice[0] element ID: " << pmesh->v_vertice[0].v_elemID[i] << std::endl;
-	}
+	std::vector<std::string> vFieldName;
+	vFieldName.push_back("temperature");
+	MHTVTKReader mhtvtkreader(vVTKname, vFieldName, 1.0);
+
+	mhtvtkreader.GetFieldIO(0).WriteTecplotField("temperature_0.plt");
+	mhtvtkreader.GetFieldIO(1).WriteTecplotField("temperature_1.plt");
 }
 
 int main(int argc, char** argv)
