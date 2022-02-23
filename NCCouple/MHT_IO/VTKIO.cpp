@@ -301,6 +301,28 @@ void MHTVTKReader::VTKMeshEstablishVertice(Mesh* pmeh)
 	}	
 }
 
+int GetFaceNum
+(
+	Mesh* pmesh,
+	int elemID
+)
+{
+	Element& curElement = pmesh->v_elem[elemID];
+	if (curElement.est_shapeType == Element::ElemShapeType::estTetrahedral)
+	{
+		return 4;
+	}
+	else if (curElement.est_shapeType == Element::ElemShapeType::estHexahedral)
+	{
+		return 6;
+	}
+	else
+	{
+		FatalError("no more element shape type supported");
+		return 0;
+	}
+}
+
 void GetFaceVerticeList
 (
 	Mesh* pmesh,
@@ -308,13 +330,14 @@ void GetFaceVerticeList
 	std::vector<std::vector<int> >& verticeList
 )
 {
-	//假设网格没有存储face
-
-	Element curElement = pmesh->v_elem[elemID];
-
+	Element& curElement = pmesh->v_elem[elemID];
 	if (curElement.est_shapeType == Element::ElemShapeType::estTetrahedral)
 	{
 		verticeList.resize(4);
+		for (int faceID = 0;faceID < 4;faceID++)
+		{
+			verticeList[faceID].clear();
+		}
 		//face 0
 		verticeList[0].push_back(curElement.v_nodeID[0]);
 		verticeList[0].push_back(curElement.v_nodeID[1]);
@@ -335,6 +358,10 @@ void GetFaceVerticeList
 	else if (curElement.est_shapeType == Element::ElemShapeType::estHexahedral)
 	{
 		verticeList.resize(6);
+		for (int faceID = 0;faceID < 6;faceID++)
+		{
+			verticeList[faceID].clear();
+		}
 		//face 0
 		verticeList[0].push_back(curElement.v_nodeID[0]);
 		verticeList[0].push_back(curElement.v_nodeID[1]);
@@ -369,9 +396,90 @@ void GetFaceVerticeList
 		verticeList[5].push_back(curElement.v_nodeID[5]);
 		verticeList[5].push_back(curElement.v_nodeID[6]);
 		verticeList[5].push_back(curElement.v_nodeID[7]);
-
 	}
 	return;
+}
+
+int GetPreviousInLoop
+(
+	std::vector<int>& IDList,
+	int& i
+)
+{
+	if (i < 0 || i >= IDList.size())
+	{
+		FatalError("out of range in GetPreviousInLoop, i = " + std::to_string(i));
+	}
+	if (0 == i)
+	{
+		i = IDList.size() - 1;
+		return IDList[i];
+	}
+	else
+	{
+		i = i - 1;
+		return IDList[i];
+	}
+}
+
+int GetNextInLoop
+(
+	std::vector<int>& IDList,
+	int& i
+)
+{
+	if (i < 0 || i >= IDList.size())
+	{
+		FatalError("out of range in GetNextInLoop, i = " +std::to_string(i));
+	}
+	if (IDList.size() - 1 == i)
+	{
+		i = 0;
+		return IDList[i];
+	}
+	else
+	{
+		i = i + 1;
+		return IDList[i];
+	}
+}
+
+bool CompareFaceVertice
+(
+	std::vector<std::vector<int> >& verticeList,
+	int ID1, 
+	int ID2
+)
+{
+	std::vector<int>& list1 = verticeList[ID1];
+	std::vector<int>& list2 = verticeList[ID2];
+	if (0 == list1.size() || 0 == list2.size()) return false;
+	bool found = false;
+	int startID = list1[0];
+	//first, startID must be found in list2: if found, we can preset it true
+	int locationInList2 = -1;
+	for (int i = 0;i < list2.size();i++)
+	{
+		if (startID == list2[i])
+		{
+			found = true;
+			locationInList2 = i;
+			break;
+		}
+	}
+	if (false == found) return false;
+	//second, the following sequence must be the same: if any one is found different, it is then false
+	for (int i = 1;i < list1.size();i++)
+	{
+		int verticeID1 = list1[i];
+		int verticeID2 = GetPreviousInLoop(list2, locationInList2);
+		if (verticeID1 != verticeID2)
+		{
+			found = false;
+			break;
+		}
+	}
+	return found;
 }
 
 void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
@@ -380,7 +488,130 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 	std::cout << "faceNum = " << pmesh->v_face.size() << std::endl;
 	std::cout << "nodeNum = " << pmesh->v_node.size() << std::endl;
 	std::cout << "verticeNum = " << pmesh->v_vertice.size() << std::endl;
+	int totalFaceNum = 0;
+	for (int i = 0;i < pmesh->v_elem.size();i++)
+	{
+		totalFaceNum += GetFaceNum(pmesh, i);
+	}
+	std::cout << "in vtk file we have totally " << totalFaceNum << " faces" << std::endl;
+	std::vector<std::vector<int> > faceVerticeList(totalFaceNum);
+	std::vector<int> ownerElemIDList(totalFaceNum);
+	std::vector<int> matchFaceIDList(totalFaceNum);
+	std::vector<int> startIDs(pmesh->v_elem.size() + 1);
+	for (int i = 0;i < totalFaceNum;i++)
+	{
+		matchFaceIDList[i] = -1;
+	}
+	int count = 0;
+	for (int i = 0;i < pmesh->n_elemNum;i++)
+	{
+		startIDs[i] = count;
+		int faceNum = GetFaceNum(pmesh, i);
+		count += faceNum;
+	}
+	startIDs[pmesh->n_elemNum]= count;
+	
+	std::vector<std::vector<int> > localFaceVerticeID;
+	for (int i = 0;i < pmesh->v_elem.size();i++)
+	{
+		int faceNum = GetFaceNum(pmesh, i);
+		GetFaceVerticeList(pmesh, i, localFaceVerticeID);
+		for (int j = startIDs[i];j < startIDs[i+1]; j++)
+		{
+			int verticeNum = localFaceVerticeID[j].size();
+			//set corresponding element ID
+			ownerElemIDList[j] = i;
+			//writting vertice IDs
+			faceVerticeList[j]= localFaceVerticeID[j- startIDs[i]];
+		}
+	}
+
+	for (int i = 0;i < pmesh->v_vertice.size();i++)
+	{
+		std::vector<int> LocalfaceIDs;
+		//collect local face IDs
+		std::cout << "collected elem number = " << pmesh->v_vertice[i].v_elemID.size() << std::endl;
+		for (int j = 0;j < pmesh->v_vertice[i].v_elemID.size();j++)
+		{
+			int elemID = pmesh->v_vertice[i].v_elemID[j];
+			for (int k = startIDs[elemID];k < startIDs[elemID + 1];k++)
+			{
+				LocalfaceIDs.push_back(k);
+			}
+		}
+		std::cout << "collected face number = " << LocalfaceIDs.size() << std::endl;
+		int numToCompare = LocalfaceIDs.size();
+		for (int j = 0;j < numToCompare;j++)
+		{
+			int faceID = LocalfaceIDs[j];
+			for (int k = 0;k < faceVerticeList[faceID].size();k++)
+			{
+				std::cout << faceVerticeList[faceID][k] << "\t";
+			}
+			std::cout << std::endl;
+		}
+		int matchfoundNum = 0;
+		for (int j = 0;j < numToCompare - 1;j++)
+		{
+			int ID1 = LocalfaceIDs[j];
+			//if (-1 != matchFaceIDList[ID1]) continue;
+			for (int k = j + 1;k < numToCompare;k++)
+			{
+				int ID2 = LocalfaceIDs[k];
+				//if (-1 != matchFaceIDList[ID2]) continue;
+				if (CompareFaceVertice(faceVerticeList, ID1, ID2))
+				{
+					/*
+					std::cout << "match found" << std::endl;
+					for (int i = 0;i < faceVerticeList[ID1].size();i++)
+					{
+						std::cout << faceVerticeList[ID1][i] << "\t";
+					}
+					std::cout << std::endl;
+					for (int i = 0;i < faceVerticeList[ID2].size();i++)
+					{
+						std::cout << faceVerticeList[ID2][i] << "\t";
+					}
+					std::cout << std::endl;
+					system("pause");
+					*/
+					matchfoundNum++;
+					matchFaceIDList[ID1] = ID2;
+					matchFaceIDList[ID2] = ID1;
+				}
+			}
+		}
+		std::cout << "found match number = " << matchfoundNum << std::endl;
+		system("pause");
+	}
+
+	int isolatedFace = 0;
+	for (int i = 0;i < totalFaceNum;i++)
+	{
+		int twinID = matchFaceIDList[i];
+		if (twinID == -1)
+		{
+			isolatedFace++;
+		}
+		else
+		{
+			if (matchFaceIDList[twinID] != i)
+			{
+				FatalError("twins are not consistent");
+			}
+		}
+	}
+	std::cout << "isolatedFace number = " << isolatedFace << std::endl;
 	/*
+	for (int i = 0;i < faceVerticeList.size();i++)
+	{
+		for (int j = 0;j < faceVerticeList[i].size();j++)
+		{
+			std::cout << faceVerticeList[i][j] << "\t";
+		}
+		std::cout << std::endl;
+	}
+	
 	for (int i = 0;i < pmesh->v_elem.size();i++)
 	{
 		std::cout << "element #" << i << " is composed of faces" << std::endl;
@@ -397,7 +628,7 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 		std::cout << std::endl;
 		system("pause");
 	}
-	*/
+	
 	for (int i = 0;i < pmesh->v_vertice.size();i++)
 	{
 		if (pmesh->v_vertice[i].v_elemID.size() <= 4) continue;
@@ -415,6 +646,7 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 		std::cout << std::endl;
 		system("pause");
 	}
+	*/
 	return;
 }
 
