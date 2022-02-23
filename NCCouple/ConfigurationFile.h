@@ -24,11 +24,11 @@ void RenameFile
 void WriteConfigurationFile
 (
 	std::string configFile,
-	std::string& mshFile,
+	//std::string& mshFile,
 	std::string& aplFile,
 	std::string& outAplFile,
-	std::vector<std::string>& MOCMaterials,
-	std::vector<std::string>& CFDRegions
+	std::vector<std::string>& MOCMaterials
+	//std::vector<std::string>& CFDRegions
 );
 
 std::string GetFileName

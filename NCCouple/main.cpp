@@ -179,13 +179,13 @@ void VTKReaderTest()
 
 void EntranceOfRegister(std::vector<std::string>& fileNames)
 {
-	if (3 != fileNames.size())
+	if (2 != fileNames.size())
 	{
-		std::cout << "Please give 3 file names if you are intending to register solver, like this:" << std::endl;
-		std::cout << "NCCouple register (MOCMesh) (MOCField) (CFDMesh)" << std::endl;
+		std::cout << "Please give 2 file names if you are intending to register solver, like this:" << std::endl;
+		std::cout << "NCCouple register (MOCMesh) (MOCMesh_out)" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	RegisterMapper(fileNames[0], fileNames[1], fileNames[2]);
+	RegisterMapper(fileNames[0], fileNames[1]);// , fileNames[2]);
 	return;
 }
 
@@ -306,13 +306,13 @@ int main(int argc, char** argv)
 	{
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
-		MOC_APL_INP_FileTest();
+		//MOC_APL_INP_FileTest();
 		//CFDFieldsToMOC();
 		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
-		//CreateMapper();
+		CreateMapper();
 		//writeheatpower();
 		return 0;
 	}

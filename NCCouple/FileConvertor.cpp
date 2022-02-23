@@ -89,7 +89,7 @@ void DisplayHelpInfo()
 	std::cout << "4. NCCouple createmapper" << std::endl;
 	std::cout << "5. NCCouple cfdtomoc" << std::endl;
 	std::cout << "6. NCCouple moctocfd" << std::endl;
-	std::cout << "7. NCCouple register (MOCMesh) (MOCMesh) (CFDMesh)" << std::endl;
+	std::cout << "7. NCCouple register (MOCMesh) (MOCMesh_out)" << std::endl;
 	return;
 }
 
@@ -114,9 +114,10 @@ void InsertWhenNotFound(std::vector<std::string>& nameList, std::string name)
 void RegisterMapper
 (
 	std::string strInput_aplFileName,
-	std::string strOutput_aplFileName,
-	std::string strInput_meshFileName
+	std::string strOutput_aplFileName
 )
+	//std::string strInput_meshFileName
+//)
 {
 	//checking file names
 	if (strInput_aplFileName.find(".apl") == std::string::npos)
@@ -131,22 +132,22 @@ void RegisterMapper
 	{
 		Logger::LogError("in CreateMapper, the output MOC mesh " + strOutput_aplFileName + " is the same with the input one " + strInput_aplFileName);
 	}
-	if (strInput_meshFileName.find(".msh") == std::string::npos)
-	{
-		Logger::LogError("in CreateMapper, the CFD mesh " + strInput_meshFileName + " is not a .msh file");
-	}
+	//if (strInput_meshFileName.find(".msh") == std::string::npos)
+	//{
+		//Logger::LogError("in CreateMapper, the CFD mesh " + strInput_meshFileName + " is not a .msh file");
+	//}
 	MOCMesh mocMesh(strInput_aplFileName, strOutput_aplFileName, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
 	//MOCIndex mocIndex(mocMesh);
 	//mocIndex.Initialization();
 	//mocIndex.BuildUpIndex();
 	//mocIndex.CheckIndex();
-	Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
-	MHTVTKReader reader(strInput_meshFileName);
+	//Logger::LogInfo("Reading CFD mesh file: " + strInput_meshFileName);
+	//MHTVTKReader reader(strInput_meshFileName);
 	std::vector<std::string> MOCRegionList;
 	std::vector<std::string> CFDRegionList;
 	//collect region names from MOC mesh
-	for (size_t i = 0;i < mocMesh.m_vSMocIndex.size(); i++)
+	for (size_t i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*mocMesh.GetMocMeshPointPtr(mocMesh.m_vSMocIndex[i]));
 
@@ -154,14 +155,15 @@ void RegisterMapper
 		std::string thisName = mocPoint.GetMaterialName();
 		InsertWhenNotFound(MOCRegionList, thisName);
 	}
+	/*
 	//collect region names from CFD mesh
 	for (size_t i = 0; i < reader.GetMeshListPtr().size(); i++)
 	{
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
 		std::string thisName = pmesh->st_meshName;
 		CFDRegionList.push_back(thisName);
-	}
-	WriteConfigurationFile(configFile, strInput_meshFileName, strInput_aplFileName, strOutput_aplFileName, MOCRegionList, CFDRegionList);
+	}*/
+	WriteConfigurationFile(configFile, strInput_aplFileName, strOutput_aplFileName, MOCRegionList);//strInput_meshFileName, CFDRegionList);
 	WarningContinue("please fill the blanks in file " + configFile + " before createmapper");
 	return;
 }
@@ -171,9 +173,10 @@ void CreateMapper()
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 	std::vector<std::string>& materialList = matches[0];
 	std::vector<std::string>& regionList = matches[1];
+	std::vector<std::string>& inputVtkList = matches[2];
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
+	std::string cfdMeshFile;// = GetFileName(configFile, "inputMsh");
 	//checking file names
 	if (mocMeshFile.find(".apl") == std::string::npos)
 	{
@@ -183,9 +186,16 @@ void CreateMapper()
 	{
 		Logger::LogError("in MOCFieldsToCFD, " + outMocMeshFile + " is not an .apl file");
 	}
-	if (cfdMeshFile.find(".msh") == std::string::npos)
+	//if (cfdMeshFile.find(".msh") == std::string::npos)
+	//{
+		//Logger::LogError("in MOCFieldsToCFD, " + cfdMeshFile + " is not a .msh file");
+	//}
+	for (size_t i = 0; i < inputVtkList.size(); i++)
 	{
-		Logger::LogError("in MOCFieldsToCFD, " + cfdMeshFile + " is not a .msh file");
+		if (inputVtkList[i].find(".vtk") == std::string::npos)
+		{
+			Logger::LogError("in CreateMapper, " + inputVtkList[i] + " is not given as .vtk file");
+		}
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching
@@ -212,10 +222,11 @@ void MOCFieldsToCFD()
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 	std::string mocPowerFile = GetFileName(configFile, "mocPower");
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
+	std::string cfdMeshFile;// = GetFileName(configFile, "inputMsh");
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 	std::vector<std::string>& materialList = matches[0];
 	std::vector<std::string>& regionList = matches[1];
+	std::vector<std::string>& inputVtkList = matches[2];
 	std::vector<std::string>& outputVtkList = matches[3];
 	//checking file names
 	if (mocMeshFile.find(".apl") == std::string::npos)
@@ -230,9 +241,16 @@ void MOCFieldsToCFD()
 	{
 		Logger::LogError("in MOCFieldsToCFD, heat power file " + mocPowerFile + " is not a .txt file");
 	}
-	if (cfdMeshFile.find(".msh") == std::string::npos)
+	//if (cfdMeshFile.find(".msh") == std::string::npos)
+	//{
+		//Logger::LogError("in MOCFieldsToCFD, " + cfdMeshFile + " is not a .msh file");
+	//}
+	for (size_t i = 0; i < inputVtkList.size(); i++)
 	{
-		Logger::LogError("in MOCFieldsToCFD, " + cfdMeshFile + " is not a .msh file");
+		if (inputVtkList[i].find(".vtk") == std::string::npos)
+		{
+			Logger::LogError("in MOCFieldsToCFD, " + inputVtkList[i] + " is not given as .vtk file");
+		}
 	}
 	for (size_t i = 0;i < outputVtkList.size();i++)
 	{
@@ -281,17 +299,17 @@ void CFDFieldsToMOC()
 	std::vector<std::string>& materialList = matches[0];
 	std::vector<std::string>& regionList = matches[1];
 	std::vector<std::string>& vtkFileName = matches[2];
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
+	std::string cfdMeshFile;// = GetFileName(configFile, "inputMsh");
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 	std::string mocFieldFile = GetFileName(configFile, "inputInp");
 	std::string outMocFieldFile = GetFileName(configFile, "outputInp");
 
 	//checking file names
-	if (cfdMeshFile.find(".msh") == std::string::npos)
-	{
-		Logger::LogError("in CFDFieldsToMOC, " + cfdMeshFile + " is not a .msh file");
-	}
+	//if (cfdMeshFile.find(".msh") == std::string::npos)
+	//{
+		//Logger::LogError("in CFDFieldsToMOC, " + cfdMeshFile + " is not a .msh file");
+	//}
 	for (size_t i = 0;i < vtkFileName.size();i++)
 	{
 		if (vtkFileName[i].find(".vtk") == std::string::npos)
@@ -311,12 +329,13 @@ void CFDFieldsToMOC()
 	{
 		Logger::LogError("in CFDFieldsToMOC, " + outMocFieldFile + " is not an .inp file");
 	}
+
 	//MOCMesh mocMesh(mocMeshFile, outMocMeshFile,MeshKernelType::MHT_KERNEL);
 	MOCMesh mocMesh(materialList);
 
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;
-	fieldName.push_back("T");
+	fieldName.push_back("temperature");
 	fieldName.push_back("Rho");
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
@@ -339,7 +358,7 @@ void CFDFieldsToMOC()
 		for (int j = 0; j < reader.GetFieldList()[RegionID].size(); j++)
 		{
 			const Field<Scalar>& field = reader.GetField(RegionID,j);
-			if (field.st_name == "T")
+			if (field.st_name == "temperature")
 			{
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::TEMPERAURE);
 			}

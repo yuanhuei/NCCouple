@@ -87,17 +87,17 @@ void RenameFile
 void WriteConfigurationFile
 (
 	std::string configFile,
-	std::string& mshFile,
+	//std::string& mshFile,
 	std::string& aplFile,
 	std::string& outAplFile,
-	std::vector<std::string>& MOCMaterials,
-	std::vector<std::string>& CFDRegions
+	std::vector<std::string>& MOCMaterials
+	//std::vector<std::string>& CFDRegions
 )
 {
 	std::ofstream config(configFile);
 	//write msh file name
-	config << "------inputMsh------" << std::endl;
-	config << "(" << mshFile << ")" << std::endl << std::endl;
+	//config << "------inputMsh------" << std::endl;
+	//config << "(" << mshFile << ")" << std::endl << std::endl;
 
 	config << "******MOC materials******" << std::endl;
 	config << "(" << std::endl;
@@ -106,7 +106,7 @@ void WriteConfigurationFile
 		config << MOCMaterials[i] << std::endl;
 	}
 	config << ")" << std::endl << std::endl;
-
+	/*
 	config << "******CFD Regions******" << std::endl;
 	config << "(" << std::endl;
 	for (size_t i = 0;i < CFDRegions.size();i++)
@@ -114,7 +114,7 @@ void WriteConfigurationFile
 		config << CFDRegions[i] << std::endl;
 	}
 	config << ")" << std::endl << std::endl;
-
+	*/
 
 	//write material-region match list
 	config << "------matchList------" << std::endl;
