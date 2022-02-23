@@ -1162,27 +1162,28 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 
 void MOCMesh::WriteTecplotFile
 (
-	std::string  mType,
-	std::string fileName
+	std::string  strFilename,
+	std::string strMaterialType
 )
 {
-	std::ofstream ofile(fileName);
+	std::ofstream ofile(strFilename);
 	ofile << "TITLE =\"" << "polyhedron" << "\"" << endl;
 	ofile << "VARIABLES = " << "\"x\"," << "\"y\"," << "\"z\"" << endl;
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
 		//if (i == 0)
 			//continue;
-		if (i > 0)
-			break;
+		//if (i > 0)
+			//break;
 
 		//平移坐标,
 		double x = m_vAssembly[i].pAssembly_type->vAssemblyType_LeftDownPoint.x_-m_vAssembly[i].vAssembly_LeftDownPoint.x_;
 		double y= m_vAssembly[i].pAssembly_type->vAssemblyType_LeftDownPoint.y_-m_vAssembly[i].vAssembly_LeftDownPoint.y_;
-		std::cout << "i="<<i << " x=" << x << std::endl;
-		std::cout << "i="<<i<< " y=" << y << std::endl;
+		//std::cout << "i="<<i << " x=" << x << std::endl;
+		//std::cout << "i="<<i<< " y=" << y << std::endl;
 		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
 		{
+			/*
 			std::vector<int> bVect(299, -1);
 			std::vector<int> bIndex{ 17, 34, 51, 18, 35, 52, 19, 36, 53 };
 			for (auto a : bIndex)
@@ -1191,14 +1192,15 @@ void MOCMesh::WriteTecplotFile
 			}
 			if (bVect[j] == -1)
 				continue;
+			*/
 			for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
 			{
 				const MHTMocMeshPoint& mhtPolyhedron = dynamic_cast<const MHTMocMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
 				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
 					(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
-				if (mType != mhtPolyhedron.GetMaterialName()) continue;
-				//处理平移
+				if(strMaterialType!="" && strMaterialType != mhtPolyhedron.GetMaterialName())continue;
+				//move to system coordinate
 				
 				MHTMocMeshPoint meshPoint = mhtPolyhedron;
 				Vector vPoint(-x, -y, 0);

@@ -67,12 +67,12 @@ void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
 void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
-	MOCMesh mocMesh("c5g72l.apl", "c5g7.inp", MeshKernelType::MHT_KERNEL);
+	MOCMesh mocMesh("3_3cells.apl", "3_3cells_out.apl", MeshKernelType::MHT_KERNEL);
 	//mocMesh.WriteSurfaceTecplotFile("filename.plt");
 	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
-	mocMesh.WriteTecplotFile("mMOD", "c5g721_cell12_mMOD.plt");
-	//mocMesh.WriteTecplotFile("mHE", "c5g721_cell12_mHE.plt");
-	//mocMesh.WriteTecplotFile("mCD", "c5g721_cell12_mCD.plt");
+	mocMesh.WriteTecplotFile("3_3cells_mMOD.plt","mMOD");
+	mocMesh.WriteTecplotFile("3_3cells_mFUEL.plt","mFUEL");
+	mocMesh.WriteTecplotFile("3_3cells_mCLAD.plt", "mCLAD");
 	//mocMesh.WriteTecplotFile("mUO2", "c5g721_cell12_mUO2.plt");
 	//mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	//mocMesh.WriteTecplotFile("UO2", "u2o.plt");

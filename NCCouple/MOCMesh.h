@@ -227,7 +227,7 @@ public:
 	void InitMOCHeatPower(std::string heatPowerFileName);
 
 	void OutputStatus(std::string outputFileName) const override;
-	void WriteTecplotFile(std::string, std::string);
+	void WriteTecplotFile(std::string strFilename, std::string strMaterialType="");
 	void WriteSurfaceTecplotFile(std::string);
 	void WriteHeatPowerTxtFile();
 	std::pair<int, Scalar> GetAxialInformation();
