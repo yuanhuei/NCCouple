@@ -622,9 +622,9 @@ void MOCMesh::setAxialInformation(string line)
 	{
 		std::pair<int, double> temp0;
 		stringline >> token;
-		temp0.first = stod(token);  // mesh number in axial direction
+		temp0.second  = stod(token);  //mesh height in axial direction  
 		stringline >> token;
-		temp0.second = stod(token);  // mesh height in axial direction
+		temp0.first = stod(token);  // mesh number in axial direction(no use for this parameter )
 		axialInformation.push_back(temp0);
 	}
 }

@@ -29,7 +29,7 @@
 int g_iProcessID = 0;
 
 //this example was designed for test of
-//(1) rewritting a apl file
+//(1) rewriting a apl file
 //(2) reading and writting of inp files
 
 void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
@@ -42,7 +42,7 @@ void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
 	for (int i = 0; i < vSMocindex.size(); i++)
 	{
 
-		//平移坐标,
+		//move coordinate
 		int iAssembly = vSMocindex[i].iAssemblyIndex;
 		double x = mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_- mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
 		double y= mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
@@ -71,9 +71,9 @@ void MOC_APL_INP_FileTest()
 	//mocMesh.WriteSurfaceTecplotFile("filename.plt");
 	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
 	mocMesh.WriteTecplotFile("mMOD", "c5g721_cell12_mMOD.plt");
-	mocMesh.WriteTecplotFile("mHE", "c5g721_cell12_mHE.plt");
-	mocMesh.WriteTecplotFile("mCD", "c5g721_cell12_mCD.plt");
-	mocMesh.WriteTecplotFile("mUO2", "c5g721_cell12_mUO2.plt");
+	//mocMesh.WriteTecplotFile("mHE", "c5g721_cell12_mHE.plt");
+	//mocMesh.WriteTecplotFile("mCD", "c5g721_cell12_mCD.plt");
+	//mocMesh.WriteTecplotFile("mUO2", "c5g721_cell12_mUO2.plt");
 	//mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	//mocMesh.WriteTecplotFile("UO2", "u2o.plt");
 	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
@@ -306,9 +306,9 @@ int main(int argc, char** argv)
 	{
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
-		//MOC_APL_INP_FileTest();
+		MOC_APL_INP_FileTest();
 		//CFDFieldsToMOC();
-		MOCFieldsToCFD();
+		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
