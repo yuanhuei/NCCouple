@@ -284,11 +284,11 @@ void RunWithParameters(std::vector<std::string>& parameters)
 }
 void writeheatpower()
 {
-	std::ofstream ofs("heatpower_1cm.txt");
+	std::ofstream ofs("heatpower_36cm.txt");
 	int iNumber_Assembly=9;
 	for (int i = 1; i <= iNumber_Assembly; i++)
 	{
-		int iNum = 48;
+		int iNum = 48*50;
 		int iValue = 1000;
 		ofs <<i <<"_" << iNum << std::endl;
 		for (int j = 0; j < iNum; j++)
@@ -312,8 +312,8 @@ int main(int argc, char** argv)
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
-		CreateMapper();
-		//writeheatpower();
+		//CreateMapper();
+		writeheatpower();
 		return 0;
 	}
 	else

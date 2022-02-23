@@ -336,7 +336,7 @@ void CFDFieldsToMOC()
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	std::vector<std::string> fieldName;
 	fieldName.push_back("temperature");
-	fieldName.push_back("Rho");
+	fieldName.push_back("rho");
 	//initialize with meshFile
 	MHTVTKReader reader(cfdMeshFile);
 	//reading available region IDs
@@ -362,7 +362,7 @@ void CFDFieldsToMOC()
 			{
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::TEMPERAURE);
 			}
-			else if (field.st_name == "Rho")
+			else if (field.st_name == "rho")
 			{
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::DENSITY);
 			}
