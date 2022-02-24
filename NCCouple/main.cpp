@@ -91,10 +91,22 @@ void MapTest()
 	std::vector<std::string>& regionList = matches[1];
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
 
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
+	std::vector<std::string> inputVTKList;
+	inputVTKList.push_back("1_PART-FLUID_couple.vtk");
+	inputVTKList.push_back("2_solid.vtk");
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(inputVTKList, ratio);
+	for (size_t i = 0; i < inputVTKList.size(); i++)
+	{
+		Mesh* pmesh = reader.GetMeshListPtr()[i];
+		//read cfd mesh and create solver
+		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
+		cfdMesh.WriteTecplotFile("cfd_"+std::to_string(i)+".plt");
+	}
+
+	/*
 	MHTVTKReader reader(cfdMeshFile, ratio);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
@@ -103,20 +115,20 @@ void MapTest()
 		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
-		/*
+		
 		std::vector<SMocIndex> thh;
 		for (int j = 0; j < 64; j++)
 		{
 			thh.push_back(SMocIndex(0, 51, j));
 		}
 		WriteTotecplot(mocMesh, cfdMesh, std::vector<int>{2559}, thh, "temp.plt");
-		*/
+		
 		//std::string outfilename = "mesh_" + std::to_string(i) + ".plt";
 		//cfdMesh.WriteTecplotFile(outfilename);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);
 		solverMapper.CheckMappingWeights();
 	}
-
+	*/
 
 	//InitCFDMeshValue(cfdMesh);
 	//solver.CFDtoMOCinterception(ValueType::DENSITY);
@@ -321,13 +333,13 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		//CFDFieldsToMOC();
+		CFDFieldsToMOC();
 		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
-		VTKReadMeshTest();
+		//VTKReadMeshTest();
 		return 0;
 	}
 	else

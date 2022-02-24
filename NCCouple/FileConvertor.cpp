@@ -249,17 +249,12 @@ void CFDFieldsToMOC()
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 	std::vector<std::string>& materialList = matches[0];
 	std::vector<std::string>& inputVTKList = matches[1];
-	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
 	std::string mocMeshFile = GetFileName(configFile, "inputApl");
 	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 	std::string mocFieldFile = GetFileName(configFile, "inputInp");
 	std::string outMocFieldFile = GetFileName(configFile, "outputInp");
 
 	//checking file names
-	if (cfdMeshFile.find(".msh") == std::string::npos)
-	{
-		Logger::LogError("in CFDFieldsToMOC, " + cfdMeshFile + " is not a .msh file");
-	}
 	for (size_t i = 0;i < inputVTKList.size();i++)
 	{
 		if (inputVTKList[i].find(".vtk") == std::string::npos)
@@ -298,7 +293,7 @@ void CFDFieldsToMOC()
 		for (int j = 0; j < reader.GetFieldList()[i].size(); j++)
 		{
 			const Field<Scalar>& field = reader.GetField(i,j);
-			if (field.st_name == "T")
+			if (field.st_name == "temperature")
 			{
 				cfdMesh.SetValueVec(field.elementField.v_value, ValueType::TEMPERAURE);
 			}

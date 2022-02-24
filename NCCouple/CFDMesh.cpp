@@ -19,6 +19,7 @@ CFDMesh::CFDMesh(Mesh* pmesh, MeshKernelType kernelType,int iMeshRegionZone)
 	int cellNum = pmesh->n_elemNum;
 	std::string regionName = pmesh->st_meshName;
 	m_meshPointPtrVec.resize(cellNum);
+	std::cout<<std::endl;
 	Logger::LogInfo("reading CFD cells in region: " + regionName);
 	Logger::LogInfo(FormatStr("CFD cell number = %d", cellNum));
 	std::mutex mtx;
