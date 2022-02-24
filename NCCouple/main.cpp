@@ -94,8 +94,8 @@ void MapTest()
 	std::string cfdMeshFile = GetFileName(configFile, "inputMsh");
 
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
-
-	MHTVTKReader reader(cfdMeshFile);
+	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
+	MHTVTKReader reader(cfdMeshFile, ratio);
 	for (size_t i = 0; i < regionList.size(); i++)
 	{
 		//if (i > 0)break;
@@ -162,7 +162,7 @@ Scalar initialHeatPower(Scalar x, Scalar y, Scalar z)
 
 void VTKReaderTest()
 {
-	MHTVTKReader reader("pinWR.msh");
+	MHTVTKReader reader("pinWR.msh",1.0);
 	std::vector<std::string> fileName;
 	fileName.push_back("H2O.vtk");
 	fileName.push_back("Zr4.vtk");
@@ -182,10 +182,10 @@ void EntranceOfRegister(std::vector<std::string>& fileNames)
 	if (2 != fileNames.size())
 	{
 		std::cout << "Please give 2 file names if you are intending to register solver, like this:" << std::endl;
-		std::cout << "NCCouple register (MOCMesh) (MOCMesh_out)" << std::endl;
+		std::cout << "NCCouple register (MOCMesh) (outMOCMesh)" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	RegisterMapper(fileNames[0], fileNames[1]);// , fileNames[2]);
+	RegisterMapper(fileNames[0], fileNames[1]);
 	return;
 }
 
@@ -298,6 +298,20 @@ void writeheatpower()
 	}
 }
 
+void VTKReadMeshTest()
+{
+	std::vector<std::string> vVTKname;
+	vVTKname.push_back("1_PART-FLUID_couple.vtk");
+	vVTKname.push_back("2_solid.vtk");
+
+	std::vector<std::string> vFieldName;
+	vFieldName.push_back("temperature");
+	MHTVTKReader mhtvtkreader(vVTKname, vFieldName, 1.0);
+	std::cout<<"mhtvtkreader.GetMeshListPtr()[0]->v_vertice.size() :" << mhtvtkreader.GetMeshListPtr()[0]->v_vertice.size()<<std::endl;
+	mhtvtkreader.GetFieldIO(0).WriteTecplotField("temperature_0.plt");
+	mhtvtkreader.GetFieldIO(1).WriteTecplotField("temperature_1.plt");
+}
+
 int main(int argc, char** argv)
 {
 	//get processor ID
@@ -313,7 +327,7 @@ int main(int argc, char** argv)
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
-		writeheatpower();
+		VTKReadMeshTest();
 		return 0;
 	}
 	else
