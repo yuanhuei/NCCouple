@@ -94,8 +94,8 @@ void MapTest()
 
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
 	std::vector<std::string> inputVTKList;
-	inputVTKList.push_back("1_PART-FLUID_couple.vtk");
-	inputVTKList.push_back("2_solid.vtk");
+	inputVTKList.push_back("fluid.vtk");
+	inputVTKList.push_back("solid.vtk");
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
 	MHTVTKReader reader(inputVTKList, ratio);
 	for (size_t i = 0; i < inputVTKList.size(); i++)
@@ -103,7 +103,7 @@ void MapTest()
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
-		cfdMesh.WriteTecplotFile("cfd_"+std::to_string(i)+".plt");
+		cfdMesh.WriteTecplotFile("cfd_50_"+std::to_string(i)+".plt");
 	}
 
 	/*
@@ -206,8 +206,8 @@ void EntranceOfCreateMapper(std::vector<std::string>& fileNames)
 	if (0 != fileNames.size())
 	{
 		std::cout << "Please do not give any file name if you are intending to create mapper, like this:" << std::endl;
-		std::cout << "NCCouple createmapper" << std::endl;
-		Logger::LogError("inccorrect number of file names");
+std::cout << "NCCouple createmapper" << std::endl;
+Logger::LogError("inccorrect number of file names");
 	}
 	CreateMapper();
 	return;
@@ -245,7 +245,7 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	}
 	std::vector<std::string> filenames;
 	filenames.resize(parameters.size() - 1);
-	for (int i = 1;i < parameters.size();i++)
+	for (int i = 1; i < parameters.size(); i++)
 	{
 		filenames[i - 1] = parameters[i];
 	}
@@ -297,16 +297,25 @@ void RunWithParameters(std::vector<std::string>& parameters)
 void writeheatpower()
 {
 	std::ofstream ofs("heatpower_36cm.txt");
-	int iNumber_Assembly=9;
+	int iNumber_Assembly = 9;
 	for (int i = 1; i <= iNumber_Assembly; i++)
 	{
 		int iNum = 48*50;
 		int iValue = 1000;
-		ofs <<i <<"_" << iNum << std::endl;
-		for (int j = 0; j < iNum; j++)
+		ofs << i << "_" << iNum << std::endl;
+		for (int j = 0; j < 240; j++)
 		{
-			ofs << iValue << std::endl;
+			for(int k = 0; k < 10; k++)
+			{
+				ofs << iValue << "  ";
+			}
+			ofs << std::endl;
 		}
+		//for (int k = 0; k < (iNum-40); k++)
+		//{
+			//ofs << iValue << "  ";
+		//}
+		ofs << std::endl;
 	}
 }
 
@@ -333,13 +342,14 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
+		//CFDFieldsToMOC();
 		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
-		//CreateMapper();
+		CreateMapper();
 		//VTKReadMeshTest();
+		//writeheatpower();
 		return 0;
 	}
 	else

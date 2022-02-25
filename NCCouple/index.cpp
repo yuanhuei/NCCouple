@@ -139,7 +139,7 @@ void AssemblyIndex::checkAssemblyIndex()
 
 	}
 	Logger::LogInfo(ifs.str(), true);
-	if (v_Assembly.size() != setAssembly.size())
+ 	if (v_Assembly.size() != setAssembly.size())
 	{
 		FatalError("wrong Assembly index");
 	}

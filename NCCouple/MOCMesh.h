@@ -47,7 +47,7 @@ public:
 		switch (vt)
 		{
 		case ValueType::TEMPERAURE:
-			return m_temperature;
+return m_temperature;
 		case ValueType::HEATPOWER:
 			return m_heatPower;
 			break;
@@ -58,31 +58,45 @@ public:
 		}
 		return 0.0;
 	}
-	double GetVolume() const{ return m_volume; };
+	double GetVolume() const { return m_volume; };
 	void SetVolume(double volume) { m_volume = volume; };
-	std::string GetMaterialName() const{ return m_materialName; };
+
+	std::string GetMaterialName() const {
+		//std::cout << "material " << m_materialName << std::endl;
+		int nPos = m_materialName.find("_");
+		if (nPos != m_materialName.npos)
+		{
+			//std::cout << "material " << m_materialName.substr(0, nPos) << std::endl;
+			return m_materialName.substr(0, nPos);
+		}
+		return m_materialName;
+	}
+	std::string GetMaterialNameWithID() const
+	{
+		return m_materialName;
+	}
 	void SetMaterialName(std::string strName) { m_materialName = strName; };
 	std::string GetTemperatureName() const { return m_temperatureName; };
 	int m_iPointID = -1;
-	std::string m_temperatureName="";
+	std::string m_temperatureName = "";
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
 	double m_heatPower = 0.0;
 	//add 
 	double m_volume = 0;
-	std::string  m_materialName="";
+	std::string  m_materialName = "";
 	//std::string m_temperatureName;
-	
+
 
 };
 
 struct Cell
 {
-	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec; 
+	std::vector<std::shared_ptr<MeshPoint>> vMeshPointPtrVec;
 	Vector vCell_LeftDownPoint, vCell_RightUpPoint;
 };
- struct Assembly_Type
+struct Assembly_Type
 {
 	std::vector<Cell> v_Cell;
 	int iAssemblyType;
@@ -96,7 +110,7 @@ struct Assembly
 	Vector vAssembly_LeftDownPoint, vAssembly_RightUpPoint;
 	int iAssemblyID;
 	int iAssemblyType;
-    std::vector<std::vector<MocMeshField>> v_field;
+	std::vector<std::vector<MocMeshField>> v_field;
 };
 
 
@@ -109,7 +123,7 @@ public:
 		m_materialName(materialName), m_temperatureName(temperatureName) {}
 
 public:
-	
+
 	void SetValue(double value, ValueType vt) override {
 		switch (vt)
 		{
@@ -143,8 +157,17 @@ public:
 		}
 		return 0.0;
 	}
-	
-	std::string GetMaterialName() const {
+
+	std::string GetMaterialName() const;// {
+		//int nPos = m_materialName.find("_");
+		//if (nPos != m_materialName.npos)
+		//{
+		//	return m_materialName.substr(0, nPos);
+		//}
+		//return m_materialName;
+	//}
+	std::string GetMaterialNameWithID() const
+	{
 		return m_materialName;
 	}
 	std::string GetTemperatureName() const {
@@ -279,6 +302,10 @@ public://multi assembly multi cell
 
 	bool m_bSingleCell = true;
 	bool m_firstCreated = true;
+	std::string GetMaterialNameWithIDInField(const SMocIndex& sIndex)const 
+	{
+		return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetMaterialNameWithID();
+	}
 	MocMeshField*  GetFieldPointerAtIndex(const SMocIndex& sIndex)
 	{
 		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
@@ -350,6 +377,7 @@ private:
 	void InitAssembly();
 	//put all index in m_vSMocIndex
 	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
+	void reWriteAplOutputFile(std::string outAplFileName);
 
 };
 #endif

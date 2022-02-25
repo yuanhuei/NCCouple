@@ -88,9 +88,11 @@ Solver::Solver
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
+		//Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
 		if (sFirstMocIndex == SMocIndex(-1, -1, -1)) 
 		{
 			Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
+			std::cout << "The coordinate of CFD mesh is " << P << std::endl;
 			continue;
 		}
 		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
@@ -518,7 +520,7 @@ void Solver::writeMapInfortoFile()
 			CFDtoMOC_MapFile << i << " " << it->first.iAssemblyIndex
 				<< " " << it->first.iCellIndex << " " << it->first.iMocIndex << " " << it->second 
 				<<" "<< mocPoint.Volume()<<" "<<mocPoint.GetTemperatureName() 
-				<<" "<< mocPoint.PointID() << std::endl;
+				<<" "<< mocPoint.PointID() << " " << mocPoint.GetMaterialNameWithID() << std::endl;
 
 		}
 	}

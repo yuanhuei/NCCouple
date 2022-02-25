@@ -8,6 +8,7 @@
 #include "Logger.h"
 #include "index.h"
 #include "Solver.h"
+#include "ConfigurationFile.h"
 #ifdef _WIN32
 #include "boost/boost/regex.hpp"
 #else
@@ -19,12 +20,209 @@
 #define NA 6.022e23
 #define BARN 1.0e-24
 
+std::string MOCMeshPoint::GetMaterialName() const {
+	int nPos = m_materialName.find("_");
+	//std::cout << "material name with id " << m_materialName << std::endl;
+	if (nPos != m_materialName.npos)
+	{
+		//std::cout << "material " << m_materialName.substr(0, nPos) << std::endl;
+		return m_materialName.substr(0, nPos);
+	}
+	return m_materialName;
+}
 
 MOCMesh::MOCMesh(const std::vector<std::string>& vMaterailName)
 {
 		m_firstCreated = false;
 		readMapFile(vMaterailName);
 		GetAllMocIndex(m_vSMocIndex);
+}
+
+void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
+{
+	RenameFile(outAplFileName, outAplFileName + "_temp");
+	ofstream outFile_new(outAplFileName+"_new");
+	ifstream infile_(outAplFileName + "_temp");
+
+	ofstream outFile(outAplFileName);
+	ifstream infile(outAplFileName + "_new");// +"_temp");
+	
+	std::stringstream firstNt_Assembly,second_Nt_Assembly, end_Nt_Assembly,outAssembly;
+
+	if (!infile_.is_open())
+	{
+		Logger::LogError("cannot find the MOC mesh file:" + outAplFileName);
+		exit(EXIT_FAILURE);
+	}
+	string line;
+
+	while (getline(infile_, line))  //read mesh data
+	{
+		
+		if (line.find("*Nt_Assembly")!=line.npos && line.find("*Nt_Assembly_") == line.npos)
+		{
+			second_Nt_Assembly<< line<<endl;
+			while (getline(infile_, line))
+			{ 
+				if (line.find("*Boundary_condition_number") != line.npos)
+				{
+					end_Nt_Assembly << line << endl;
+					while (getline(infile_, line))
+					{
+						end_Nt_Assembly << line << endl;
+					}
+				}
+				else
+					second_Nt_Assembly << line << endl;
+			}
+
+		}
+		else
+			firstNt_Assembly << line << endl;
+	}
+	outFile_new << firstNt_Assembly.str();
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		outFile_new << second_Nt_Assembly.str() << endl;
+	}
+	outFile_new << end_Nt_Assembly.str();
+	outFile_new.close();
+	infile_.close();
+	
+	while (getline(infile, line))  //read mesh data
+	{
+		outFile << line << endl;
+		//stringstream stringline(line);
+		//string token;
+		//stringline >> token;
+		if (line.find("*Nt_Assembly_Cat_Num")!=std::string::npos)
+		{
+			getline(infile, line);
+			outFile << m_vAssembly.size() << endl;
+			int iAssemblyIndex = 1;
+			while (getline(infile, line))
+			{
+				outFile << line << endl;
+			Nt_Assembly_line:
+				if (line.find("*Nt_Assembly") != std::string::npos) 
+				{
+					//outAssembly << line << endl;
+					getline(infile, line);
+					outFile << iAssemblyIndex << endl;
+					//outAssembly << iAssemblyIndex << endl;
+					while (getline(infile, line))
+					{
+						outFile << line << endl;
+						outAssembly << line << endl;
+					Material_name_of_each_mesh_line:
+						if (line.find("*Material_name_of_each_mesh") != std::string::npos)
+						{
+							int ID_order = 1;
+							string tokenMaterialType = "";
+							int out0 = 1;
+							while (out0 != 0)
+							{
+								std::streampos Material_pos;
+								//Material_pos = infile.tellg();
+								getline(infile, line);
+								stringstream stringlineMaterialType(line);
+								while (stringlineMaterialType >> tokenMaterialType)
+								{
+									if (tokenMaterialType.find("*") != std::string::npos)
+									{
+										out0 = 0;
+										//stringlineMaterialType >> token;
+										//infile.seekg(Material_pos);
+										break;
+									}
+
+									if (tokenMaterialType.find("mMOD_") != tokenMaterialType.npos)
+									{
+
+										tokenMaterialType += "_" + std::to_string(iAssemblyIndex);
+									}
+									outFile << tokenMaterialType << "  ";
+									outAssembly << tokenMaterialType << "  ";
+								}
+								if (out0 != 0)
+								{
+									outFile << endl;
+									outAssembly << endl;
+								}
+								else
+								{
+									outFile << line << endl;
+									outAssembly << line << endl;
+									goto Material_name_of_each_mesh_line;
+									
+								}
+							}
+
+						}
+						else if (line.find("*Temperature_name_of_each_mesh") != std::string::npos)
+						{
+							//int ID_order = 1;
+							string tokenTemperatureName = "";
+							int out0 = 1;
+							while (out0 != 0)
+							{
+								//assembly_pos = infile.tellg();
+								getline(infile, line);
+								stringstream stringlineTemperatureName(line);
+								while (stringlineTemperatureName >> tokenTemperatureName)
+								{
+									if (tokenTemperatureName.find("*") != std::string::npos)
+									{
+										out0 = 0;
+										//stringlineTemperatureName >> token;
+										break;
+									}
+
+									if (tokenTemperatureName.find("tMOD_")!= tokenTemperatureName.npos
+										|| tokenTemperatureName.find("tFUEL_")!= tokenTemperatureName.npos)
+									{
+										tokenTemperatureName += "_" + std::to_string(iAssemblyIndex);
+										//outFile << tokenTemperatureName << "_" << ID_order << "  ";
+										//ID_order++;
+									}
+
+									outAssembly << tokenTemperatureName << "  ";
+									outFile << tokenTemperatureName << "  ";
+									//meshTemperatureNameTemperary.push_back(tokenTemperatureName);
+
+								}
+								if (out0 != 0)
+								{
+									outFile << endl;
+								}
+								else
+								{
+									outFile << line << endl;
+									outAssembly << line << endl;
+									goto Material_name_of_each_mesh_line;
+								}
+							}
+						}
+						else if (line.find("*Nt_Assembly") != std::string::npos)
+						{
+							iAssemblyIndex++;
+							goto Nt_Assembly_line;
+						}
+
+					}
+				}
+				
+
+			}
+
+		}
+	}
+
+	
+	infile.close();
+	outFile.close();
+	//RemoveFile(outAplFileName + "_temp");
+
 }
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
@@ -122,20 +320,23 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 				m_pAssemblyIndex->m_assemblyIndex.resize(xDirection_Number);
 				for (int i = 0; i < xDirection_Number; i++)
 					m_pAssemblyIndex->m_assemblyIndex[i].resize(yDirection_Number);
+				int kkk = 1;
 				for (int i = 0; i < yDirection_Number; i++)
 				{
 					getline(infile, line);
-					outFile << line << endl;
+					//outFile << line << endl;
 					stringstream stringnumline(line);
 					string tokennum;
-
+					
 					for (int j = 0; j < xDirection_Number; j++)
 					{
 						stringnumline >> tokennum;
 						m_vAssembly[k].iAssemblyType = std::stod(tokennum);
 						m_pAssemblyIndex->m_assemblyIndex[j][yDirection_Number - i - 1] = k;
 						k++;
+						outFile << kkk++ << "   ";
 					}
+					outFile << std::endl;
 				}
 				break;
 			}
@@ -182,6 +383,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 				while (getline(infile, line))
 				{
+					outFile << line << endl;
 					stringstream stringline(line);
 					string token;
 					stringline >> token;
@@ -199,6 +401,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 						std::streampos pos;
 						while (getline(infile, line))
 						{
+							outFile << line << endl;
 							if (line.find("*") == std::string::npos)
 							{
 								stringstream stringline(line);
@@ -283,11 +486,14 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									//infile.seekg(Material_pos);
 									break;
 								}
+								
+								if (tokenMaterialType == "mMOD")
+								{
+
+									tokenMaterialType += "_" + std::to_string(ID_order);
+								}
 								meshMaterialNameTemperary.push_back(tokenMaterialType);
-								if (tokenMaterialType == "H2O")
-									outFile << tokenMaterialType << "_" << ID_order << "  ";
-								else
-									outFile << tokenMaterialType << "  ";
+								outFile << tokenMaterialType << "  ";
 								ID_order++;
 							}
 							if (out0 != 0)
@@ -318,9 +524,17 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 									stringlineTemperatureName >> token;
 									break;
 								}
+								
+								if (tokenTemperatureName == "tMOD" || tokenTemperatureName == "tFUEL")
+								{
+									tokenTemperatureName += "_" + std::to_string(ID_order);
+									//outFile << tokenTemperatureName << "_" << ID_order << "  ";
+									ID_order++;
+								}
+								
+								outFile << tokenTemperatureName << "  ";
 								meshTemperatureNameTemperary.push_back(tokenTemperatureName);
-								outFile << tokenTemperatureName << "_" << ID_order << "  ";
-								ID_order++;
+								
 							}
 							if (out0 != 0)
 							{
@@ -335,6 +549,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					if (line.find("*Nt_Assembly") != std::string::npos)
 					{
 						//infile.seekg(assembly_pos);
+						outFile << line << endl;
 						bNextAssembly = true;
 						break;
 					}
@@ -418,6 +633,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	InitAssembly();
 	m_pAssemblyIndex->buildIndex();
 	GetAllMocIndex(m_vSMocIndex);
+	reWriteAplOutputFile(outAplFileName);
 
 	Logger::LogInfo("MOCMesh generation ends");
 }
@@ -859,9 +1075,11 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		if (iter1 != m_mediumMap.end())
 			p_medium = &(iter1->second);
 		
-		boost::smatch m;
-		if (!boost::regex_search(materialName, m, boost::regex(R"(_\d+)")) && materialName == "H2O") {
-			materialName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
+		std::smatch m;
+		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)")) && materialName == "mMOD") {
+			materialName = GetMaterialNameWithIDInField(sMocIndex);
+			materialName += "_" + std::to_string(sMocIndex.iAssemblyIndex+1);
+			//materialName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
 			if (!p_medium) {
 				auto iter2 = m_mediumMap.find(materialName);
 				if (iter2 != m_mediumMap.end())
@@ -891,10 +1109,10 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		ofs << std::endl;
 		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
 		std::string tempName = GetTemperatureNameAtIndex(sMocIndex);// p_mocMeshPoint->GetTemperatureName();
-		boost::smatch m;
-		if (!boost::regex_search(tempName, m, boost::regex(R"(_\d+)")))
-			tempName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
-		
+		std::smatch m;
+		//if (!std::regex_search(tempName, m, std::regex(R"(_\d+)")))
+			//tempName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
+		tempName +="_" + std::to_string(sMocIndex.iAssemblyIndex+1);
 		ofs << FormatStr("\t\t\t '%s' = TEMP(%.6lf)", tempName.c_str(), GetValueAtIndex(sMocIndex,ValueType::TEMPERAURE)) << std::endl;
 	}
 
@@ -928,31 +1146,31 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 		std::string line;
 		std::getline(ifs, line);
 		TOKEN nextToken = token;
-		if (boost::regex_search(line, boost::regex(R"(\*\s*material\s+definition)")))
+		if (std::regex_search(line, std::regex(R"(\*\s*material\s+definition)")))
 			nextToken = MATERIAL_DEFINITION;
-		if (boost::regex_search(line, boost::regex(R"(\*\s*temperature\s+definition)")))
+		if (std::regex_search(line, std::regex(R"(\*\s*temperature\s+definition)")))
 			nextToken = TEMPERATURE_DEFINITION;
-		if (boost::regex_search(line, boost::regex(R"(MODULE)")))
+		if (std::regex_search(line, std::regex(R"(MODULE)")))
 			nextToken = OTHER_DEFINITION;
 
 		if (nextToken != token) {
 			p_currentContext = &m_sufContext;
 			if (token == MATERIAL_DEFINITION) {
-				boost::smatch outer_match;
-				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
+				std::smatch outer_match;
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
 					std::string materialName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					boost::regex_search(detailDef, outer_match, boost::regex(R"(MAT[^\)]+\))"));
+					std::regex_search(detailDef, outer_match, std::regex(R"(MAT[^\)]+\))"));
 					std::string matInfo = outer_match.str(0);
-					boost::smatch innerMatch;
+					std::smatch innerMatch;
 					Medium& medium = m_mediumMap[materialName];
-					while (boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"))) {
+					while (std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"))) {
 						int eleFlag = std::stoi(innerMatch.str(0));
 						medium.eleFlagVec.push_back(eleFlag);
 
 						matInfo = innerMatch.suffix().str();
-						boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
+						std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
 						double eleDens = std::stod(innerMatch.str(0));
 						medium.eleDensCalcFunVec.push_back([eleDens](double) {return eleDens; });
 
@@ -994,15 +1212,15 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 				}
 			}
 			else if (token == TEMPERATURE_DEFINITION) {
-				boost::smatch outer_match;
-				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
+				std::smatch outer_match;
+				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
 					std::string tempName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					boost::regex_search(detailDef, outer_match, boost::regex(R"(TEMP[^\)]+\))"));
+					std::regex_search(detailDef, outer_match, std::regex(R"(TEMP[^\)]+\))"));
 					std::string tempInfo = outer_match.str(0);
-					boost::smatch innerMatch;
-					boost::regex_search(tempInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
+					std::smatch innerMatch;
+					std::regex_search(tempInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
 					double tempValue = std::stod(innerMatch.str(0));
 
 					temperatureMap[tempName] = tempValue;
@@ -1027,14 +1245,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	{
 		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
 		{
-			boost::smatch m;
+			std::smatch m;
 			std::string materialName = GetMaterialNameAtIndex(sMocIndex);
 			auto iter1 = materialDensityMap.find(materialName);
 			if (iter1 != materialDensityMap.end())
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::DENSITY);
 			//p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
 
-			if (boost::regex_search(materialName, m, boost::regex(R"(_\d+)"))) {
+			if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
 				std::string materialMetaName = m.prefix().str();
 				auto iter2 = materialDensityMap.find(materialMetaName);
 				if (iter2 != materialDensityMap.end()) {
@@ -1044,14 +1262,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 			}
 		}
 		{
-			boost::smatch m;
+			std::smatch m;
 			std::string temperatureName = GetTemperatureNameAtIndex(sMocIndex);
 			auto iter1 = temperatureMap.find(temperatureName);
 			if (iter1 != temperatureMap.end())
 				//p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::TEMPERAURE);
 
-			if (boost::regex_search(temperatureName, m, boost::regex(R"(_\d+)"))) {
+			if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
 				std::string tempMetaName = m.prefix().str();
 				auto iter2 = temperatureMap.find(tempMetaName);
 				if (iter2 != temperatureMap.end()) {
@@ -1118,21 +1336,51 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 	string line;
 	while (getline(ifs, line))  //read mesh data
 	{
+	loop_:
 		int iPos = line.find("_");
 		if (iPos != std::string::npos)
 		{
 			int iAssembly_index = stod(line.substr(0, iPos));
 			int iNumb_Value = stod(line.substr(iPos + 1, line.length()));
 			std::vector<double> vValue;
-			vValue.resize(iNumb_Value);
+			//vValue.resize(iNumb_Value);
+
+			string tokenMeshId = "";
+			int out0 = 1;
+			std::streampos pos;
+			while (getline(ifs, line))
+			{
+				//pos = infile.tellg();
+				//getline(ifs, line);
+				//outFile << line << endl;
+				stringstream stringlineMeshID(line);
+				while (stringlineMeshID >> tokenMeshId)
+				{
+					if (tokenMeshId.find("_") != std::string::npos)
+					{
+						vHeatPowerValue.push_back(vValue);
+						//out0 = 0;
+						//stringlineMeshID >> token;
+						goto loop_;
+						//infile.seekg(pos);
+						break;
+					}
+					vValue.push_back(stod(tokenMeshId));
+				}
+				//out0 = 0;
+			}
+			vHeatPowerValue.push_back(vValue);
+
+			/*
 			for (int i = 0; i < iNumb_Value;i++)
 			{
 
 				getline(ifs, line);
 				vValue[i] = stod(line);
-			}
-			vHeatPowerValue.push_back(vValue);
+			}*/
+			
 		}
+		
 	}
 	/*
 	if (powerInput.size() != m_vSMocIndex.size())
@@ -1624,18 +1872,19 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 		{
 			int i, j, k, m,iPointID;
 			double value, valueVolume;
-			std::string valueTemptureName;
+			std::string valueTemptureName, strMaterial;
 			stringstream stringline(line);
-			stringline >> i >> j >> k >> m >> value>>valueVolume>> valueTemptureName >> iPointID;
+			stringline >> i >> j >> k >> m >> value>>valueVolume>> valueTemptureName >> iPointID>> strMaterial;
 			IndexAndVaule sTemp;
 			sTemp.iCFD = i;
 			sTemp.iMoc.iAssemblyIndex = j;
 			sTemp.iMoc.iCellIndex = k;
 			sTemp.iMoc.iMocIndex = m;
 			sTemp.volume = valueVolume;
-			sTemp.strMaterailName = materialList[kk];
+			
 			sTemp.strTemptureName = valueTemptureName;
 			sTemp.iPointID = iPointID;
+			sTemp.strMaterailName = strMaterial;
 			vIndexValue.push_back(sTemp);;
 			//m_CFD_MOC_Map[i][sTemp] = value;
 			iMax_iAssembly = max(iMax_iAssembly, j);

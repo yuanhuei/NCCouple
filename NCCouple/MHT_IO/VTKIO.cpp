@@ -89,6 +89,8 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	this->GetTranslation();
 	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
+	
+	DisplayCorrdinateRange();
 }
 
 MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio)
@@ -115,6 +117,36 @@ MHTVTKReader::~MHTVTKReader()
 	std::vector<StandardMeshBlock>().swap(v_stdMesh);
 	std::vector<Mesh*>().swap(v_pmesh);
 	std::vector<int>().swap(v_meshID);
+}
+
+void MHTVTKReader::DisplayCorrdinateRange()
+{
+	Scalar xmin = 1e10;
+	Scalar ymin = 1e10;
+	Scalar zmin = 1e10;
+	Scalar xmax = -1e10;
+	Scalar ymax = -1e10;
+	Scalar zmax = -1e10;
+
+
+	for(size_t i=0;i<this->v_pmesh.size();i++)
+	{
+		Mesh* pmesh = this->v_pmesh[i];
+		for (int j = 0; j < pmesh->v_node.size(); j++)
+		{
+			Vector node = pmesh->v_node[j];
+			xmin = Min(xmin, node.x_);
+			ymin = Min(ymin, node.y_);
+			zmin = Min(zmin, node.z_);
+			xmax = Max(xmax, node.x_);
+			ymax = Max(ymax, node.y_);
+			zmax = Max(zmax, node.z_);
+
+		}
+	}
+	std::cout << "cfd mesh is located in box:";
+	std::cout << Vector(xmin, ymin, zmin) << "to " << Vector(xmax, ymax, zmax) << std::endl;
+	return;
 }
 
 void MHTVTKReader::GetTranslation()
@@ -501,6 +533,7 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 	startIDs[pmesh->n_elemNum]= count;
 	
 	std::vector<std::vector<int> > localFaceVerticeID;
+	/*
 	for (int i = 0;i < pmesh->v_elem.size();i++)
 	{
 		int faceNum = GetFaceNum(pmesh, i);
@@ -513,7 +546,20 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 			//writting vertice IDs
 			faceVerticeList[j]= localFaceVerticeID[j- startIDs[i]];
 		}
+	}*/
+	for (int elemID = 0; elemID < pmesh->v_elem.size(); elemID++)
+	{
+		int faceNum = GetFaceNum(pmesh, elemID);
+		GetFaceVerticeList(pmesh, elemID, localFaceVerticeID);
+		for (int j = 0; j < faceNum; j++)
+		{
+			//set corresponding element ID
+			ownerElemIDList[startIDs[elemID] + j] = elemID;
+			//writting vertice IDs
+			faceVerticeList[startIDs[elemID] + j] = localFaceVerticeID[j];
+		}
 	}
+
 
 	//search coincident faces and mark
 	for (int i = 0;i < pmesh->v_vertice.size();i++)

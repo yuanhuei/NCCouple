@@ -39,6 +39,8 @@ public:
 	void WriteDataFile(std::string DataFileName);
 	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);		//read total region field
 	void ReadVTKFile(std::vector<std::string>, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList);		//read field by mesh ID
+	void DisplayCorrdinateRange();
+
 private:
 	Vector translation;
 	Scalar scaleRatio;
