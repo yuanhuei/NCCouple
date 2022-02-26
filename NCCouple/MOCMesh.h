@@ -372,6 +372,8 @@ public://multi assembly multi cell
 	};
 	
 	void readMapFile(const std::vector<std::string>& materialList);
+
+	void GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex,std::string strMaterial);
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();

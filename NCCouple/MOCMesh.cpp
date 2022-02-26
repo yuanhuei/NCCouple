@@ -674,6 +674,49 @@ void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 		}
 	}
 }
+void MOCMesh::GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex, std::string strMaterial)
+{
+	SMocIndex sTemp;
+	if (m_firstCreated)
+	{
+		for (int i = 0; i < m_vAssembly.size(); i++)
+		{
+			//m_vAssembly[i].v_field.resize(m_vAssembly[i].pAssembly_type->v_Cell.size());
+			for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+			{
+				//m_vAssembly[i].v_field[j].resize(64);
+				for (int k = 0; k < m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size(); k++)
+				{
+					const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
+						(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+					if(mocPoint.GetMaterialName() == strMaterial)
+					{
+						sTemp.iAssemblyIndex = i;
+						sTemp.iCellIndex = j;
+						sTemp.iMocIndex = k;
+						vSMocIndex.push_back(sTemp);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < m_vAssemblyField.size(); i++)
+		{
+			for (int j = 0; j < m_vAssemblyField[i].size(); j++)
+			{
+				for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+				{
+					if (m_vAssemblyField[i][j][k]->GetMaterialName() == strMaterial)
+						vSMocIndex.push_back(SMocIndex(i, j, k));
+				}
+			}
+		}
+	}
+
+
+}
 
 void MOCMesh::InitAssembly()
 {
@@ -944,7 +987,7 @@ void MOCMesh::setMeshFaceInformation(vector<int> meshIDTransfer, vector<string> 
 void MOCMesh::ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh)
 {
 	string filename = "";
-	int H0 = 0, H1 = 0;
+	double H0 = 0, H1 = 0;
 	int index0 = 0;
 	for (int j = 0; j < axialNum; j++)
 	{

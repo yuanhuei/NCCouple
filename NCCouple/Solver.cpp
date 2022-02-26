@@ -83,18 +83,25 @@ Solver::Solver
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
-		//if (CFDID == 2559)
-			//int kkk = 0;
+		std:vector< SMocIndex> vSMoc;
+		//std::vector<int>vCFD;
+		//vCFD.push_back(CFDID);
+
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
 
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
-		//Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
+		vSMoc.push_back(sFirstMocIndex);
+		//if (CFDID == 350)
+			//WriteTotecplot(*m_mocMeshPtr, *m_cfdMeshPtr, vCFD, vSMoc, "debuf_350_0.plt");
+		
 		if (sFirstMocIndex == SMocIndex(-1, -1, -1)) 
 		{
 			Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
 			std::cout << "The coordinate of CFD mesh is " << P << std::endl;
 			continue;
 		}
+		std::stringstream  streamOut;
+
 		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
 
 		const MHTCFDMeshPoint& cfdPoint = dynamic_cast<const MHTCFDMeshPoint&>(*m_cfdMeshPtr->GetMeshPointPtr(CFDID));
@@ -104,6 +111,7 @@ Solver::Solver
 		MHTMocMeshPoint& mocPoint =*ptrMocMesh;
 
 		double cfdPointVolume = cfdPoint.Volume();
+
 		double mocPointVolume = mocPoint.Volume();
 		double intersectedVolume = 0.0;
 		if (mocPoint.GetMaterialName() == materialName)
@@ -114,11 +122,13 @@ Solver::Solver
 			m_CFD_MOC_Map[CFDID][sFirstMocIndex]=intersectedVolume / cfdPointVolume;
 			m_MOC_CFD_Map[iAssembly][iCell][iMoc][CFDID] = intersectedVolume / mocPointVolume;
 		}
+
 		if ((cfdPointVolume - intersectedVolume) <= INTERSECT_JUDGE_LIMIT)
 		{
 			iNum++;
 			continue;
 		}
+		//Logger::LogInfo(streamOut.str());
 		std::vector<std::future<void>> futureVec;
 		//coordinate on the leftdown and rightup corner of cell
 		Vector leftdownPoint = mocMesh.m_vAssembly[iAssembly].pAssembly_type->v_Cell[iCell].vCell_LeftDownPoint;
@@ -150,6 +160,7 @@ Solver::Solver
 			Vector(vNearestPoint.x_ - 0.5, vNearestPoint.y_ + 0.5, 0),
 			Vector(vNearestPoint.x_ - 0.5, vNearestPoint.y_ - 0.5, 0) };
 		//search this four cell
+		
 		for(int i=0;i<vPoint.size();i++)
 		{
 			//get cell Index
@@ -174,6 +185,7 @@ Solver::Solver
 			for (int j = 0; j < vMocID.size(); j++)
 			{
 				sMocIndex.iMocIndex = vMocID[j];
+				vSMoc.push_back(sMocIndex);
 				if (sFirstMocIndex == sMocIndex)continue;
 				const MOCMeshPoint& localMOCPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(sMocIndex));
 				if (materialName != localMOCPoint.GetMaterialName()) continue;
@@ -195,11 +207,14 @@ Solver::Solver
 						m_CFD_MOC_Map[CFDID][sMocIndex] = intersectedVolume / cfdPointVolume;
 						m_MOC_CFD_Map[sMocIndex.iAssemblyIndex][sMocIndex.iCellIndex][sMocIndex.iMocIndex][CFDID] = intersectedVolume / mocPointVolume;
 					}
+
 				};
 				//fun();
 				futureVec.push_back(std::async(std::launch::async | std::launch::deferred, fun));
 			}
 		}
+
+		//WriteTotecplot(*m_mocMeshPtr, *m_cfdMeshPtr, vCFD, vSMoc, "debuf.plt");
 		for (size_t j = 0; j < futureVec.size(); j++)
 			futureVec[j].get();
 
@@ -211,7 +226,45 @@ Solver::Solver
 
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
 	writeMapInfortoFile();
+
+	DisplayEmptyMap();
 }
+void Solver::DisplayEmptyMap()
+{
+	std::stringstream  streamOutCFD,streamOutMOC;
+	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
+	{
+		if (m_CFD_MOC_Map[i].empty())
+		{
+			std::stringstream  streamOut;
+			streamOut << "empty cfd id:" << i << std::endl;
+
+		}
+	}
+	Logger::LogInfo(streamOutCFD.str(),true);
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	{
+		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
+		{
+			for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
+			{
+				SMocIndex sTemp(i, j, k);
+				const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(sTemp));
+
+				//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>
+					//(*m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec[k]);
+				//if (mocPoint.GetMaterialName() == materialName)
+				if (m_MOC_CFD_Map[i][j][k].empty() && mocPoint.GetMaterialName() == materialName)
+				{
+					streamOutMOC << "empty moc id :" << i << " " << j << " " << k << std::endl;
+				}
+
+			}
+		}
+	}
+	Logger::LogInfo(streamOutMOC.str(),true);
+}
+
 /*
 Solver::Solver
 (
@@ -321,11 +374,13 @@ void Solver::GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex)
 			for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
 			{
 				std::unordered_map<int, double>::iterator it;
-				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
-				{
+				if(!m_MOC_CFD_Map[i][j][k].empty())
 					vSMocIndex.push_back(SMocIndex(i, j, k));
-					break;
-				}
+				//for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
+				//{
+					//vSMocIndex.push_back(SMocIndex(i, j, k));
+					//break;
+				//}
 			}
 		}
 	}
@@ -333,13 +388,13 @@ void Solver::GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex)
 void Solver::CheckMappingWeights()
 {
 	std::vector< SMocIndex> vSMocIndex;
-	GetMocIndexByMapValue(vSMocIndex);
+	m_mocMeshPtr->GetMocIndexByMaterial(vSMocIndex,materialName);
 
 	double totalMOCVolume = 0.0;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
 		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
-		if (this->materialName != mocPoint.GetMaterialName()) continue;
+		//if (this->materialName != mocPoint.GetMaterialName()) continue;
 		totalMOCVolume += mocPoint.Volume();
 	}
 	double totalCFDVolume = 0.0;
@@ -359,8 +414,8 @@ void Solver::CheckMappingWeights()
 	int sumOfZero = 0;
 	for (int j = 0; j < vSMocIndex.size(); j++)
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
-		if (mocPoint.GetMaterialName() != materialName) continue;
+		//const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_mocMeshPtr->GetMocMeshPointPtr(vSMocIndex[j]));
+		//if (mocPoint.GetMaterialName() != materialName) continue;
 		double sumSumWeight = 0.0;
 		for (auto& iter : m_MOC_CFD_Map[vSMocIndex[j].iAssemblyIndex][vSMocIndex[j].iCellIndex][vSMocIndex[j].iMocIndex])
 		{
@@ -370,6 +425,10 @@ void Solver::CheckMappingWeights()
 		maxSumWeight = max(maxSumWeight, sumSumWeight);
 		if (sumSumWeight < SMALL)
 		{
+			std::stringstream streamTemp;
+			streamTemp << "0 sumSumWeight mod id" << vSMocIndex[j].iAssemblyIndex
+				<<" "<< vSMocIndex[j].iCellIndex<<" "<< vSMocIndex[j].iMocIndex<< std::endl;
+			Logger::LogInfo(streamTemp.str(),true);
 			sumOfZero++;
 		}
 	}
@@ -391,6 +450,7 @@ void Solver::CheckMappingWeights()
 		maxSumWeight = max(maxSumWeight, sumSumWeight);
 		if (sumSumWeight < SMALL)
 		{
+			Logger::LogInfo(FormatStr("0 sumSumWeight cfd id  %d ", j),true);
 			sumOfZero++;
 		}
 	}

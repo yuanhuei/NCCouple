@@ -32,8 +32,8 @@ int g_iProcessID = 0;
 //(1) rewriting a apl file
 //(2) reading and writting of inp files
 
-void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
-	const std::vector<int> v_iCFD,const std::vector<SMocIndex>& vSMocindex,std::string fileName)
+void WriteTotecplot( MOCMesh& mocmesh, CFDMesh& cfdmesh,
+	const std::vector<int> &v_iCFD,const std::vector<SMocIndex>& vSMocindex,std::string fileName)
 {
 	std::string  mType;
 	std::ofstream ofile(fileName);
@@ -43,16 +43,21 @@ void WriteTotecplot(const MOCMesh& mocmesh,const CFDMesh& cfdmesh,
 	{
 
 		//move coordinate
+		/*
 		int iAssembly = vSMocindex[i].iAssemblyIndex;
 		double x = mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.x_- mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.x_;
 		double y= mocmesh.m_vAssembly[iAssembly].pAssembly_type->vAssemblyType_LeftDownPoint.y_-mocmesh.m_vAssembly[iAssembly].vAssembly_LeftDownPoint.y_;
 		
 		const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocmesh.GetMocMeshPointPtr(vSMocindex[i]));
+		*/
+		shared_ptr<MHTMocMeshPoint> ptrMocMesh;
+		mocmesh.MoveMeshToSysCoordinate(ptrMocMesh, vSMocindex[i]);
+		MHTMocMeshPoint& mocPoint = *ptrMocMesh;
 
-		MHTMocMeshPoint meshPoint = mocPoint;
-		Vector vPoint(-x, -y, 0);
-		meshPoint.Move(vPoint);
-		meshPoint.WriteTecplotZones(ofile);
+		//MHTMocMeshPoint meshPoint = mocPoint;
+		//Vector vPoint(-x, -y, 0);
+		//meshPoint.Move(vPoint);
+		mocPoint.WriteTecplotZones(ofile);
 	}
 	for (int i = 0; i < v_iCFD.size(); i++)
 	{
@@ -72,7 +77,7 @@ void MOC_APL_INP_FileTest()
 	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
 	mocMesh.WriteTecplotFile("3_3cells_mMOD.plt","mMOD");
 	mocMesh.WriteTecplotFile("3_3cells_mFUEL.plt","mFUEL");
-	mocMesh.WriteTecplotFile("3_3cells_mCLAD.plt", "mCLAD");
+	//mocMesh.WriteTecplotFile("3_3cells_mCLAD.plt", "mCLAD");
 	//mocMesh.WriteTecplotFile("mUO2", "c5g721_cell12_mUO2.plt");
 	//mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
 	//mocMesh.WriteTecplotFile("UO2", "u2o.plt");
@@ -296,12 +301,12 @@ void RunWithParameters(std::vector<std::string>& parameters)
 }
 void writeheatpower()
 {
-	std::ofstream ofs("heatpower_36cm.txt");
+	std::ofstream ofs("heatpower_1cm.txt");
 	int iNumber_Assembly = 9;
 	for (int i = 1; i <= iNumber_Assembly; i++)
 	{
 		int iNum = 48*50;
-		int iValue = 1000;
+		double iValue = 1.9e+10;
 		ofs << i << "_" << iNum << std::endl;
 		for (int j = 0; j < 240; j++)
 		{

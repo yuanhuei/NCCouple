@@ -45,9 +45,9 @@ private:
 		MOCMesh& targetMesh,
 		ValueType vt
 	);
-
 	void writeMapInfortoFile();
 	void readMapInfor();
+	void DisplayEmptyMap();
 
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;

@@ -1,7 +1,10 @@
 #ifndef STRUCTURE_HEADER
 #define STRUCTURE_HEADER
 #include<functional>
-
+#include<vector>
+#include<string>
+class MOCMesh;
+class CFDMesh;
 struct SMocIndex {
 	int iAssemblyIndex;
 	int iCellIndex;
@@ -28,7 +31,11 @@ namespace std
 		};
 
 	};
-}
+};
+
+void WriteTotecplot( MOCMesh& mocmesh,  CFDMesh& cfdmesh,
+	const std::vector<int> &v_iCFD, const std::vector<SMocIndex>& vSMocindex, std::string fileName);
+
 /*
 struct hash_name {
 	hash_name() {};
