@@ -83,16 +83,13 @@ Solver::Solver
 
 	for (int CFDID = 0; CFDID < nCFDNum; CFDID++)
 	{
-		//if (CFDID == 2559)
-			//int kkk = 0;
 		Vector P = m_cfdMeshPtr->GetMeshPointPtr(CFDID)->Center();
-
 		SMocIndex sFirstMocIndex = mocMesh.getIndex(P);
 		//Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
 		if (sFirstMocIndex == SMocIndex(-1, -1, -1)) 
 		{
-			Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
 			std::cout << "The coordinate of CFD mesh is " << P << std::endl;
+			Logger::LogError("can not find  moc index corresponding to cfd Coordinate");
 			continue;
 		}
 		int iAssembly = sFirstMocIndex.iAssemblyIndex, iCell = sFirstMocIndex.iCellIndex, iMoc = sFirstMocIndex.iMocIndex;
@@ -380,6 +377,8 @@ void Solver::CheckMappingWeights()
 	maxSumWeight = 0;
 	//also, they are exepected to be around 1
 	sumOfZero = 0;
+	std::vector<int> topTen;
+	int count = 0;
 	for (int j = 0; j < m_cfdMeshPtr->GetMeshPointNum(); j++)
 	{
 		double sumSumWeight = 0.0;
@@ -392,7 +391,17 @@ void Solver::CheckMappingWeights()
 		if (sumSumWeight < SMALL)
 		{
 			sumOfZero++;
+			if (count < 10)
+			{
+				topTen.push_back(j);
+				count++;
+			}
 		}
+	}
+	std::cout << "if any, top 10 CFD ID having no overlaping MOC cells are list below:" << std::endl;
+	for (int j = 0;j < topTen.size();j++)
+	{
+		std::cout << topTen[j] << "\t";
 	}
 	Logger::LogInfo(FormatStr("sum of MOC->CFD weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
 	Logger::LogInfo(FormatStr("%d CFD cells have no weights from MOC cells", sumOfZero));
