@@ -507,6 +507,7 @@ void InsertWhenNotFound(std::vector<int>& IDList, int newID)
 	return;
 }
 
+
 void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 {
 	int totalFaceNum = 0;
@@ -530,28 +531,14 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 		int faceNum = GetFaceNum(pmesh, i);
 		count += faceNum;
 	}
-	startIDs[pmesh->n_elemNum]= count;
-	
+	startIDs[pmesh->n_elemNum] = count;
+
 	std::vector<std::vector<int> > localFaceVerticeID;
-	/*
-	for (int i = 0;i < pmesh->v_elem.size();i++)
-	{
-		int faceNum = GetFaceNum(pmesh, i);
-		GetFaceVerticeList(pmesh, i, localFaceVerticeID);
-		for (int j = startIDs[i];j < startIDs[i+1]; j++)
-		{
-			int verticeNum = localFaceVerticeID[j].size();
-			//set corresponding element ID
-			ownerElemIDList[j] = i;
-			//writting vertice IDs
-			faceVerticeList[j]= localFaceVerticeID[j- startIDs[i]];
-		}
-	}*/
-	for (int elemID = 0; elemID < pmesh->v_elem.size(); elemID++)
+	for (int elemID = 0;elemID < pmesh->v_elem.size();elemID++)
 	{
 		int faceNum = GetFaceNum(pmesh, elemID);
 		GetFaceVerticeList(pmesh, elemID, localFaceVerticeID);
-		for (int j = 0; j < faceNum; j++)
+		for (int j = 0;j < faceNum; j++)
 		{
 			//set corresponding element ID
 			ownerElemIDList[startIDs[elemID] + j] = elemID;
@@ -559,7 +546,6 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 			faceVerticeList[startIDs[elemID] + j] = localFaceVerticeID[j];
 		}
 	}
-
 
 	//search coincident faces and mark
 	for (int i = 0;i < pmesh->v_vertice.size();i++)
@@ -667,6 +653,7 @@ void MHTVTKReader::VTKCreateFaces(Mesh* pmesh)
 	std::cout << "Number of faces saved in mesh = " << pmesh->v_face.size() << std::endl;
 	return;
 }
+
 
 void MHTVTKReader::ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList)
 {
