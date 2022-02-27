@@ -157,8 +157,17 @@ public:
 		}
 		return 0.0;
 	}
-
-	std::string GetMaterialName() const;// {
+	std::string GetMaterialName() const {
+		int nPos = m_materialName.find("_");
+		//std::cout << "material name with id " << m_materialName << std::endl;
+		if (nPos != m_materialName.npos)
+		{
+			//std::cout << "material " << m_materialName.substr(0, nPos) << std::endl;
+			return m_materialName.substr(0, nPos);
+		}
+		return m_materialName;
+	}
+	//std::string GetMaterialName() const;// {
 		//int nPos = m_materialName.find("_");
 		//if (nPos != m_materialName.npos)
 		//{
