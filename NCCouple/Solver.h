@@ -32,7 +32,7 @@ public:
 	}
 
 private:
-	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
+	//void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 	void Interception_fromMocToCFD
 	(
 		MOCMesh& sourceMesh,
