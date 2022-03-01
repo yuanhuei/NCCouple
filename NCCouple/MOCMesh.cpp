@@ -1211,7 +1211,7 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 						matInfo = innerMatch.suffix().str();
 					}
 
-					if (materialName.find("H2O") != materialName.npos) {
+					if (materialName.find("mMOD") != materialName.npos) {
 						double slackH2ODensity = 1e3;
 						for (size_t i = 0; i < medium.eleFlagVec.size(); i++) {
 							int eleFlag = medium.eleFlagVec[i];
@@ -1314,43 +1314,6 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 
 		}
 	}
-	/*
-	for (auto meshPointPtr : m_meshPointPtrVec) {
-		std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
-		if (p_mocMeshPoint) {
-			{
-				std::smatch m;
-				std::string materialName = p_mocMeshPoint->GetMaterialName();
-				auto iter1 = materialDensityMap.find(materialName);
-				if (iter1 != materialDensityMap.end())
-					p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
-
-				if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
-					std::string materialMetaName = m.prefix().str();
-					auto iter2 = materialDensityMap.find(materialMetaName);
-					if (iter2 != materialDensityMap.end()) {
-						p_mocMeshPoint->SetValue(iter2->second, ValueType::DENSITY);
-					}
-				}
-			}
-
-			{
-				std::smatch m;
-				std::string temperatureName = p_mocMeshPoint->GetTemperatureName();
-				auto iter1 = temperatureMap.find(temperatureName);
-				if (iter1 != temperatureMap.end())
-					p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
-
-				if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
-					std::string tempMetaName = m.prefix().str();
-					auto iter2 = temperatureMap.find(tempMetaName);
-					if (iter2 != temperatureMap.end()) {
-						p_mocMeshPoint->SetValue(iter2->second, ValueType::TEMPERAURE);
-					}
-				}
-			}
-		}
-	}*/
 
 
 	return;
