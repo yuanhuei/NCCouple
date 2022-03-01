@@ -39,7 +39,8 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	ifstream infile(outAplFileName + "_new");// +"_temp");
 	
 	std::stringstream firstNt_Assembly,second_Nt_Assembly, end_Nt_Assembly,outAssembly;
-
+	//std::vector<std::stringstream> vSecond_Nt_Assembly;
+	vector< shared_ptr<stringstream>> vSecond_Nt_Assembly;
 	if (!infile_.is_open())
 	{
 		Logger::LogError("cannot find the MOC mesh file:" + outAplFileName);
@@ -49,9 +50,10 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 
 	while (getline(infile_, line))  //read mesh data
 	{
-		
+	loop_Nt_Assembly:
 		if (line.find("*Nt_Assembly")!=line.npos && line.find("*Nt_Assembly_") == line.npos)
 		{
+			second_Nt_Assembly.str("");
 			second_Nt_Assembly<< line<<endl;
 			while (getline(infile_, line))
 			{ 
@@ -60,13 +62,21 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 					end_Nt_Assembly << line << endl;
 					while (getline(infile_, line))
 					{
+						if (line.find("Nt_Assembly") != line.npos && line.find("*Nt_Assembly_") == line.npos)
+						{
+							vSecond_Nt_Assembly.push_back(make_shared<stringstream>());
+							*vSecond_Nt_Assembly.back()<< second_Nt_Assembly.str();
+							goto loop_Nt_Assembly;
+						}
 						end_Nt_Assembly << line << endl;
 					}
 				}
 				else
 					second_Nt_Assembly << line << endl;
 			}
-
+			vSecond_Nt_Assembly.push_back(make_shared<stringstream>());
+			*vSecond_Nt_Assembly.back() << second_Nt_Assembly.str();
+			//vSecond_Nt_Assembly.push_back(make_shared<stringstream>(second_Nt_Assembly));
 		}
 		else
 			firstNt_Assembly << line << endl;
@@ -74,7 +84,7 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	outFile_new << firstNt_Assembly.str();
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
-		outFile_new << second_Nt_Assembly.str() << endl;
+		outFile_new << vSecond_Nt_Assembly[m_vAssembly[i].iAssemblyType-1]->str() << endl;
 	}
 	outFile_new << end_Nt_Assembly.str();
 	outFile_new.close();
@@ -199,13 +209,9 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 							iAssemblyIndex++;
 							goto Nt_Assembly_line;
 						}
-
 					}
 				}
-				
-
 			}
-
 		}
 	}
 
@@ -540,7 +546,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					if (line.find("*Nt_Assembly") != std::string::npos)
 					{
 						//infile.seekg(assembly_pos);
-						outFile << line << endl;
+						//outFile << line << endl;
 						bNextAssembly = true;
 						break;
 					}
