@@ -1133,7 +1133,7 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 			for (size_t i = 0; i < p_medium->eleFlagVec.size(); i++) {
 				int eleFlag = p_medium->eleFlagVec[i];
 				double eleDensity = p_medium->eleDensCalcFunVec[i](GetValueAtIndex(sMocIndex,ValueType::DENSITY));
-				ofs << eleFlag << "," << FormatStr("%.6f", eleDensity);
+				ofs << eleFlag << "," << FormatStr("%.6e", eleDensity);
 
 				if (i != p_medium->eleFlagVec.size() - 1)
 					ofs << ";" << std::endl << "\t\t\t\t\t";
