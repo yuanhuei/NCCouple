@@ -1223,14 +1223,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 							int eleFlag = medium.eleFlagVec[i];
 							if (eleFlag == 1001) {
 								double eleDensity = medium.eleDensCalcFunVec[i](0.0);
-								slackH2ODensity = eleDensity / (NA * BARN * 2) * 1800.0;
+								slackH2ODensity = eleDensity / (NA * BARN * 2) * 18000.0;
 								medium.eleDensCalcFunVec[i] = [](double density) {
-									return density / 1800.0 * NA * BARN * 2;
+									return density / 18000.0 * NA * BARN * 2;
 								};
 							}
 							else if (eleFlag == 8016) {
 								medium.eleDensCalcFunVec[i] = [](double density) {
-									return density / 1800.0 * NA * BARN;
+									return density / 18000.0 * NA * BARN;
 								};
 							}
 						}
