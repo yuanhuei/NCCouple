@@ -47,7 +47,7 @@ elseif(UNIX)
 
 endif()
 
-if (${CMAKE_VERSION} VERSION_LESS 3.8)
+if (${CMAKE_VERSION} VERSION_LESS 3.13)
 	message("Include directories: ${INCLUDE_DIR}")
 	include_directories(${INCLUDE_DIR})
 	link_directories(${STATIC_LIBRARY_DIR})

@@ -465,6 +465,7 @@ void Field<Scalar>::ElementToNode()
 		nodeField.Initialize();
 	}
 	//step 3: visit all nodes in mesh data
+
 	for (int i = 0; i < (int)p_blockMesh->v_vertice.size(); i++)
 	{
 		std::vector<Node> relativePos;
@@ -480,6 +481,7 @@ void Field<Scalar>::ElementToNode()
 			//an element center is of course not on the boundary; 
 			isBoundary.push_back(false);
 		}
+
 		//step 3.2: if existing, collect toplogical information from boundary face field
 		if (BaseField<Scalar>::fsAssigned == faceField.fs_status)
 		{
@@ -528,6 +530,10 @@ void Field<Scalar>::ElementToNode()
 			}
 		}
 		//step 3.4: use interpolation tools and write values
+		if (relativePos.size() ==0)
+		{
+			continue;
+		}
 		Scalar interpolatedValue = Interpolation(relativePos, value);
 		nodeField.SetValue(i, interpolatedValue);
 	}

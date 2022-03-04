@@ -32,7 +32,7 @@ public:
 	}
 
 private:
-	void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
+	//void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 	void Interception_fromMocToCFD
 	(
 		MOCMesh& sourceMesh,
@@ -45,9 +45,9 @@ private:
 		MOCMesh& targetMesh,
 		ValueType vt
 	);
-
 	void writeMapInfortoFile();
 	void readMapInfor();
+	void DisplayEmptyMap();
 
 private:
 	MOCMesh* m_mocMeshPtr = nullptr;

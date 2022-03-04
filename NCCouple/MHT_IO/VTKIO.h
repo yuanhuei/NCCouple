@@ -19,11 +19,15 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList);
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList);
-	MHTVTKReader(std::string MshFileName);
-
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
+	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
+	MHTVTKReader(std::string MshFileName, Scalar ratio);
+	MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio);
+	MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	~MHTVTKReader();
+	void GetTranslation();
+	void TransformToMOC();
+	void TransformBack();
 	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }
 	FieldIO GetFieldIO(int num) { return v_FieldIO[num]; }
 	std::vector<StandardMeshBlock> GetMeshList() { return v_stdMesh; }
@@ -35,8 +39,11 @@ public:
 	void WriteDataFile(std::string DataFileName);
 	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);		//read total region field
 	void ReadVTKFile(std::vector<std::string>, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList);		//read field by mesh ID
-private:
+	void DisplayCorrdinateRange();
 
+private:
+	Vector translation;
+	Scalar scaleRatio;
 	std::vector < std::vector<Field<Scalar> > > vv_scalarFieldList;			//size same like region in mesh
 	std::vector<FieldIO> v_FieldIO;
 	std::vector<StandardMeshBlock> v_stdMesh;
@@ -44,9 +51,13 @@ private:
 	std::vector<int> v_meshID;
 
 	void ReadMSHFile(std::string MeshFileName);
+	void VTKMeshEstablishVertice(Mesh *pmeh);
+	void VTKCreateFaces(Mesh* pmesh);
+	void ReadMSHFromVTKFile(std::vector<std::string>& vtkFileNameList);
 	void ReadDataFile(std::string DataFileName, std::vector<std::string>& vFiedNameList);
 	void InitializeEmptyField(std::vector<std::string>& vFiedNameList);
 	void ReadVTKMeshFormat(std::ifstream &inFile);
+	void ReadVTKMeshFormat(std::ifstream& inFile,Mesh *pmesh);
 };
 
 

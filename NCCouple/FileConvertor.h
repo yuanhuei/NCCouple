@@ -25,8 +25,7 @@ void ConservationValidation
 void RegisterMapper
 (
 	std::string strInput_aplFileName,
-	std::string strInput_inpFileName,
-	std::string strInput_meshFileName
+	std::string strInput_inpFileName
 );
 
 void CreateMapper();

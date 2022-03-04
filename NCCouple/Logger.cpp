@@ -3,8 +3,9 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 static auto my_logger = spdlog::basic_logger_mt("basic_logger", "log.txt");
-void Logger::LogInfo(std::string info) {
-	spdlog::info(info);
+void Logger::LogInfo(std::string info,bool bOnlyInLogFile) {
+	if(bOnlyInLogFile==false)
+		spdlog::info(info);
 	my_logger->info(info);
 	return;
 }

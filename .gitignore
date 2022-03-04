@@ -354,6 +354,7 @@ healthchecksdb
 /NCCouple/NCCouple.tar
 /.VSCodeCounter/2022-01-26_09-51-29
 /.vscode
+<<<<<<< HEAD
 .VSCodeCounter/2022-03-03_16-46-03/details.md
 .VSCodeCounter/2022-03-03_16-46-03/diff-details.md
 .VSCodeCounter/2022-03-03_16-46-03/diff.csv
@@ -364,3 +365,12 @@ healthchecksdb
 .VSCodeCounter/2022-03-03_16-46-03/results.md
 .VSCodeCounter/2022-03-03_16-46-03/results.txt
 .gitignore
+=======
+/build-release-2019
+/run.sbatch
+/NCCouple2.0.tar.gz
+/NCCouple2.0.tar
+/NCCouple/pin_c2.apl
+/国防科大vtk.rar
+/build
+>>>>>>> a4b67eab9f65609e2cbe397c0c4c3f750c763294
