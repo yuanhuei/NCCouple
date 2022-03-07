@@ -3,6 +3,7 @@
 #include<functional>
 #include<vector>
 #include<string>
+extern int g_iMpiID;
 class MOCMesh;
 class CFDMesh;
 struct SMocIndex {

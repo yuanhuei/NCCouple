@@ -218,15 +218,15 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	
 	infile.close();
 	outFile.close();
-	//RemoveFile(outAplFileName + "_temp");
+	RemoveFile(outAplFileName + "_temp");
+	RemoveFile(outAplFileName + "_new");
 
 }
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
 {
 	Logger::LogInfo("MOCMesh generation begin");
-
-	ofstream outFile(outAplFileName);
+	stringstream outFile;
 	ifstream infile(meshFileName);
 	if (!infile.is_open())
 	{
@@ -626,11 +626,17 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		}
 		strpos = infile.tellg();
 	}
-	outFile.close();
+	//outFile.close();
 	InitAssembly();
 	m_pAssemblyIndex->buildIndex();
 	GetAllMocIndex(m_vSMocIndex);
-	reWriteAplOutputFile(outAplFileName);
+	if (g_iMpiID == 1)
+	{
+		ofstream outputAplFile(outAplFileName);
+		outputAplFile << outFile.str();
+		reWriteAplOutputFile(outAplFileName);
+	}
+
 
 	Logger::LogInfo("MOCMesh generation ends");
 }

@@ -27,7 +27,7 @@
 
 
 #include "./MHT_IO/VTKIO.h"
-int g_iMpiID = 0;
+int g_iMpiID = -1;
 
 //this example was designed for test of
 //(1) rewriting a apl file
@@ -353,14 +353,21 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 	//myid = 1;
-	g_iMpiID = myid-1;
+	g_iMpiID = myid;
 	if (myid > 0) {
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
 		strInputMOCfile = "pin_c1.apl";
 		strInputCFDfile = "CFDCELLS0.txt";
 		strOutputFile = "pin_c1.inp_" + std::to_string(myid);
 		//caculate(strInputMOCfile, strInputCFDfile, strOutputFile);
+		if (myid == 2)
+		{
+			int num = 10;
+			std::cout << "this is child,pid=" << getpid() << std::endl;
+			while (num == 10)
+				Sleep(10);
 
+		}
 
 		if (argc == 1)
 		{
