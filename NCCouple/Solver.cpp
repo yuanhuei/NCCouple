@@ -467,8 +467,8 @@ void Solver::Interception_fromCFDToMOC
 
 void Solver::writeMapInfortoFile()
 {
-	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC");
-	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD");
+	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
+	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
 
 	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{

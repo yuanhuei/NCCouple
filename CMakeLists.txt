@@ -5,8 +5,8 @@ set(PROJECT_NAME NCCouple)
 project (${PROJECT_NAME})
 
 #设置gdb调试
-#SET(CMAKE_BUILD_TYPE "Debug")  # 定义编译类型
-#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb") # 定义Debug编译参数
+SET(CMAKE_BUILD_TYPE "Debug")  # 定义编译类型
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb") # 定义Debug编译参数
 #SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall") # 定义Release编译参数
 
 # specify the C++ standard

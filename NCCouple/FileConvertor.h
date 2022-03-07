@@ -3,6 +3,7 @@
 #define FILECONVERTOR_HEADER
 #include "./Solver.h"
 #include <string>
+extern int g_iMpiID;
 enum class Material
 {
 	H2O,

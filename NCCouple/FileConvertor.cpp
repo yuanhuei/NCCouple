@@ -165,10 +165,12 @@ void CreateMapper()
 	}
 	for (int i = 0;i < inputVTKList.size();i++)
 	{
-		if (inputVTKList[i].find(".vtk") == std::string::npos)
+		int iPos = inputVTKList[i].find(".vtk");
+		if (iPos == std::string::npos)
 		{
 			Logger::LogError("in MOCFieldsToCFD, " + inputVTKList[i] + " is not a .vtk file");
 		}
+		inputVTKList[i] = inputVTKList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
 	}
 	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	//create an index for fast searching

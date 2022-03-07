@@ -27,7 +27,7 @@
 
 
 #include "./MHT_IO/VTKIO.h"
-int g_iProcessID = 0;
+int g_iMpiID = 0;
 
 //this example was designed for test of
 //(1) rewriting a apl file
@@ -343,27 +343,52 @@ int main(int argc, char** argv)
 {
 	//get processor ID
 	//g_iProcessID = (int)getpid();
+	//CreateMapper();
+	//return 0;
 
-	int numprocs, myid, source;
+	int numprocs, myid=-1, source;
 	MPI_Status status;
 	char message[100];
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-
-	if (myid != 0) {  
+	//myid = 1;
+	g_iMpiID = myid-1;
+	if (myid > 0) {
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
 		strInputMOCfile = "pin_c1.apl";
 		strInputCFDfile = "CFDCELLS0.txt";
 		strOutputFile = "pin_c1.inp_" + std::to_string(myid);
 		//caculate(strInputMOCfile, strInputCFDfile, strOutputFile);
 
-		std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
-		strcpy(message, strMessage.data());// "caclulation finished!");
-		MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
-			MPI_COMM_WORLD);
+
+		if (argc == 1)
+		{
+			std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
+			strcpy(message, strMessage.data());// "caclulation finished!");
+			
+			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
+				MPI_COMM_WORLD);
+		}
+		else
+		{
+			std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
+			std::vector<std::string> parameterList;
+			parameterList.resize(argc - 1);
+			for (int i = 1; i < argc; i++)
+			{
+				parameterList[i - 1] = argv[i];
+				strMessage += " " + parameterList[i - 1];
+			}
+			RunWithParameters(parameterList);
+			strcpy(message, strMessage.data());// "caclulation finished!");
+			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
+				MPI_COMM_WORLD);
+		}
+
+
 	}
-	else {   
+	else if(myid==0) {
 		for (source = 1; source < numprocs; source++) {
 			MPI_Recv(message, 100, MPI_CHAR, source, 99,
 				MPI_COMM_WORLD, &status);

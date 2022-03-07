@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "Structure.h"
 class MOCMesh;
+extern int g_iMpiID;
 class Solver {
 public:
 	Solver() {};
