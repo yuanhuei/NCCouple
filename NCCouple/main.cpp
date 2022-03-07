@@ -9,13 +9,16 @@
 #include<time.h>
 #include "./FileConvertor.h"
 #include "./ConfigurationFile.h"
-#include <string>
+
 #include <sstream>
 #include <mpi.h>
 #ifdef _WIN32
 #include <process.h>
+#include <string>
 #else
 #include <unistd.h>
+#include <string>
+#include <string.h>
 #endif
 #include "./MHT_common/SystemControl.h"
 #include "./MHT_mesh/UnGridFactory.h"
@@ -28,6 +31,7 @@
 
 #include "./MHT_IO/VTKIO.h"
 int g_iMpiID = -1;
+int g_iNumProcs = 0;
 
 //this example was designed for test of
 //(1) rewriting a apl file
@@ -354,19 +358,32 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
 	//myid = 1;
 	g_iMpiID = myid;
+	g_iNumProcs = numprocs;
+
+	std::vector<std::string> parameterList;
+	parameterList.resize(argc - 1);
+	for (int i = 1; i < argc; i++)
+	{
+		parameterList[i - 1] = argv[i];
+	}
 	if (myid > 0) {
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
 		strInputMOCfile = "pin_c1.apl";
 		strInputCFDfile = "CFDCELLS0.txt";
 		strOutputFile = "pin_c1.inp_" + std::to_string(myid);
 		//caculate(strInputMOCfile, strInputCFDfile, strOutputFile);
-		if (myid == 2)
+		if (myid == 100)
 		{
 			int num = 10;
 			std::cout << "this is child,pid=" << getpid() << std::endl;
 			while (num == 10)
+			{
+			#ifdef _WIN32
 				Sleep(10);
-
+			#else
+				sleep(10);
+			#endif
+			}
 		}
 
 		if (argc == 1)
@@ -384,7 +401,7 @@ int main(int argc, char** argv)
 			parameterList.resize(argc - 1);
 			for (int i = 1; i < argc; i++)
 			{
-				parameterList[i - 1] = argv[i];
+				//parameterList[i - 1] = argv[i];
 				strMessage += " " + parameterList[i - 1];
 			}
 			RunWithParameters(parameterList);
@@ -396,12 +413,17 @@ int main(int argc, char** argv)
 
 	}
 	else if(myid==0) {
+		
 		for (source = 1; source < numprocs; source++) {
 			MPI_Recv(message, 100, MPI_CHAR, source, 99,
 				MPI_COMM_WORLD, &status);
+			//if (source == (numprocs - 1))
+				
 			//printf("%d %s\n", source, message);
 			Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
 		}
+		if(argc==2 && parameterList[0]=="createmapper")
+			ConvergeMocMapInfor();
 	}
 	MPI_Finalize();
 	return 0;

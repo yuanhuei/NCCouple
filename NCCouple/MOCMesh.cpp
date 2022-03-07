@@ -221,6 +221,17 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	RemoveFile(outAplFileName + "_temp");
 	RemoveFile(outAplFileName + "_new");
 
+	size_t iMaxCell=0, iMaxMesh=0;
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		iMaxCell = max(iMaxCell, m_vAssembly[i].pAssembly_type->v_Cell.size());
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			iMaxMesh = max(iMaxMesh, m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
+		}
+	}
+	ofstream MocMeshMaxSize_info("MocMeshMaxSize_info");
+	MocMeshMaxSize_info << m_vAssembly.size()<<" " << iMaxCell<<" " << iMaxMesh << std::endl;
 }
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)

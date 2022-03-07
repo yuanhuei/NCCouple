@@ -469,7 +469,7 @@ void Solver::writeMapInfortoFile()
 {
 	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
 	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
-
+	CFDtoMOC_MapFile << m_CFD_MOC_Map.size() << std::endl;
 	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{
 		std::unordered_map<SMocIndex, double>::iterator it;
