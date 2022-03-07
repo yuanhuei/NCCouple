@@ -273,8 +273,6 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 					m_pAssemblyIndex->m_assemblyIndex[0][0] = 0;
 					//vNumber_of_each_coarse_mesh.resize(1);
 					//vNumber_of_each_coarse_mesh[0] = layerMeshNum;
-
-
 					break;
 				}
 				if (token == "EDGE")

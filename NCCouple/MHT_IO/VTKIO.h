@@ -19,9 +19,6 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
-	MHTVTKReader(std::string MshFileName, Scalar ratio);
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio);
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	~MHTVTKReader();
