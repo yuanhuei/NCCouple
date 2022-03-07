@@ -36,8 +36,8 @@ namespace MHT
 		std::vector<Vector> v_faceCenter;
 		bool geometryCalculated;
 		Scalar volume;
-	private:
 		Vector center;
+
 	public:
 
 		Polyhedron();
@@ -48,11 +48,19 @@ namespace MHT
 
 		Polyhedron(std::istream& is);
 
+		Polyhedron(Vector, Vector);
+
 		void Display() const;
+
+		void Check() const;
 
 		Scalar GetVolume() const;
 
 		Vector GetCenter() const;
+
+		Polygon GetFace(int) const;
+
+		std::vector<Polygon> GetFacesOnBoxBoundary(Vector, Vector, Scalar) const;
 
 		void CalculateVolume();
 
@@ -70,11 +78,22 @@ namespace MHT
 
 		bool IsExisting() const;
 
+		void Move(Vector&);
+
+		Polyhedron Copy(Vector&) const;
+
 		Polyhedron ClipByPlane(Vector, Vector, std::vector<int>&);
 
 		Polygon SearchCutPosition(Vector norm, Scalar volume, Scalar tolerance);
 
 		Polygon Reconstruction(Vector norm, Scalar volume, Scalar tolerance);
+
+		void WriteTecplotZones(std::ofstream&) const;
+
+		Vector GetCenter()
+		{
+			return this->center;
+		}
 
 	private:
 

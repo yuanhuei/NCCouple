@@ -341,3 +341,5 @@ healthchecksdb
 /out
 /tools/boost
 /NCCouple/CFDCELLS0.txt
+/.vscode
+/build

@@ -21,7 +21,7 @@ static std::string FormatStr(const std::string& fmtStr, Args... args) {
 class Logger
 {
 public:
-	static void LogInfo(std::string info);
+	static void LogInfo(std::string info,bool bOnlyInLogFile=false);
 	static void LogWarn(std::string warn);
 	static void LogError(std::string error);
 	static void LogInfotoFile(std::string info);

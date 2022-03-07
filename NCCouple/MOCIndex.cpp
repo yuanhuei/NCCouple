@@ -1,17 +1,38 @@
 #include "MOCIndex.h"
-#include"Logger.h"
+#include "Logger.h"
+#include "./MHT_common/SystemControl.h"
+#include "MOCMesh.h"
 
 MOCIndex::MOCIndex(MOCMesh& mocMesh)
 	:pMOCMesh(&mocMesh)
 {
+	Initialization();
+	//BuildUpIndex();
+	//CheckIndex();
+}
+MOCIndex::MOCIndex(MOCMesh&pMocMesh, Cell& pCell) :m_pCell(&pCell), pMOCMesh(&pMocMesh)
+{ 
+	Initialization();
+}
+
+
+void MOCIndex::Initialization()
+{
+	this->SetTolerance();
+	this->SetAxialInfo();
+	this->SetCircularInfo();
+	this->GetRadiusList();
+	return;
 }
 
 void MOCIndex::BuildUpIndex()
 {
 	AllocateDim(this->v_MOCID, this->circularCellNum, this->v_radius.size(), this->axialCellNum);
-	for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	//for (int i = 0; i < pMOCMesh->GetMeshPointNum(); i++)
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
+
 	{
-		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*pMOCMesh->GetMeshPointPtr(i));
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
 		int verticeNum = mocPoint.VerticesNum();
 		double RSum = 0.0;
 		double ZSum = 0.0;
@@ -21,8 +42,7 @@ void MOCIndex::BuildUpIndex()
 		double count2 = 0.0;
 		for (int j = 0; j < verticeNum; j++)
 		{
-			std::tuple<double, double, double> cor = mocPoint.VerticeCoordinate(j);
-			Vector P(std::get<0>(cor), std::get<1>(cor), std::get<2>(cor));
+			Vector P = mocPoint.VerticeCoordinate(j);
 			Vector OP = P - this->axisPoint;
 			Vector axialProjection = (OP & this->axisNorm) * this->axisNorm;
 			Vector radialProjection = OP - axialProjection;
@@ -30,7 +50,7 @@ void MOCIndex::BuildUpIndex()
 			ZSum += axialProjection.Mag();
 			OPSum = OPSum + OP;
 			count1 += 1.0;
-			if (radialProjection.Mag() > SMALL)
+			if (radialProjection.Mag() > scaleTolerance)
 			{
 				COSTheetaSum += radialProjection.GetNormal() & this->theetaStartNorm;
 				count2 += 1.0;
@@ -57,29 +77,108 @@ void MOCIndex::BuildUpIndex()
 		}
 		int IndexK = int(height / axialCellSize);
 		this->v_MOCID[IndexI][IndexJ][IndexK] = i;
-		//Logger::LogInfo(FormatStr("IndexI,IndexJ,IndexK is :%d,%d,%d; MocIndex is %d :", IndexI, IndexJ, IndexK, i));
 	}
-	/*
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 7; j++)
-		    std::cout << this->v_MOCID[i][j][0] << std::endl;
-    }
-	*/
+	//CheckIndex();
 	return;
 }
 
-void MOCIndex::SetRadial
-(
-	std::vector<Scalar>& radiusList
-)
+//find the largest radius to estimate a tolerance
+void MOCIndex::SetTolerance()
 {
-	this->v_radius.resize(radiusList.size() + 1);
-	this->v_radius[0] = 0.0;
-	for (int i = 1;i < v_radius.size();i++)
+	Scalar maxRadius = 0.0;
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
 	{
-		v_radius[i] = radiusList[i - 1];
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
+		std::vector<Scalar> radiusList = mocPoint.GetRadiusList();
+		for (size_t j = 0;j < radiusList.size();j++)
+		{
+			maxRadius = max(maxRadius, radiusList[j]);
+		}
 	}
+	this->scaleTolerance = 1e-4 * maxRadius;
+	return;
+}
+
+void MOCIndex::GetRadiusList()
+{
+	//insert into v_radius list
+	this->v_radius.clear();
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
+	{
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
+		std::vector<Scalar> radiusList = mocPoint.GetRadiusList();
+		//for each radius in this cell
+		for (size_t j = 0;j < radiusList.size();j++)
+		{
+			//loop over the existing vadius list,
+			bool found = false;
+			for (size_t k = 0;k < v_radius.size();k++)
+			{
+				if (fabs(v_radius[k] - radiusList[j]) < scaleTolerance)
+				{
+					found = true;
+					break;
+				}
+			}
+			//insert if not found within given tolerance
+			if (false == found)
+			{
+				v_radius.push_back(radiusList[j]);
+			}
+		}
+	}
+	v_radius.push_back(0.0);
+	//re-order v_radius
+	int vadiusNum = v_radius.size();
+	for (size_t i = 0;i < vadiusNum;i++)
+	{
+		for (int j = 0;j < vadiusNum - 1;j++)
+		{
+			if (v_radius[j] > v_radius[j + 1])
+			{
+				Scalar temp = v_radius[j];
+				v_radius[j] = v_radius[j + 1];
+				v_radius[j + 1] = temp;
+			}
+		}
+	}
+	return;
+}
+
+void MOCIndex::SetAxialInfo()
+{
+	//axial cell number and cell size
+	std::pair<int, Scalar> info = pMOCMesh->GetAxialInformation();
+	this->axialCellNum = info.first;
+	this->axialCellSize = info.second;
+	//axis center
+	Vector numerator(0.0,0.0,0.0);
+	int denominator = 0;
+	for (int i = 0; i < m_pCell->vMeshPointPtrVec.size(); i++)
+	{
+		const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
+		std::pair<bool, Vector> axisCenterInfo = mocPoint.AxisCenter();
+		if (axisCenterInfo.first)
+		{
+			numerator += axisCenterInfo.second;
+			denominator++;
+		}
+	}
+	if (0 == denominator)
+	{
+		Logger::LogError("in MOCIndex::SetAxialInfo(), no curved cell is found");
+	}
+	this->axisPoint = numerator / Scalar(denominator);
+	this->axisPoint.z_ = 0.0;
+	//axis norm
+	this->axisNorm = Vector(0.0, 0.0, 1.0);
+	return;
+}
+
+void MOCIndex::SetCircularInfo()
+{
+	this->theetaStartNorm = Vector(1.0, 0.0, 0.0);
+	this->circularCellNum = 8;
 	return;
 }
 
@@ -149,4 +248,70 @@ int MOCIndex::GetMOCIDWithPoint
 	int j = std::get<1>(indexes);
 	int k = std::get<2>(indexes);
 	return this->v_MOCID[i][j][k];
+}
+
+
+void MOCIndex::CheckIndex()
+{
+	int meshNum = m_pCell->vMeshPointPtrVec.size();
+	std::vector<bool> v_registered;
+	v_registered.resize(meshNum);
+	for (size_t i = 0;i < meshNum;i++)
+	{
+		v_registered[i] = false;
+	}
+
+	for (int i = 0;i < this->v_MOCID.size();i++)
+	{
+		for (int j = 0;j < this->v_MOCID[i].size();j++)
+		{
+			for (int k = 0;k < this->v_MOCID[i][j].size();k++)
+			{
+				int ID = this->v_MOCID[i][j][k];
+				v_registered[ID] = true;
+			}
+		}
+	}
+	std::stringstream msg;
+	int unregisteredNum = 0;
+	for (int i = 0; i < meshNum; i++)
+	{
+		if (false == v_registered[i])
+		{
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*m_pCell->vMeshPointPtrVec[i]);
+			Vector meshCenter = mocPoint.Center();
+			msg << "mesh #" << i << " is not registered, centering at " << meshCenter << std::endl;
+			unregisteredNum++;
+		}
+	}
+	if (0 != unregisteredNum)
+	{
+		FatalError(msg.str());
+	}
+	return;
+}
+void MOCIndex::Display()
+{
+	std::cout << "axisPoint = " << axisPoint << std::endl;
+	std::cout << "axisNorm = " << axisNorm << std::endl;
+	std::cout << "theetaStartNorm = " << theetaStartNorm << std::endl;
+	std::cout << "circularCellNum = " << circularCellNum << std::endl;
+	std::cout << "axialCellSize = " << axialCellSize << std::endl;
+	std::cout << "axialCellNum = " << axialCellNum << std::endl;
+	std::cout << "scaleTolerance = " << scaleTolerance << std::endl;
+	for (int i = 0; i < this->v_radius.size(); i++)
+	{
+		std::cout << "v_radius[" << i << "] = " << v_radius[i] << std::endl;
+	}
+	for (int k = 0; k < axialCellNum; k++)
+	{
+		for (int i = 0; i < this->v_MOCID.size(); i++)
+		{
+			for (int j = 0; j < this->v_MOCID[i].size(); j++)
+			{
+				std::cout << i << "\t" << j << "\t" << k << "\t" << this->v_MOCID[i][j][k] << std::endl;
+			}
+		}
+	}
+	return;
 }

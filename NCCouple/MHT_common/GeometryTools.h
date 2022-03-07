@@ -77,4 +77,22 @@ Point3D<Scalar>& center,
 Scalar& volume
 );
 
+//rotate a given point around a given axis at a given angle 
+//https://en.wikipedia.org/wiki/Rotation_matrix#cite_note-5
+Vector RotatePoint
+(
+	const Vector& GivenPoint,
+	const Vector& AxisPoint,
+	Vector axis,
+	const Scalar& theeta
+);
+
+//added by Kong Ling
+#include "../MHT_common/Tensor.h"
+Tensor RotationTensor
+(
+	Vector axis,
+	Scalar theeta
+);
+
 #endif

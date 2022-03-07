@@ -1,5 +1,6 @@
 #include "Polyhedron.h"
 #include "../MHT_common/GeometryTools.h"
+#include "../MHT_common/SystemControl.h"
 #include <algorithm>
 
 namespace MHT
@@ -44,6 +45,60 @@ namespace MHT
 		this->ReadGeometry(is);
 		this->CalculateVolume();
 		return;
+	}
+
+	Polyhedron::Polyhedron(Vector minVertice, Vector maxVertice)
+	{
+		Scalar xmin = minVertice.x_;
+		Scalar xmax = maxVertice.x_;
+		Scalar ymin = minVertice.y_;
+		Scalar ymax = maxVertice.y_;
+		Scalar zmin = minVertice.z_;
+		Scalar zmax = maxVertice.z_;
+		if (xmax <= xmin || ymax <= ymin || zmax <= zmin)
+		{
+			stringstream ss;
+			ss << "invalid vertice: " << minVertice << " and " << maxVertice;
+			FatalError(ss.str());
+		}
+		//create the 8 vertices
+		this->v_point.resize(8);
+		v_point[0] = Vector(xmin, ymin, zmin);
+		v_point[1] = Vector(xmax, ymin, zmin);
+		v_point[2] = Vector(xmax, ymax, zmin);
+		v_point[3] = Vector(xmin, ymax, zmin);
+		v_point[4] = Vector(xmin, ymin, zmax);
+		v_point[5] = Vector(xmax, ymin, zmax);
+		v_point[6] = Vector(xmax, ymax, zmax);
+		v_point[7] = Vector(xmin, ymax, zmax);
+		//create the 6 faces
+		this->v_facePointID.resize(6);
+		v_facePointID[0].push_back(0);
+		v_facePointID[0].push_back(3);
+		v_facePointID[0].push_back(2);
+		v_facePointID[0].push_back(1);
+		v_facePointID[1].push_back(0);
+		v_facePointID[1].push_back(1);
+		v_facePointID[1].push_back(5);
+		v_facePointID[1].push_back(4);
+		v_facePointID[2].push_back(0);
+		v_facePointID[2].push_back(4);
+		v_facePointID[2].push_back(7);
+		v_facePointID[2].push_back(3);
+		v_facePointID[3].push_back(2);
+		v_facePointID[3].push_back(3);
+		v_facePointID[3].push_back(7);
+		v_facePointID[3].push_back(6);
+		v_facePointID[4].push_back(1);
+		v_facePointID[4].push_back(2);
+		v_facePointID[4].push_back(6);
+		v_facePointID[4].push_back(5);
+		v_facePointID[5].push_back(4);
+		v_facePointID[5].push_back(5);
+		v_facePointID[5].push_back(6);
+		v_facePointID[5].push_back(7);
+		//calculate geomety
+		this->CalculateVolume();
 	}
 
 	void Polyhedron::ReadGeometry(ifstream& infile)
@@ -179,7 +234,85 @@ namespace MHT
 			{
 				cout << v_facePointID[i][j] << " ";
 			}
+			if (geometryCalculated)
+			{
+				cout << " center" << this->v_faceCenter[i] << ", area" << this->v_faceArea[i];
+			}
 			cout << endl;
+		}
+		if (geometryCalculated)
+		{
+			cout << "polyhedron center: " << this->center << endl;
+			cout << "polyhedron volume: " << this->volume << endl;
+		}
+		return;
+	}
+
+	void Polyhedron::Check() const
+	{
+		//if the polyhedron is not existint, it is meaningless to check
+		if (false == this->IsExisting())
+		{
+			return;
+		}
+		std::stringstream errorMsg;
+		//error 1: there is no face
+		if (0 == this->v_faceArea.size())
+		{
+			FatalError("Polyhedron Check(): no face is found");
+			return;
+		}
+		bool pass = true;
+		Vector totalArea(0.0, 0.0, 0.0);
+		Scalar denominator = 0.0;
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			totalArea += this->v_faceArea[faceID];
+			denominator += this->v_faceArea[faceID].Mag();
+		}
+		//error 2: there are faces, but no face has area
+		if (denominator < SMALL)
+		{
+			errorMsg << "Polyhedron Check(): no face has any area" << std::endl;
+			this->Display();
+			pass = false;
+		}
+		else
+		{
+			Scalar faceAreaError = totalArea.Mag() / denominator;
+			//error 3: face areas are not conservative
+			if (faceAreaError > SMALL)
+			{
+				errorMsg << "Polyhedron Check(): the face areas are not conservative in this polyhedron:" << std::endl;
+				for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+				{
+					errorMsg << "face #" << faceID << ": " << this->v_faceArea[faceID] << std::endl;
+				}
+				errorMsg << "total area:" << totalArea << std::endl;
+				pass = false;
+			}
+		}
+		//error 4: wrong face direction
+		for (int faceID = 0;faceID < this->v_faceArea.size(); faceID++)
+		{
+			Vector faceArea = this->v_faceArea[faceID];
+			Vector faceCenter = this->v_faceCenter[faceID];
+			Vector OP = faceCenter - this->center;
+			Scalar OPdotSf = OP & faceArea;
+			if (OPdotSf < 0)
+			{
+				errorMsg << "Polyhedron Check(): direction of face #" << faceID << " is incorrect" << std::endl;
+				pass = false;
+			}
+		}
+		//error 5: negative volume
+		if (volume < 0)
+		{
+			errorMsg << "Polyhedron Check(): the volume is negative: " << this->volume << std::endl;
+		}
+		if (!pass)
+		{
+			FatalError(errorMsg.str());
 		}
 		return;
 	}
@@ -210,6 +343,63 @@ namespace MHT
 		{
 			return this->center;
 		}
+	}
+
+	Polygon Polyhedron::GetFace(int faceID) const
+	{
+		if (faceID < 0 || faceID >= this->v_facePointID.size())
+		{
+			FatalError("in Polyhedron::GetFace(), face ID " + std::to_string(faceID) + " is out of range.");
+		}
+		Polygon result;
+		for (size_t i = 0;i < v_facePointID[faceID].size();i++)
+		{
+			int nodeID = v_facePointID[faceID][i];
+			Vector vertice = v_point[nodeID];
+			result.v_point.push_back(vertice);
+		}
+		result.center = this->v_faceCenter[faceID];
+		result.area = this->v_faceArea[faceID];
+		return result;
+	}
+
+	//collect all faces on boundaries of a box
+	std::vector<Polygon> Polyhedron::GetFacesOnBoxBoundary
+	(
+		Vector verticeMin,//xmin, ymin, zmin
+		Vector verticeMax,//xmax, ymax, zmax
+		Scalar tolerance
+	) const
+	{
+		std::vector<Polygon> faceList;
+		for (size_t i = 0;i < v_faceCenter.size();i++)
+		{
+			Scalar xCenter = v_faceCenter[i].x_;
+			Scalar yCenter = v_faceCenter[i].y_;
+			Scalar zCenter = v_faceCenter[i].z_;
+			bool isOnBoundary = false;
+			if (xCenter - verticeMin.x_ < -tolerance) continue;
+			if (xCenter - verticeMax.x_ > tolerance) continue;
+			if (yCenter - verticeMin.y_ < -tolerance) continue;
+			if (yCenter - verticeMax.y_ > tolerance) continue;
+			if (zCenter - verticeMin.z_ < -tolerance) continue;
+			if (zCenter - verticeMax.z_ > tolerance) continue;
+			if (fabs(xCenter - verticeMin.x_) < tolerance || fabs(xCenter - verticeMax.x_) < tolerance) isOnBoundary = true;
+			if (fabs(yCenter - verticeMin.y_) < tolerance || fabs(yCenter - verticeMax.y_) < tolerance) isOnBoundary = true;
+			if (fabs(zCenter - verticeMin.z_) < tolerance || fabs(zCenter - verticeMax.z_) < tolerance) isOnBoundary = true;
+			if (isOnBoundary)
+			{
+				//std::cout << "face center = " << v_faceCenter[i] << ", box range = " << verticeMin << " ~ " << verticeMax << std::endl;
+				Polygon face = this->GetFace(i);
+				//for (int j = 0;j < face.v_point.size();j++)
+				//{
+				//	std::cout << "point coordinate = " << face.v_point[j] << std::endl;
+				//}
+				faceList.push_back(face);
+				//system("pause");
+			}
+		}
+		return faceList;
 	}
 
 	void Polyhedron::WriteDataFile(ofstream& outfile) const
@@ -395,6 +585,33 @@ namespace MHT
 		{
 			return false;
 		}
+	}
+
+	void Polyhedron::Move(Vector& translation)
+	{
+		//move vertices
+		for (size_t i = 0;i < this->v_point.size();i++)
+		{
+			this->v_point[i] += translation;
+		}
+		if (geometryCalculated)
+		{
+			//move face centers
+			for (size_t i = 0;i < this->v_faceCenter.size();i++)
+			{
+				this->v_faceCenter[i] += translation;
+			}
+			//move polyhedron center
+			this->center += translation;
+		}
+		return;
+	}
+
+	Polyhedron Polyhedron::Copy(Vector& translation) const
+	{
+		Polyhedron result = *(this);
+		result.Move(translation);
+		return result;
 	}
 
 	Polyhedron Polyhedron::ClipByPlane
@@ -725,5 +942,40 @@ namespace MHT
 			resultPolygon.v_point[i] = alpha * resultPolygon.v_point[i] + this->center;
 		}
 		return resultPolygon;
+	}
+
+
+	void Polyhedron::WriteTecplotZones(std::ofstream& outFile) const
+	{
+		int nCount(0);
+		int faceNum = (int)this->v_facePointID.size();
+		for (int i = 0; i < faceNum; i++)
+		{
+			nCount += (int)this->v_facePointID[i].size();
+		}
+
+		outFile << "ZONE T = " << "\"" << "polyhedron" << "\"," << " DATAPACKING = POINT, N = " << v_point.size() << ", E = "
+			<< nCount << ", ZONETYPE = FELINESEG" << std::endl;
+
+		for (unsigned int i = 0; i < v_point.size(); i++)
+		{
+			outFile << setprecision(8) << setiosflags(ios::scientific) << v_point[i].x_ << " " << v_point[i].y_ << " " << v_point[i].z_ << endl;
+		}
+
+		for (int i = 0; i < faceNum; i++)
+		{
+			for (int n = 0; n < (int)this->v_facePointID[i].size(); n++)
+			{
+				if (n == (int)this->v_facePointID[i].size() - 1)
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][0] + 1 << std::endl;
+				}
+				else
+				{
+					outFile << v_facePointID[i][n] + 1 << "\t" << v_facePointID[i][n + 1] + 1 << std::endl;
+				}
+			}
+		}
+		return;
 	}
 }

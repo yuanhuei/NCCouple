@@ -1,7 +1,10 @@
 #ifndef CFDMESH_HEADER
 #define CFDMESH_HEADER
 
-#include "Mesh.h"
+#include "GeneralMesh.h"
+class Mesh;
+template<class Type>
+class Field;
 
 class CFDMeshPoint : virtual public MeshPoint
 {
@@ -48,12 +51,6 @@ private:
 	double m_density = 0.0;
 };
 
-class CGALCFDMeshPoint : public CFDMeshPoint, public CGALMeshPoint
-{
-public:
-	CGALCFDMeshPoint(int pointID, std::istream& isf) :
-		MeshPoint(pointID), CFDMeshPoint(), CGALMeshPoint(isf) {}
-};
 
 class MHTCFDMeshPoint : public CFDMeshPoint, public MHTMeshPoint
 {
@@ -67,11 +64,14 @@ public:
 		MeshPoint(pointID), CFDMeshPoint(), MHTMeshPoint(isf, curveInfoVec, axisPoint, axisNorm) {}
 };
 
-class CFDMesh : public Mesh
+class CFDMesh : public GeneralMesh
 {
 public:
 	CFDMesh() = delete;
-	CFDMesh(std::string fileName, MeshKernelType kernelType);
+	CFDMesh(Mesh* pmesh, MeshKernelType kernelType, int iMeshRegionZone);
+	void WriteTecplotFile(std::string);
+	void WriteTecplotFile(std::string,std::vector<int>&);
+	void SetFieldValue(std::vector<double>& v_value, ValueType vt);
 };
 
 #endif
