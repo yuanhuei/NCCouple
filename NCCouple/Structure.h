@@ -3,6 +3,7 @@
 #include<functional>
 #include<vector>
 #include<string>
+
 extern int g_iMpiID;
 extern int g_iNumProcs;
 extern std::string configFile;
@@ -59,4 +60,13 @@ struct hash_name {
 	};
 };
 */
+
+void SendFieldForTest(int argc, char** argv);
+
+struct STRMocField
+{
+	int iAssemblyIndex, iCellIndex, iMeshIndex;
+	double dTempValue, dDensityValue;
+	char cMaterialName[20], cTempName[20];
+};
 #endif

@@ -369,6 +369,9 @@ int main(int argc, char** argv)
 	//CreateMapper();
 	//return 0;
 
+	SendFieldForTest(argc, argv);
+	return 0;
+
 	int numprocs, myid=-1, source;
 	MPI_Status status;
 	char message[100];
