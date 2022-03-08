@@ -60,4 +60,6 @@ private:
 	std::vector<std::vector<std::vector<std::unordered_map<int, double>>>> m_MOC_CFD_Map;
 	std::vector<std::unordered_map<SMocIndex, double>> m_CFD_MOC_Map;
 
+	std::vector < std::vector < std::vector < std::unordered_map < std::pair<int, int>, double, pair_hash>>>> m_MOC_CFD_MapWithID;
+
 };

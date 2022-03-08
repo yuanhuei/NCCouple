@@ -16,10 +16,10 @@ void ConvergeMocMapInfor()
 	std::string fileName = "MocMeshMaxSize_info";
 	ifstream infile(fileName);
 	std::string line;
-	getline(infile, line);
-	stringstream stringline(line);
+	//getline(infile, line);
+	//stringstream stringline(line);
 	int iAssemby, iCell, iMesh;
-	stringline >> iAssemby >> iCell >> iMesh ; 
+	infile >> iAssemby >> iCell >> iMesh ;
 	infile.close();
 	std::vector<std::vector<std::vector<std::unordered_map<std::pair<int,int>, double, pair_hash>>>> MOC_CFD_Map;
 
@@ -51,14 +51,14 @@ void ConvergeMocMapInfor()
 				exit(EXIT_FAILURE);
 				return;
 			}
-			Logger::LogInfo("reading MOC to CFD map file in material: " + materialList[j]);
+			Logger::LogInfo("reading MOC to CFD map file in material: " + materialList[j]+"in the file "+ fileName);
 			while (getline(infile, line))
 			{
 				int iAssembly , iCell, iMesh, n;
-				double k;
+				double dValue;
 				stringstream stringline(line);
-				stringline >> iAssembly >> iCell >> iMesh >> n >> k;
-				MOC_CFD_Map[iAssembly][iCell][iMesh].emplace(std::make_pair(i,n),  k);
+				stringline >> iAssembly >> iCell >> iMesh >> n >> dValue;
+				MOC_CFD_Map[iAssembly][iCell][iMesh].emplace(std::make_pair(i,n),dValue);
 			}
 			infile.close();
 
@@ -68,22 +68,29 @@ void ConvergeMocMapInfor()
 		{
 			for (int m = 0; m < MOC_CFD_Map[i].size(); m++)
 			{
-				for (int k = 0; k < MOC_CFD_Map[i][j].size(); k++)
+				for (int k = 0; k < MOC_CFD_Map[i][m].size(); k++)
 				{
-					std::unordered_map<std::pair<int,int>, double>::iterator it;
-					for (it = MOC_CFD_Map[i][m][k].begin(); it != MOC_CFD_Map[i][m][k].end(); it++)
+					//std::unordered_map<std::pair<int,int>, double, pair_hash>::iterator it;
+					for (auto it = MOC_CFD_Map[i][m][k].begin(); it != MOC_CFD_Map[i][m][k].end();it++)
 					{
-						MOCtoCFD_MapFile << i << " " << m << " " << k << " " << it->first.first
-						<<" "<<it->first.second << " " << it->second << std::endl;
-						//MOC_CFD_Map.erase(*it);
+						if (it->second != -1)
+						{
+							MOCtoCFD_MapFile << i << " " << m << " " << k << " " << it->first.first
+								<< " " << it->first.second << " " << it->second << std::endl;
+							it->second = -1;
+						}
+
+						//MOC_CFD_Map.erase(*itit->second
+						//it=MOC_CFD_Map[i][m][k].erase(it);
 					}
-					MOC_CFD_Map[i][m][k].clear();
+					//if(!MOC_CFD_Map[i][m][k].empty())
+						//MOC_CFD_Map[i][m][k].clear();
 				}
 			}
 		}
+		MOCtoCFD_MapFile.close();
 	}
-
-
+	std::cout << "Writing Moc finished" << std::endl;
 	return;
 }
 

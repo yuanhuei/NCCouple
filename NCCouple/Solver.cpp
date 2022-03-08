@@ -446,13 +446,13 @@ void Solver::Interception_fromCFDToMOC
 		double interValue = 0.0;
 		double dValue=0;
 		double iMin = 10000, iMax = 0;
-		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
+		for (auto& pair : m_MOC_CFD_MapWithID[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
 		{
 			dValue += pair.second;
 		}
-		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
+		for (auto& pair : m_MOC_CFD_MapWithID[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
 		{
-			int  iCFDMeshPointID = pair.first;
+			int  iCFDMeshPointID = pair.first.second;
 			double interCoe = pair.second/ dValue;
 			interValue += interCoe * sourceValueField[iCFDMeshPointID];
 
@@ -506,17 +506,7 @@ void Solver::writeMapInfortoFile()
 void Solver::readMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
-	m_MOC_CFD_Map.resize(m_mocMeshPtr->m_vAssemblyField.size());
-	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
-	{
-		m_MOC_CFD_Map[i].resize(m_mocMeshPtr->m_vAssemblyField[i].size());
-		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
-		{
-			m_MOC_CFD_Map[i][j].resize(m_mocMeshPtr->m_vAssemblyField[i][j].size());
-		}
-	}
-
-	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC";
+	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC" +"_"+std::to_string(g_iMpiID);
 	ifstream infile(fileName);
 	if (!infile.is_open())
 	{
@@ -540,6 +530,23 @@ void Solver::readMapInfor()
 
 	}
 	infile.close();
+
+	fileName = "MocMeshMaxSize_info";
+	ifstream infile_MocMeshMaxSize_info(fileName);
+	int iAssemby, iCell, iMesh;
+	infile_MocMeshMaxSize_info >> iAssemby >> iCell >> iMesh;
+	infile_MocMeshMaxSize_info.close();
+
+	m_MOC_CFD_MapWithID.resize(iAssemby);
+	for (int i = 0; i < iAssemby; i++)
+	{
+		m_MOC_CFD_MapWithID[i].resize(iCell);
+		for (int j = 0; j < iCell; j++)
+		{
+			m_MOC_CFD_MapWithID[i][j].resize(iMesh);
+		}
+	}
+
 	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
 	infile.open(fileName);
 	if (!infile.is_open())
@@ -551,11 +558,12 @@ void Solver::readMapInfor()
 	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
 	while (getline(infile, line))
 	{
-		int i, j,m,n;
-		double k;
+		int i, j,k,m,n;
+		double dValue;
 		stringstream stringline(line);
-		stringline >> i >> j >>m >>n >> k;
-		m_MOC_CFD_Map[i][j][m][n] = k;
+		stringline >> i >> j >>k>>m >>n >> dValue;
+		//m_MOC_CFD_MapWithID[i][iCell][iMesh].emplace(std::make_pair(i, n), k);
+		m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m,n),dValue);
 	}
 	infile.close();
 	return;

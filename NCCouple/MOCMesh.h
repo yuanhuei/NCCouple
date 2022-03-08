@@ -248,10 +248,11 @@ public:
 		std::vector<std::function<double(double)>> eleDensCalcFunVec;
 	};
 
-	MOCMesh() = delete;
+	MOCMesh()= delete;
 	MOCMesh(const std::vector<std::string>& vMaterailName);
 	MOCMesh(std::string meshFileName, std::string outAplFileName,
 		MeshKernelType kernelType = MeshKernelType::MHT_KERNEL);
+	MOCMesh(const std::vector<std::string>& strMocFileName,bool bFirstCreated);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
@@ -284,7 +285,7 @@ public:
 		vPoint.y_ = vPoint.y_ - y;
 	};
 	void Display();
-
+	void WriteFieldInfortoFile();
 private:
 	void setMeshInformation(std::string line); //set mesh information
 	void setAxialInformation(std::string line); //set mesh information

@@ -310,8 +310,9 @@ void CFDFieldsToMOC()
 		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i], solverMapper);
 		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i], solverMapper);
 	}
-	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
-	mocMesh.OutputStatus(outMocFieldFile);
+	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
+	//mocMesh.OutputStatus(outMocFieldFile);
+	mocMesh.WriteFieldInfortoFile();
 	return;
 }
 

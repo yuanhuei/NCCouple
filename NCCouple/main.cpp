@@ -343,6 +343,25 @@ void VTKReadMeshTest()
 	mhtvtkreader.GetFieldIO(1).WriteTecplotField("temperature_1.plt");
 }
 
+void FinalCFDFieldsToMOC()
+{
+	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+	std::string mocFieldFile = GetFileName(configFile, "inputInp");
+	std::string outMocFieldFile = GetFileName(configFile, "outputInp");
+
+	//checking file names
+	std::vector<std::string> vStrMocFileName;
+	for (int i = 1; i < g_iNumProcs; i++)
+	{
+		vStrMocFileName[i] = "Mocfield_" + std::to_string(i);
+	}
+		
+	MOCMesh mocMesh(vStrMocFileName,false);
+	mocMesh.InitMOCFromInputFile(mocFieldFile);
+	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
+	mocMesh.OutputStatus(outMocFieldFile);
+}
+
 int main(int argc, char** argv)
 {
 	//get processor ID
@@ -361,10 +380,13 @@ int main(int argc, char** argv)
 	g_iNumProcs = numprocs;
 
 	std::vector<std::string> parameterList;
-	parameterList.resize(argc - 1);
-	for (int i = 1; i < argc; i++)
+	parameterList.resize(argc - 1); 
+	if (argc > 1)
 	{
-		parameterList[i - 1] = argv[i];
+		for (int i = 1; i < argc; i++)
+		{
+			parameterList[i - 1] = argv[i];
+		}
 	}
 	if (myid > 0) {
 		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
@@ -397,8 +419,8 @@ int main(int argc, char** argv)
 		else
 		{
 			std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
-			std::vector<std::string> parameterList;
-			parameterList.resize(argc - 1);
+			//std::vector<std::string> parameterList;
+			//parameterList.resize(argc - 1);
 			for (int i = 1; i < argc; i++)
 			{
 				//parameterList[i - 1] = argv[i];
@@ -422,8 +444,22 @@ int main(int argc, char** argv)
 			//printf("%d %s\n", source, message);
 			Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
 		}
+
+		int num = 10;
+		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
+		/*
+		while (num == 10)
+		{
+		#ifdef _WIN32
+			Sleep(10);
+		#else
+			sleep(10);
+		#endif
+		}*/
 		if(argc==2 && parameterList[0]=="createmapper")
 			ConvergeMocMapInfor();
+		if (argc == 2 && parameterList[0] == "cfdtomoc")
+			FinalCFDFieldsToMOC();
 	}
 	MPI_Finalize();
 	return 0;

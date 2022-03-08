@@ -1876,7 +1876,7 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 
 	for (int kk = 0; kk < materialList.size(); kk++)
 	{
-		std::string fileName = "MapFile_" + materialList[kk] + "_CFDtoMOC";
+		std::string fileName = "MapFile_" + materialList[kk] + "_CFDtoMOC"+"_"+std::to_string(g_iMpiID);
 		ifstream infile(fileName);
 		if (!infile.is_open())
 		{
@@ -1942,7 +1942,60 @@ void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
 	return;
 }
 
+void MOCMesh::WriteFieldInfortoFile()
+{
 
+	std::ofstream ofMocField("MocField_"+std::to_string(g_iMpiID));
+	for (int i = 0; i < m_vSMocIndex.size(); i++)
+	{
+		MocMeshField* pMocField = GetFieldPointerAtIndex(m_vSMocIndex[i]);
+		ofMocField << m_vSMocIndex[i].iAssemblyIndex << " " << m_vSMocIndex[i].iCellIndex << " "
+			<< m_vSMocIndex[i].iMocIndex << " " << pMocField->GetMaterialNameWithID()
+			<< " " << pMocField->GetTemperatureName() << " " << pMocField->GetValue(ValueType::TEMPERAURE)
+			<< " " << pMocField->GetValue(ValueType::DENSITY) << std::endl;
+	}
+	ofMocField.close();
+
+}
+MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bFirstCreated)
+{
+	std::string fileName = "MocMeshMaxSize_info";
+	ifstream infile_MocMeshMaxSize_info(fileName);
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	infile_MocMeshMaxSize_info >> iMax_iAssembly >> iMax_iCell >> iMax_iMoc;
+	infile_MocMeshMaxSize_info.close();
+	m_vAssemblyField.resize(iMax_iAssembly);
+
+	for (int i = 0; i < iMax_iAssembly; i++)
+	{
+		m_vAssemblyField[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j++)
+		{
+			m_vAssemblyField[i][j].resize(iMax_iMoc);
+		}
+	}
+
+	for (int i = 0; i < strMocFileName.size(); i++)
+	{
+		ifstream ifile(strMocFileName[i]);// "Mocfield_" + std::to_string(i));
+		std::string line;
+		SMocIndex smIndex;
+		double tempValue, denstiyValue;
+		std::string strMaterialName, strTempName;
+		while (getline(ifile, line))
+		{
+			stringstream strLine(line);
+			strLine >> smIndex.iAssemblyIndex >> smIndex.iCellIndex >> smIndex.iMocIndex >> strMaterialName >> strTempName
+				>> tempValue >> denstiyValue;
+
+			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex] = std::make_shared<MocMeshField>();
+			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(tempValue, ValueType::TEMPERAURE);
+			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(denstiyValue, ValueType::DENSITY);
+
+		}
+		ifile.close();
+	}
+}
 
 
 
