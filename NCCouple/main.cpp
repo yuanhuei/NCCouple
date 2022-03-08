@@ -364,40 +364,40 @@ void FinalCFDFieldsToMOC()
 
 int main(int argc, char** argv)
 {
-	//get processor ID
-	//g_iProcessID = (int)getpid();
-	//CreateMapper();
+	//SendFieldForTest(argc, argv);
 	//return 0;
 
-	SendFieldForTest(argc, argv);
-	return 0;
-
-	int numprocs, myid=-1, source;
+	int iNumberOfProcs, iMpiProcessID =-1, source;
 	MPI_Status status;
 	char message[100];
 	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-	MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+	MPI_Comm_rank(MPI_COMM_WORLD, &iMpiProcessID);
+	MPI_Comm_size(MPI_COMM_WORLD, &iNumberOfProcs);
 	//myid = 1;
-	g_iMpiID = myid;
-	g_iNumProcs = numprocs;
+	g_iMpiID = iMpiProcessID;
+	g_iNumProcs = iNumberOfProcs;
 
 	std::vector<std::string> parameterList;
-	parameterList.resize(argc - 1); 
+
 	if (argc > 1)
 	{
+		parameterList.resize(argc - 1);
 		for (int i = 1; i < argc; i++)
-		{
 			parameterList[i - 1] = argv[i];
-		}
 	}
-	if (myid > 0) {
-		std::string strInputMOCfile, strInputCFDfile, strOutputFile;
-		strInputMOCfile = "pin_c1.apl";
-		strInputCFDfile = "CFDCELLS0.txt";
-		strOutputFile = "pin_c1.inp_" + std::to_string(myid);
-		//caculate(strInputMOCfile, strInputCFDfile, strOutputFile);
-		if (myid == 100)
+	else
+	{
+		DisplayHelpInfo();
+		return 0;
+	}
+	if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
+	{
+		RunWithParameters(parameterList);
+		return 0;
+	}
+	if (iMpiProcessID > 0) {
+		//for debug
+		if (iMpiProcessID == 100)
 		{
 			int num = 10;
 			std::cout << "this is child,pid=" << getpid() << std::endl;
@@ -410,47 +410,51 @@ int main(int argc, char** argv)
 			#endif
 			}
 		}
-
-		if (argc == 1)
+		std::string strMessage;
+		if (parameterList[0] == "createmapper"&&argc==2)
 		{
-			std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
+			CreateMapper();
+			strMessage = "Process " + std::to_string(iMpiProcessID) + " createmapper finished";
 			strcpy(message, strMessage.data());// "caclulation finished!");
-			
-			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
-				MPI_COMM_WORLD);
+			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
+		}
+		else if (parameterList[0] == "moctocfd " && argc == 2)
+		{
+			MOCFieldsToCFD();
+			strMessage = "Process " + std::to_string(iMpiProcessID) + " moctocfd finished";
+			strcpy(message, strMessage.data());// "caclulation finished!");
+			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
+		}
+		else if (parameterList[0] == "cfdtomoc" && argc == 2)
+		{
+			CFDFieldsToMOC();
+			strMessage = "Process " + std::to_string(iMpiProcessID) + " cfdtomoc finished";
+			strcpy(message, strMessage.data());// "caclulation finished!");
+			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
+
+			/*
+			 
+			 
+			*/
 		}
 		else
 		{
-			std::string strMessage = "Process " + std::to_string(myid) + " caculation finished";
-			//std::vector<std::string> parameterList;
-			//parameterList.resize(argc - 1);
-			for (int i = 1; i < argc; i++)
-			{
-				//parameterList[i - 1] = argv[i];
-				strMessage += " " + parameterList[i - 1];
-			}
-			RunWithParameters(parameterList);
-			strcpy(message, strMessage.data());// "caclulation finished!");
-			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,
-				MPI_COMM_WORLD);
+			Logger::LogError("Wrong input parameter");
+			return -1;
 		}
-
-
 	}
-	else if(myid==0) {
-		
-		for (source = 1; source < numprocs; source++) {
-			MPI_Recv(message, 100, MPI_CHAR, source, 99,
-				MPI_COMM_WORLD, &status);
-			//if (source == (numprocs - 1))
-				
-			//printf("%d %s\n", source, message);
-			Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
-		}
-
-		int num = 10;
+	else if(iMpiProcessID ==0) 
+	{
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
-		/*
+		//if(parameterList[0] != "cfdtomoc")
+		//{
+			for (source = 1; source < iNumberOfProcs; source++) {
+				MPI_Recv(message, 100, MPI_CHAR, source, 99,MPI_COMM_WORLD, &status);
+				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
+			}
+		//}
+		/*for debug 
+		* int num = 10;
 		while (num == 10)
 		{
 		#ifdef _WIN32
@@ -460,37 +464,32 @@ int main(int argc, char** argv)
 		#endif
 		}*/
 		if(argc==2 && parameterList[0]=="createmapper")
+		{
 			ConvergeMocMapInfor();
+			Logger::LogInfo("All createmapper finished.");
+		}
 		if (argc == 2 && parameterList[0] == "cfdtomoc")
+		{
 			FinalCFDFieldsToMOC();
+			Logger::LogInfo("CFD to MOC finished.");
+			/*
+			MPI_Datatype person_type;
+			InitMocFieldToMpiType(person_type);
+
+			std::vector<STRMocField> vReciveField;
+			struct STRMocField received;
+			int iSize;
+			MPI_Recv(&iSize, 1, MPI_INT, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::cout << "receive isize:" << iSize << std::endl;
+			vReciveField.resize(iSize);
+			MPI_Recv(&vReciveField[0], 2, person_type, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
+				//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
+			MPI_Type_free(&person_type);
+			*/
+
+		}
 	}
 	MPI_Finalize();
-	return 0;
-
-	if (argc == 1)
-	{
-		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
-		//box.MHT::Polyhedron::Display();
-		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
-		//MOCFieldsToCFD();
-		//MapTest();
-		//MOCMesh mocmesh = MOCMesh();
-		//mocmesh.InitMOCFromInputFile("c5g7.inp");
-		//CreateMapper();
-		//VTKReadMeshTest();
-		//writeheatpower();
-		return 0;
-	}
-	else
-	{
-		std::vector<std::string> parameterList;
-		parameterList.resize(argc - 1);
-		for (int i = 1;i < argc;i++)
-		{
-			parameterList[i - 1] = argv[i];
-		}
-		RunWithParameters(parameterList);
-	}
 	return 0;
 }

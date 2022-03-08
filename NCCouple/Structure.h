@@ -3,6 +3,7 @@
 #include<functional>
 #include<vector>
 #include<string>
+#include<mpi.h>
 
 extern int g_iMpiID;
 extern int g_iNumProcs;
@@ -52,6 +53,13 @@ namespace std
 void WriteTotecplot( MOCMesh& mocmesh,  CFDMesh& cfdmesh,
 	const std::vector<int> &v_iCFD, const std::vector<SMocIndex>& vSMocindex, std::string fileName);
 
+
+struct STRMocField
+{
+	int iAssemblyIndex, iCellIndex, iMeshIndex;
+	double dTempValue, dDensityValue;
+	char cMaterialName[20], cTempName[20];
+};
 /*
 struct hash_name {
 	hash_name() {};
@@ -61,12 +69,9 @@ struct hash_name {
 };
 */
 
-void SendFieldForTest(int argc, char** argv);
+void SendFieldForTest(const std::vector<STRMocField>& vMocField);
+void InitMocFieldToMpiType( MPI_Datatype& person_type);
 
-struct STRMocField
-{
-	int iAssemblyIndex, iCellIndex, iMeshIndex;
-	double dTempValue, dDensityValue;
-	char cMaterialName[20], cTempName[20];
-};
+
+
 #endif
