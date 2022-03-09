@@ -366,8 +366,8 @@ int main(int argc, char** argv)
 {
 	//SendFieldForTest(argc, argv);
 	//return 0;
-
-	int iNumberOfProcs, iMpiProcessID =-1, source;
+	DisplayHelpInfo();
+	int iNumberOfProcs=0, iMpiProcessID =-1, iSourceID;
 	MPI_Status status;
 	char message[100];
 	MPI_Init(&argc, &argv);
@@ -387,7 +387,8 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		DisplayHelpInfo();
+		//if(iMpiProcessID==0)
+			DisplayHelpInfo();
 		return 0;
 	}
 	if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
@@ -444,9 +445,9 @@ int main(int argc, char** argv)
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
 		//if(parameterList[0] != "cfdtomoc")
 		//{
-			for (source = 1; source < iNumberOfProcs; source++) {
-				MPI_Recv(message, 100, MPI_CHAR, source, 99,MPI_COMM_WORLD, &status);
-				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", source, message));
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99,MPI_COMM_WORLD, &status);
+				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
 		//}
 		/*for debug 
