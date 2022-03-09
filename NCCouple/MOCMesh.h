@@ -384,12 +384,14 @@ public://multi assembly multi cell
 	void readMapFile(const std::vector<std::string>& materialList);
 
 	void GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex,std::string strMaterial);
+	void SetFieldByMpiType(std::vector<STRMocField>& vMocField);
+	void SetFieldValueToMpiType(std::vector<STRMocField>& vMocField);
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();
 	//put all index in m_vSMocIndex
 	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
-	void reWriteAplOutputFile(std::string outAplFileName);
+	void ReWriteAplOutputFile(std::string outAplFileName);
 
 };
 #endif

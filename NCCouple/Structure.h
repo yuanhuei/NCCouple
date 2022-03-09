@@ -10,7 +10,7 @@ extern int g_iNumProcs;
 extern std::string configFile;
 class MOCMesh;
 class CFDMesh;
-
+class MocMeshField;
 struct pair_hash
 {
 	template<class T1, class T2>
@@ -71,6 +71,7 @@ struct hash_name {
 
 void SendFieldForTest(const std::vector<STRMocField>& vMocField);
 void InitMocFieldToMpiType( MPI_Datatype& person_type);
+
 
 
 

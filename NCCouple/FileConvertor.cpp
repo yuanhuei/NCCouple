@@ -313,6 +313,9 @@ void CFDFieldsToMOC()
 	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	//mocMesh.OutputStatus(outMocFieldFile);
 	mocMesh.WriteFieldInfortoFile();
+	//std::vector<STRMocField> vMocField;
+	//mocMesh.SetFieldValueToMpiType(vMocField);
+	//SendFieldForTest(vMocField);
 	return;
 }
 

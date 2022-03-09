@@ -356,7 +356,7 @@ void FinalCFDFieldsToMOC()
 		vStrMocFileName[i] = "Mocfield_" + std::to_string(i);
 	}
 		
-	MOCMesh mocMesh(vStrMocFileName,false);
+	MOCMesh mocMesh(vStrMocFileName,true);
 	mocMesh.InitMOCFromInputFile(mocFieldFile);
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
@@ -396,11 +396,12 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	if (iMpiProcessID > 0) {
+		std::cout << "this is child,pid=" << getpid() << std::endl;
 		//for debug
 		if (iMpiProcessID == 100)
 		{
 			int num = 10;
-			std::cout << "this is child,pid=" << getpid() << std::endl;
+			
 			while (num == 10)
 			{
 			#ifdef _WIN32
@@ -431,11 +432,6 @@ int main(int argc, char** argv)
 			strMessage = "Process " + std::to_string(iMpiProcessID) + " cfdtomoc finished";
 			strcpy(message, strMessage.data());// "caclulation finished!");
 			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
-
-			/*
-			 
-			 
-			*/
 		}
 		else
 		{
@@ -473,19 +469,30 @@ int main(int argc, char** argv)
 			FinalCFDFieldsToMOC();
 			Logger::LogInfo("CFD to MOC finished.");
 			/*
-			MPI_Datatype person_type;
-			InitMocFieldToMpiType(person_type);
+			std::vector<std::string> vStrMocFileName;
+			MOCMesh mocMesh(vStrMocFileName,true);
+			
+			MPI_Datatype mpiMocField_type;
+			InitMocFieldToMpiType(mpiMocField_type)
 
 			std::vector<STRMocField> vReciveField;
-			struct STRMocField received;
-			int iSize;
-			MPI_Recv(&iSize, 1, MPI_INT, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			std::cout << "receive isize:" << iSize << std::endl;
-			vReciveField.resize(iSize);
-			MPI_Recv(&vReciveField[0], 2, person_type, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
-				//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
-			MPI_Type_free(&person_type);
+			for (source = 1; source < iNumberOfProcs; source++) 
+			{
+				int iSize;
+				MPI_Recv(&iSize, 1, MPI_INT, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				std::cout << "receive isize:" << iSize << std::endl;
+				vReciveField.resize(iSize);
+				MPI_Recv(&vReciveField[0], 2, person_type, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
+					//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
+
+				SetFieldByMpiType(vReciveField);
+			}
+			MPI_Type_free(&mpiMocField_type);
+			mocMesh.InitMOCFromInputFile(mocFieldFile);
+			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
+			mocMesh.OutputStatus(outMocFieldFile);
+			
 			*/
 
 		}

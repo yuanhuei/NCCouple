@@ -94,103 +94,40 @@ void ConvergeMocMapInfor()
 	return;
 }
 
-void SetFieldValue(
-	const std::vector<std::vector<std::vector<std::shared_ptr<MocMeshField>>>> &vAssemlbyField,
-	std::vector<STRMocField>& vMocField)
-{
-	STRMocField  stMocTemp;
-	for (int i = 0; i < vAssemlbyField.size(); i++)
-	{
-		for (int j = 0; j < vAssemlbyField[i].size(); j++)
-		{
-			for (int k = 0; k < vAssemlbyField[i][j].size(); k++)
-			{
-				if (vAssemlbyField[i][j][k])
-				{
-					stMocTemp.iAssemblyIndex = i;
-					stMocTemp.iCellIndex = j;
-					stMocTemp.iMeshIndex = k;
-					stMocTemp.dDensityValue = vAssemlbyField[i][j][k]->GetValue(ValueType::DENSITY);
-					stMocTemp.dTempValue= vAssemlbyField[i][j][k]->GetValue(ValueType::TEMPERAURE);
-					strcpy(stMocTemp.cMaterialName , vAssemlbyField[i][j][k]->GetMaterialNameWithID().c_str());
-					strcpy(stMocTemp.cTempName, vAssemlbyField[i][j][k]->GetTemperatureName().c_str());
-				}
-			}
-		}
-	}
-}
+
 void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 {
-
-	//MPI_Init(&argc, &argv);
-
-	// Get the number of processes and check only 2 processes are used
-	//int size;
-	//MPI_Comm_size(MPI_COMM_WORLD, &size);
-	//if (size != 2)
-	//{
-		//printf("This application is meant to be run with 2 processes.\n");
-		//MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-	//}
-
 	STRMocField stField;
-	/*
-	struct STRMocField
-	{
-		int iAssemblyIndex, iCellIndex, iMeshIndex;
-		double dTempValue, dDensityValue;
-		char cMaterialName[20], cTempName[20];
-	};*/
-	// Create the datatype(
 	MPI_Datatype person_type;
 	InitMocFieldToMpiType(person_type);
 
 
-	//
+	std::vector<STRMocField> vField;
+	struct STRMocField buffer;
+	buffer.iAssemblyIndex = 20;
+	buffer.iCellIndex = 20;
+	buffer.iMeshIndex = 20;
+	buffer.dDensityValue = 20;
+	buffer.dTempValue = 20;
+	strncpy(buffer.cMaterialName, "Tom", 19);
+	buffer.cMaterialName[19] = '\0';
+	strncpy(buffer.cTempName, "Jone", 19);
+	buffer.cTempName[19] = '\0';
 
-	// Get my rank and do the corresponding job
-	//enum rank_roles { SENDER, RECEIVER };
-	//int my_rank;
-	//MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	//switch (my_rank)
-	//{
-	//case SENDER:
-	//{
-		// Send the message
-		std::vector<STRMocField> vField;
-		struct STRMocField buffer;
-		buffer.iAssemblyIndex = 20;
-		buffer.iCellIndex = 20;
-		buffer.iMeshIndex = 20;
-		buffer.dDensityValue = 20;
-		buffer.dTempValue = 20;
-		strncpy(buffer.cMaterialName, "Tom", 19);
-		buffer.cMaterialName[19] = '\0';
-		strncpy(buffer.cTempName, "Jone", 19);
-		buffer.cTempName[19] = '\0';
+	vField.push_back(buffer);
+	buffer.iAssemblyIndex = 40;
+	vField.push_back(buffer);
+	printf("MPI process  sends messge\n");
+	int iSize = 2;
+	MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	MPI_Send(&vField[0], 2, person_type, 0, 0, MPI_COMM_WORLD);
 
-		vField.push_back(buffer);
-		buffer.iAssemblyIndex = 40;
-		vField.push_back(buffer);
-		printf("MPI process  sends messge\n");
-		int iSize = 2;
-		MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-		MPI_Send(&vField[0], 2, person_type, 0, 0, MPI_COMM_WORLD);
-		//break;
-	//}
-	//case RECEIVER:
-	//{
-		// Receive the message
-		//break;
-	//}
-	//}
 	MPI_Type_free(&person_type);
-	//MPI_Finalize();
 
 	return;
 }
 
-void InitMocFieldToMpiType(MPI_Datatype &person_type)
+void InitMocFieldToMpiType(MPI_Datatype &mpiMocField_type)
 {
 	STRMocField stField;
 	/*
@@ -201,25 +138,18 @@ void InitMocFieldToMpiType(MPI_Datatype &person_type)
 		char cMaterialName[20], cTempName[20];
 	};*/
 	// Create the datatype
-	//MPI_Datatype person_type;
-	int lengths[7] = { 1, 1,1,1,1,20,20 };
 
-	// Calculate displacements
-	// In C, by default padding can be inserted between fields. MPI_Get_address will allow
-	// to get the address of each struct field and calculate the corresponding displacement
-	// relative to that struct base address. The displacements thus calculated will therefore
-	// include padding if any.
+	int lengths[7] = { 1, 1,1,1,1,20,20 };
 	MPI_Aint displacements[7];
-	struct STRMocField dummy_person;
 	MPI_Aint base_address;
-	MPI_Get_address(&dummy_person, &base_address);
-	MPI_Get_address(&dummy_person.iAssemblyIndex, &displacements[0]);
-	MPI_Get_address(&dummy_person.iCellIndex, &displacements[1]);
-	MPI_Get_address(&dummy_person.iMeshIndex, &displacements[2]);
-	MPI_Get_address(&dummy_person.dTempValue, &displacements[3]);
-	MPI_Get_address(&dummy_person.dDensityValue, &displacements[4]);
-	MPI_Get_address(&dummy_person.cMaterialName[0], &displacements[5]);
-	MPI_Get_address(&dummy_person.cTempName[0], &displacements[6]);
+	MPI_Get_address(&stField, &base_address);
+	MPI_Get_address(&stField.iAssemblyIndex, &displacements[0]);
+	MPI_Get_address(&stField.iCellIndex, &displacements[1]);
+	MPI_Get_address(&stField.iMeshIndex, &displacements[2]);
+	MPI_Get_address(&stField.dTempValue, &displacements[3]);
+	MPI_Get_address(&stField.dDensityValue, &displacements[4]);
+	MPI_Get_address(&stField.cMaterialName[0], &displacements[5]);
+	MPI_Get_address(&stField.cTempName[0], &displacements[6]);
 
 	displacements[0] = MPI_Aint_diff(displacements[0], base_address);
 	displacements[1] = MPI_Aint_diff(displacements[1], base_address);
@@ -230,7 +160,7 @@ void InitMocFieldToMpiType(MPI_Datatype &person_type)
 	displacements[6] = MPI_Aint_diff(displacements[6], base_address);
 
 	MPI_Datatype types[7] = { MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE,MPI_DOUBLE, MPI_CHAR,MPI_CHAR };
-	MPI_Type_create_struct(7, lengths, displacements, types, &person_type);
-	MPI_Type_commit(&person_type);
+	MPI_Type_create_struct(7, lengths, displacements, types, &mpiMocField_type);
+	MPI_Type_commit(&mpiMocField_type);
 }
 

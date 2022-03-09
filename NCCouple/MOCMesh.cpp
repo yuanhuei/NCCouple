@@ -29,38 +29,40 @@ MOCMesh::MOCMesh(const std::vector<std::string>& vMaterailName)
 		GetAllMocIndex(m_vSMocIndex);
 }
 
-void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
+void MOCMesh::ReWriteAplOutputFile(std::string outAplFileName)
 {
-	RenameFile(outAplFileName, outAplFileName + "_temp");
-	ofstream outFile_new(outAplFileName+"_new");
-	ifstream infile_(outAplFileName + "_temp");
+	int iPos = outAplFileName.find(".apl");
+	std::string outAplFileNewName = outAplFileName.substr(0, iPos) + "_new" + ".apl";
+	std::string outAplFileTempName = outAplFileName.substr(0, iPos) + "_temp" + ".apl";
+	RenameFile(outAplFileName, outAplFileTempName);
+	ofstream outFile_new(outAplFileNewName);
+	ifstream infile_temp(outAplFileTempName);
 
-	ofstream outFile(outAplFileName);
-	ifstream infile(outAplFileName + "_new");// +"_temp");
+
 	
 	std::stringstream firstNt_Assembly,second_Nt_Assembly, end_Nt_Assembly,outAssembly;
 	//std::vector<std::stringstream> vSecond_Nt_Assembly;
 	vector< shared_ptr<stringstream>> vSecond_Nt_Assembly;
-	if (!infile_.is_open())
+	if (!infile_temp.is_open())
 	{
 		Logger::LogError("cannot find the MOC mesh file:" + outAplFileName);
 		exit(EXIT_FAILURE);
 	}
 	string line;
 
-	while (getline(infile_, line))  //read mesh data
+	while (getline(infile_temp, line))  //read mesh data
 	{
 	loop_Nt_Assembly:
 		if (line.find("*Nt_Assembly")!=line.npos && line.find("*Nt_Assembly_") == line.npos)
 		{
 			second_Nt_Assembly.str("");
 			second_Nt_Assembly<< line<<endl;
-			while (getline(infile_, line))
+			while (getline(infile_temp, line))
 			{ 
 				if (line.find("*Boundary_condition_number") != line.npos)
 				{
 					end_Nt_Assembly << line << endl;
-					while (getline(infile_, line))
+					while (getline(infile_temp, line))
 					{
 						if (line.find("Nt_Assembly") != line.npos && line.find("*Nt_Assembly_") == line.npos)
 						{
@@ -88,7 +90,10 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	}
 	outFile_new << end_Nt_Assembly.str();
 	outFile_new.close();
-	infile_.close();
+	infile_temp.close();
+
+	ofstream outFile(outAplFileName);
+	ifstream infile(outAplFileNewName);// +"_temp");
 	
 	while (getline(infile, line))  //read mesh data
 	{
@@ -218,8 +223,8 @@ void MOCMesh::reWriteAplOutputFile(std::string outAplFileName)
 	
 	infile.close();
 	outFile.close();
-	RemoveFile(outAplFileName + "_temp");
-	RemoveFile(outAplFileName + "_new");
+	RemoveFile(outAplFileTempName);
+	RemoveFile(outAplFileNewName);
 
 	size_t iMaxCell=0, iMaxMesh=0;
 	for (int i = 0; i < m_vAssembly.size(); i++)
@@ -645,7 +650,8 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 	{
 		ofstream outputAplFile(outAplFileName);
 		outputAplFile << outFile.str();
-		reWriteAplOutputFile(outAplFileName);
+		outputAplFile.close();
+		ReWriteAplOutputFile(outAplFileName);
 	}
 
 
@@ -1957,8 +1963,9 @@ void MOCMesh::WriteFieldInfortoFile()
 	ofMocField.close();
 
 }
-MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bFirstCreated)
+MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByFile)
 {
+	m_firstCreated = false;
 	std::string fileName = "MocMeshMaxSize_info";
 	ifstream infile_MocMeshMaxSize_info(fileName);
 	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
@@ -1974,28 +1981,65 @@ MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bFirstCreat
 			m_vAssemblyField[i][j].resize(iMax_iMoc);
 		}
 	}
-
-	for (int i = 0; i < strMocFileName.size(); i++)
+	if (bCreatedByFile)
 	{
-		ifstream ifile(strMocFileName[i]);// "Mocfield_" + std::to_string(i));
-		std::string line;
-		SMocIndex smIndex;
-		double tempValue, denstiyValue;
-		std::string strMaterialName, strTempName;
-		while (getline(ifile, line))
+		for (int i = 0; i < strMocFileName.size(); i++)
 		{
-			stringstream strLine(line);
-			strLine >> smIndex.iAssemblyIndex >> smIndex.iCellIndex >> smIndex.iMocIndex >> strMaterialName >> strTempName
-				>> tempValue >> denstiyValue;
+			ifstream ifile(strMocFileName[i]);// "Mocfield_" + std::to_string(i));
+			std::string line;
+			SMocIndex smIndex;
+			double tempValue, denstiyValue;
+			std::string strMaterialName, strTempName;
+			while (getline(ifile, line))
+			{
+				stringstream strLine(line);
+				strLine >> smIndex.iAssemblyIndex >> smIndex.iCellIndex >> smIndex.iMocIndex >> strMaterialName >> strTempName
+					>> tempValue >> denstiyValue;
 
-			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex] = std::make_shared<MocMeshField>();
-			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(tempValue, ValueType::TEMPERAURE);
-			m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(denstiyValue, ValueType::DENSITY);
+				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex] = std::make_shared<MocMeshField>();
+				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(tempValue, ValueType::TEMPERAURE);
+				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(denstiyValue, ValueType::DENSITY);
 
+			}
+			ifile.close();
 		}
-		ifile.close();
 	}
 }
 
+void MOCMesh::SetFieldByMpiType(std::vector<STRMocField>& vMocField)
+{
+	for (int i = 0; i < vMocField.size(); i++)
+	{
+		SMocIndex smTemp(vMocField[i].iAssemblyIndex, vMocField[i].iCellIndex, vMocField[i].iMeshIndex);
+		SetValueAtIndex(smTemp, vMocField[i].dDensityValue, ValueType::DENSITY);
+		SetValueAtIndex(smTemp, vMocField[i].dTempValue, ValueType::TEMPERAURE);
+	}
+}
+
+void MOCMesh::SetFieldValueToMpiType(std::vector<STRMocField>& vMocField)
+{
+	STRMocField  stMocTemp;
+	for (int i = 0; i < m_vAssemblyField.size(); i++)
+	{
+		for (int j = 0; j < m_vAssemblyField[i].size(); j++)
+		{
+			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+			{
+				if (m_vAssemblyField[i][j][k])
+				{
+					stMocTemp.iAssemblyIndex = i;
+					stMocTemp.iCellIndex = j;
+					stMocTemp.iMeshIndex = k;
+					stMocTemp.dDensityValue = m_vAssemblyField[i][j][k]->GetValue(ValueType::DENSITY);
+					stMocTemp.dTempValue = m_vAssemblyField[i][j][k]->GetValue(ValueType::TEMPERAURE);
+					strcpy(stMocTemp.cMaterialName, m_vAssemblyField[i][j][k]->GetMaterialNameWithID().c_str());
+					strcpy(stMocTemp.cTempName, m_vAssemblyField[i][j][k]->GetTemperatureName().c_str());
+
+					vMocField.push_back(stMocTemp);
+				}
+			}
+		}
+	}
+}
 
 
