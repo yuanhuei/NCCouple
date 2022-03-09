@@ -46,8 +46,8 @@ private:
 		MOCMesh& targetMesh,
 		ValueType vt
 	);
-	void writeMapInfortoFile();
-	void readMapInfor();
+	void WriteMapInfortoFile();
+	void ReadMapInfor();
 	void DisplayEmptyMap();
 
 private:

@@ -480,12 +480,12 @@ int main(int argc, char** argv)
 			{
 				int iSize;
 				MPI_Recv(&iSize, 1, MPI_INT, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				std::cout << "receive isize:" << iSize << std::endl;
+				std::cout << "receive isize:" << iSize <<"from process:"<<source<< std::endl;
 				vReciveField.resize(iSize);
-				MPI_Recv(&vReciveField[0], 2, person_type, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(&vReciveField[0], 2, person_type, source, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
 					//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
-
+				std::cout << "receive data from process: "<<source<< std::endl;
 				SetFieldByMpiType(vReciveField);
 			}
 			MPI_Type_free(&mpiMocField_type);

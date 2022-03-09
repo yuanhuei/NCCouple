@@ -120,7 +120,7 @@ void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 	printf("MPI process  sends messge\n");
 	int iSize = 2;
 	MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(&vField[0], 2, person_type, 0, 0, MPI_COMM_WORLD);
+	MPI_Send(&vField[0], 2, person_type, 0, 1, MPI_COMM_WORLD);
 
 	MPI_Type_free(&person_type);
 

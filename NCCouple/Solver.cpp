@@ -45,7 +45,7 @@ Solver::Solver(MOCMesh& mocMesh, CFDMesh& cfdMesh)
 		if (i % 100 == 0 || i == cfdMesh.GetMeshPointNum())
 			Logger::LogInfo(FormatStr("Solver Initialization: %.2lf%% Completed.", i * 100.0 / cfdMesh.GetMeshPointNum()));
 	}
-	writeMapInfortoFile();
+	WriteMapInfortoFile();
 }
 
 Solver::Solver
@@ -62,7 +62,7 @@ Solver::Solver
 {
 	if (!bFirstCreated)
 	{
-		readMapInfor();
+		ReadMapInfor();
 		return;
 	}
 	std::mutex mtx;
@@ -224,7 +224,7 @@ Solver::Solver
 	}
 
 	Logger::LogInfo(FormatStr("CFD cell number:%d, and %d of them are located inside one MOC cell, taking %.2lf percent", cfdMesh.GetMeshPointNum(), iNum, 100 * double(iNum) / cfdMesh.GetMeshPointNum()));
-	writeMapInfortoFile();
+	WriteMapInfortoFile();
 
 	DisplayEmptyMap();
 }
@@ -465,7 +465,7 @@ void Solver::Interception_fromCFDToMOC
 	return;
 }
 
-void Solver::writeMapInfortoFile()
+void Solver::WriteMapInfortoFile()
 {
 	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
 	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
@@ -503,7 +503,7 @@ void Solver::writeMapInfortoFile()
 
 }
 
-void Solver::readMapInfor()
+void Solver::ReadMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
 	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC" +"_"+std::to_string(g_iMpiID);

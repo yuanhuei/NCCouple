@@ -381,7 +381,7 @@ public://multi assembly multi cell
 		return m_vAssembly[pointID.iAssemblyIndex].pAssembly_type->v_Cell[pointID.iCellIndex].vMeshPointPtrVec[pointID.iMocIndex];
 	};
 	
-	void readMapFile(const std::vector<std::string>& materialList);
+	void ReadMapFile(const std::vector<std::string>& materialList);
 
 	void GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex,std::string strMaterial);
 	void SetFieldByMpiType(std::vector<STRMocField>& vMocField);

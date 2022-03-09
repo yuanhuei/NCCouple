@@ -25,7 +25,7 @@
 MOCMesh::MOCMesh(const std::vector<std::string>& vMaterailName)
 {
 		m_firstCreated = false;
-		readMapFile(vMaterailName);
+		ReadMapFile(vMaterailName);
 		GetAllMocIndex(m_vSMocIndex);
 }
 
@@ -1866,7 +1866,7 @@ MOCEdge::MOCEdge(std::array<double, 3> beginPoint, std::array<double, 3> endPoin
 	}
 }
 
-void MOCMesh::readMapFile(const std::vector<std::string>& materialList)
+void MOCMesh::ReadMapFile(const std::vector<std::string>& materialList)
 {
 	struct IndexAndVaule
 	{
