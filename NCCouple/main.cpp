@@ -366,7 +366,6 @@ int main(int argc, char** argv)
 {
 	//SendFieldForTest(argc, argv);
 	//return 0;
-	DisplayHelpInfo();
 	int iNumberOfProcs=0, iMpiProcessID =-1, iSourceID;
 	MPI_Status status;
 	char message[100];
@@ -387,19 +386,23 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		//if(iMpiProcessID==0)
+		if(iMpiProcessID==0)
 			DisplayHelpInfo();
+		MPI_Finalize();
 		return 0;
 	}
+
 	if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
 	{
-		RunWithParameters(parameterList);
+		if (iMpiProcessID == 0)
+			RunWithParameters(parameterList);
+		MPI_Finalize();
 		return 0;
 	}
 	if (iMpiProcessID > 0) {
 		std::cout << "this is child,pid=" << getpid() << std::endl;
 		//for debug
-		if (iMpiProcessID == 100)
+		if (iMpiProcessID == 10)
 		{
 			int num = 10;
 			
@@ -420,7 +423,7 @@ int main(int argc, char** argv)
 			strcpy(message, strMessage.data());// "caclulation finished!");
 			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
 		}
-		else if (parameterList[0] == "moctocfd " && argc == 2)
+		else if (parameterList[0] == "moctocfd" && argc == 2)
 		{
 			MOCFieldsToCFD();
 			strMessage = "Process " + std::to_string(iMpiProcessID) + " moctocfd finished";
@@ -437,7 +440,6 @@ int main(int argc, char** argv)
 		else
 		{
 			Logger::LogError("Wrong input parameter");
-			return -1;
 		}
 	}
 	else if(iMpiProcessID ==0) 
@@ -496,6 +498,10 @@ int main(int argc, char** argv)
 			
 			*/
 
+		}
+		else if (argc == 2 && parameterList[0] == "moctcfd")
+		{
+			Logger::LogInfo(" MOC to CFD finished.");
 		}
 	}
 	MPI_Finalize();

@@ -263,14 +263,14 @@ void Solver::DisplayEmptyMap()
 
 void Solver::GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex)
 {
-	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+	for (int i = 0; i < m_MOC_CFD_MapWithID.size(); i++)
 	{
-		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
+		for (int j = 0; j < m_MOC_CFD_MapWithID[i].size(); j++)
 		{
-			for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
+			for (int k = 0; k < m_MOC_CFD_MapWithID[i][j].size(); k++)
 			{
 				std::unordered_map<int, double>::iterator it;
-				if(!m_MOC_CFD_Map[i][j][k].empty())
+				if(!m_MOC_CFD_MapWithID[i][j][k].empty())
 					vSMocIndex.push_back(SMocIndex(i, j, k));
 			}
 		}
@@ -516,6 +516,7 @@ void Solver::ReadMapInfor()
 	}
 	Logger::LogInfo("reading CFD to MOC map file in material: " + materialName);
 	std::string line;
+	getline(infile, line);
 	while (getline(infile, line))
 	{
 		int i, j,k,m;

@@ -1893,7 +1893,7 @@ void MOCMesh::ReadMapFile(const std::vector<std::string>& materialList)
 		Logger::LogInfo("reading CFD to MOC map file in material: " + materialList[kk]);
 
 		std::string line;
-
+		getline(infile, line);
 		while (getline(infile, line))
 		{
 			int i, j, k, m,iPointID;

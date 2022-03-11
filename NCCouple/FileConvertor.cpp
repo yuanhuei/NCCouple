@@ -210,7 +210,7 @@ void MOCFieldsToCFD()
 	{
 		Logger::LogError("in MOCFieldsToCFD, heat power file " + mocPowerFile + " is not a .txt file");
 	}
-	for (size_t i = 0;i < outputVtkList.size();i++)
+	for (size_t i = 0; i < outputVtkList.size(); i++)
 	{
 		if (inputVTKList[i].find(".vtk") == std::string::npos)
 		{
@@ -220,7 +220,12 @@ void MOCFieldsToCFD()
 		{
 			Logger::LogError("in MOCFieldsToCFD, " + outputVtkList[i] + " is not given as .vtk file");
 		}
+		int iPos = inputVTKList[i].find(".vtk");
+		inputVTKList[i] = inputVTKList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
+		iPos = outputVtkList[i].find(".vtk");
+		outputVtkList[i] = outputVtkList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
 	}
+
 	//MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	MOCMesh mocMesh(materialList);
 	mocMesh.InitMOCHeatPower(mocPowerFile);
@@ -228,7 +233,7 @@ void MOCFieldsToCFD()
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
 	MHTVTKReader reader(inputVTKList, ratio);
 	//read interpolation weights only in available regions
-	for (size_t i = 0; i < inputVTKList.size(); i++)
+	for (size_t i = 0; i < materialList.size(); i++)
 	{
 		Mesh* pmesh = reader.GetMeshListPtr()[i];
 		Field<Scalar> heatpower(pmesh, 0.0, "heatpower");
