@@ -4,6 +4,7 @@
 #include<vector>
 #include<string>
 #include<mpi.h>
+#include"MHT_polyhedron/PolyhedronSet.h"
 
 extern int g_iMpiID;
 extern int g_iNumProcs;
@@ -72,7 +73,7 @@ struct hash_name {
 void SendFieldForTest(const std::vector<STRMocField>& vMocField);
 void InitMocFieldToMpiType( MPI_Datatype& person_type);
 
-
+Vector UpdateMinLocation(Vector vPoint);
 
 
 #endif

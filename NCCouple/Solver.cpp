@@ -441,6 +441,7 @@ void Solver::Interception_fromCFDToMOC
 
 	std::vector< SMocIndex>& vSMocIndex = targetMesh.m_vSMocIndex;
 	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
+	double dMax = 0, dMin = 2;
 	for (int i = 0; i < vSMocIndex.size(); i++)
 	{
 		double interValue = 0.0;
@@ -457,9 +458,12 @@ void Solver::Interception_fromCFDToMOC
 			interValue += interCoe * sourceValueField[iCFDMeshPointID];
 
 		}
+		dMax = max(dMax, dValue);
+		dMin = min(dMin, dValue);
 		if(dValue !=0)
 			targetMesh.SetValueAtIndex(vSMocIndex[i], interValue, vt);
 	}
+	std::cout << "the max dValue: " << dMax << " the Min: " << dMin << std::endl;
 
 
 	return;

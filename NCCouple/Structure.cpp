@@ -101,24 +101,7 @@ void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 	MPI_Datatype STRMocFieldMPIType;
 	InitMocFieldToMpiType(STRMocFieldMPIType);
 
-	/*
-	std::vector<STRMocField> vField;
-	struct STRMocField buffer;
-	buffer.iAssemblyIndex = 20;
-	buffer.iCellIndex = 20;
-	buffer.iMeshIndex = 20;
-	buffer.dDensityValue = 20;
-	buffer.dTempValue = 20;
-	strncpy(buffer.cMaterialName, "Tom", 19);
-	buffer.cMaterialName[19] = '\0';
-	strncpy(buffer.cTempName, "Jone", 19);
-	buffer.cTempName[19] = '\0';
 
-	vField.push_back(buffer);
-	buffer.iAssemblyIndex = 40;
-	vField.push_back(buffer);
-	printf("MPI process  sends messge\n");
-	*/
 	int iSize = vMocField.size();
 	MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 	MPI_Send(&vMocField[0], iSize, STRMocFieldMPIType, 0, 1, MPI_COMM_WORLD);
@@ -165,3 +148,18 @@ void InitMocFieldToMpiType(MPI_Datatype &mpiMocField_type)
 	MPI_Type_commit(&mpiMocField_type);
 }
 
+Vector UpdateMinLocation(Vector vPoint)
+{
+	std::vector<double> vCoordinate;
+	vCoordinate.push_back(vPoint.x_);
+	vCoordinate.push_back(vPoint.y_);
+	vCoordinate.push_back(vPoint.y_);
+
+	MPI_Send(&vCoordinate[0], 3, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+	std::vector<double> vCoordinate_new;
+	vCoordinate_new.resize(3);
+	//MPI_Recv(&vCoordinate_new[0], 3, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Bcast(&vCoordinate_new[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	return Vector(vCoordinate_new[0], vCoordinate_new[1], vCoordinate_new[3]);
+}

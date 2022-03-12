@@ -467,6 +467,26 @@ int main(int argc, char** argv)
 		}
 		if(argc==2 && parameterList[0]=="createmapper")
 		{
+			std::vector<Vector> vPoint;
+			double xMin=100000, yMin=100000,zMin=100000;
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++)
+			{
+				std::vector<double> vCoordinate;
+				vCoordinate.resize(3);
+				MPI_Recv(&vCoordinate[0], 3, MPI_DOUBLE, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				vPoint.push_back(Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]));
+				std::cout << "receive CFD MIN coordinate:" << vPoint.back() << "from proc,ess:" << iSourceID << std::endl;
+				xMin = min(xMin, vCoordinate[0]);
+				yMin=min(yMin, vCoordinate[1]);
+				zMin=min(zMin, vCoordinate[2]);
+			}
+			std::vector<double> vCoordinate;
+			vCoordinate.push_back(xMin);
+			vCoordinate.push_back(yMin);
+			vCoordinate.push_back(zMin);
+			MPI_Bcast(&vCoordinate[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+
 			ConvergeMocMapInfor();
 			Logger::LogInfo("All createmapper finished.");
 		}

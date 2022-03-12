@@ -25,7 +25,11 @@ MHTVTKReader::MHTVTKReader
 		this->scaleRatio = ratio;
 	}
 	this->GetTranslation();
+	std::cout << "before TransformToMOC()" << std::endl;
+	DisplayCorrdinateRange();
 	this->TransformToMOC();
+	std::cout << "after TransformToMOC()" << std::endl;
+	DisplayCorrdinateRange();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 	ReadVTKFile(vVTKFileName, vFiedNameList);
 }
@@ -166,6 +170,10 @@ void MHTVTKReader::GetTranslation()
 		}
 	}
 	this->translation = -Vector(xmin, ymin, zmin);
+	Vector minLocation = Vector(xmin, ymin, zmin);
+	//the minLocation is updated interporcessly
+	minLocation = UpdateMinLocation(minLocation);
+	this->translation = -minLocation;
 	return;
 }
 
