@@ -660,6 +660,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 
 void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
 {
+	vSMocIndex.clear();
 	SMocIndex sTemp;
 	if (m_firstCreated)
 	{
@@ -1138,8 +1139,8 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		if (iter1 != m_mediumMap.end())
 			p_medium = &(iter1->second);
 		
-		std::smatch m;
-		if (!std::regex_search(materialName, m, std::regex(R"(_\d+)")) && materialName == "mMOD") {
+		boost::smatch m;
+		if (!boost::regex_search(materialName, m, boost::regex(R"(_\d+)")) && materialName == "mMOD") {
 			materialName = GetMaterialNameWithIDInField(sMocIndex);
 			materialName += "_" + std::to_string(sMocIndex.iAssemblyIndex+1);
 			//materialName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
@@ -1172,8 +1173,8 @@ void MOCMesh::OutputStatus(std::string outputFileName) const {
 		ofs << std::endl;
 		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(meshPointPtr);
 		std::string tempName = GetTemperatureNameAtIndex(sMocIndex);// p_mocMeshPoint->GetTemperatureName();
-		std::smatch m;
-		//if (!std::regex_search(tempName, m, std::regex(R"(_\d+)")))
+		boost::smatch m;
+		//if (!boost::regex_search(tempName, m, boost::regex(R"(_\d+)")))
 			//tempName += "_" + std::to_string(GetPointIDAtIndex(sMocIndex));
 		tempName +="_" + std::to_string(sMocIndex.iAssemblyIndex+1);
 		ofs << FormatStr("\t\t\t '%s' = TEMP(%.6lf)", tempName.c_str(), GetValueAtIndex(sMocIndex,ValueType::TEMPERAURE)) << std::endl;
@@ -1209,31 +1210,31 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 		std::string line;
 		std::getline(ifs, line);
 		TOKEN nextToken = token;
-		if (std::regex_search(line, std::regex(R"(\*\s*material\s+definition)")))
+		if (boost::regex_search(line, boost::regex(R"(\*\s*material\s+definition)")))
 			nextToken = MATERIAL_DEFINITION;
-		if (std::regex_search(line, std::regex(R"(\*\s*temperature\s+definition)")))
+		if (boost::regex_search(line, boost::regex(R"(\*\s*temperature\s+definition)")))
 			nextToken = TEMPERATURE_DEFINITION;
-		if (std::regex_search(line, std::regex(R"(MODULE)")))
+		if (boost::regex_search(line, boost::regex(R"(MODULE)")))
 			nextToken = OTHER_DEFINITION;
 
 		if (nextToken != token) {
 			p_currentContext = &m_sufContext;
 			if (token == MATERIAL_DEFINITION) {
-				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
+				boost::smatch outer_match;
+				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
 					std::string materialName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					std::regex_search(detailDef, outer_match, std::regex(R"(MAT[^\)]+\))"));
+					boost::regex_search(detailDef, outer_match, boost::regex(R"(MAT[^\)]+\))"));
 					std::string matInfo = outer_match.str(0);
-					std::smatch innerMatch;
+					boost::smatch innerMatch;
 					Medium& medium = m_mediumMap[materialName];
-					while (std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"))) {
+					while (boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"))) {
 						int eleFlag = std::stoi(innerMatch.str(0));
 						medium.eleFlagVec.push_back(eleFlag);
 
 						matInfo = innerMatch.suffix().str();
-						std::regex_search(matInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
+						boost::regex_search(matInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
 						double eleDens = std::stod(innerMatch.str(0));
 						medium.eleDensCalcFunVec.push_back([eleDens](double) {return eleDens; });
 
@@ -1275,15 +1276,15 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 				}
 			}
 			else if (token == TEMPERATURE_DEFINITION) {
-				std::smatch outer_match;
-				while (std::regex_search(detailDef, outer_match, std::regex(R"('[\w\.]+')"))) {
+				boost::smatch outer_match;
+				while (boost::regex_search(detailDef, outer_match, boost::regex(R"('[\w\.]+')"))) {
 					std::string tempName = outer_match.str(0).substr(1, outer_match.str(0).length() - 2);
 					detailDef = outer_match.suffix().str();
 
-					std::regex_search(detailDef, outer_match, std::regex(R"(TEMP[^\)]+\))"));
+					boost::regex_search(detailDef, outer_match, boost::regex(R"(TEMP[^\)]+\))"));
 					std::string tempInfo = outer_match.str(0);
-					std::smatch innerMatch;
-					std::regex_search(tempInfo, innerMatch, std::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
+					boost::smatch innerMatch;
+					boost::regex_search(tempInfo, innerMatch, boost::regex(R"(([\+|-]?\d+(\.{0}|\.\d+))[Ee]?([\+|-]?\d+))"));
 					double tempValue = std::stod(innerMatch.str(0));
 
 					temperatureMap[tempName] = tempValue;
@@ -1308,14 +1309,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	{
 		//std::shared_ptr<MOCMeshPoint> p_mocMeshPoint = std::dynamic_pointer_cast<MOCMeshPoint>(GetMocMeshPointPtr(sMocIndex));
 		{
-			std::smatch m;
+			boost::smatch m;
 			std::string materialName = GetMaterialNameAtIndex(sMocIndex);
 			auto iter1 = materialDensityMap.find(materialName);
 			if (iter1 != materialDensityMap.end())
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::DENSITY);
 			//p_mocMeshPoint->SetValue(iter1->second, ValueType::DENSITY);
 
-			if (std::regex_search(materialName, m, std::regex(R"(_\d+)"))) {
+			if (boost::regex_search(materialName, m, boost::regex(R"(_\d+)"))) {
 				std::string materialMetaName = m.prefix().str();
 				auto iter2 = materialDensityMap.find(materialMetaName);
 				if (iter2 != materialDensityMap.end()) {
@@ -1325,14 +1326,14 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 			}
 		}
 		{
-			std::smatch m;
+			boost::smatch m;
 			std::string temperatureName = GetTemperatureNameAtIndex(sMocIndex);
 			auto iter1 = temperatureMap.find(temperatureName);
 			if (iter1 != temperatureMap.end())
 				//p_mocMeshPoint->SetValue(iter1->second, ValueType::TEMPERAURE);
 				SetValueAtIndex(sMocIndex, iter1->second, ValueType::TEMPERAURE);
 
-			if (std::regex_search(temperatureName, m, std::regex(R"(_\d+)"))) {
+			if (boost::regex_search(temperatureName, m, boost::regex(R"(_\d+)"))) {
 				std::string tempMetaName = m.prefix().str();
 				auto iter2 = temperatureMap.find(tempMetaName);
 				if (iter2 != temperatureMap.end()) {
@@ -1941,9 +1942,7 @@ void MOCMesh::ReadMapFile(const std::vector<std::string>& materialList)
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
 			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->m_iPointID = vIndexValue[i].iPointID;
 		m_vAssemblyField[vIndexValue[i].iMoc.iAssemblyIndex][vIndexValue[i].
-			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->m_temperatureName = vIndexValue[i].strTemptureName;
-
-
+			iMoc.iCellIndex][vIndexValue[i].iMoc.iMocIndex]->SetTemperatureName(vIndexValue[i].strTemptureName);
 	}
 	return;
 }
@@ -1954,7 +1953,7 @@ void MOCMesh::WriteFieldInfortoFile()
 	std::ofstream ofMocField("MocField_"+std::to_string(g_iMpiID));
 	for (int i = 0; i < m_vSMocIndex.size(); i++)
 	{
-		MocMeshField* pMocField = GetFieldPointerAtIndex(m_vSMocIndex[i]);
+		std::shared_ptr<MocMeshField> pMocField = GetPointerAtIndex(m_vSMocIndex[i]);
 		ofMocField << m_vSMocIndex[i].iAssemblyIndex << " " << m_vSMocIndex[i].iCellIndex << " "
 			<< m_vSMocIndex[i].iMocIndex << " " << pMocField->GetMaterialNameWithID()
 			<< " " << pMocField->GetTemperatureName() << " " << pMocField->GetValue(ValueType::TEMPERAURE)
@@ -1999,20 +1998,31 @@ MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByF
 				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex] = std::make_shared<MocMeshField>();
 				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(tempValue, ValueType::TEMPERAURE);
 				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetValue(denstiyValue, ValueType::DENSITY);
+				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetMaterialName(strMaterialName);
+				m_vAssemblyField[smIndex.iAssemblyIndex][smIndex.iCellIndex][smIndex.iMocIndex]->SetTemperatureName(strTempName);
 
 			}
 			ifile.close();
 		}
 	}
+	GetAllMocIndex(m_vSMocIndex);
 }
 
 void MOCMesh::SetFieldByMpiType(std::vector<STRMocField>& vMocField)
 {
 	for (int i = 0; i < vMocField.size(); i++)
 	{
+
 		SMocIndex smTemp(vMocField[i].iAssemblyIndex, vMocField[i].iCellIndex, vMocField[i].iMeshIndex);
-		SetValueAtIndex(smTemp, vMocField[i].dDensityValue, ValueType::DENSITY);
-		SetValueAtIndex(smTemp, vMocField[i].dTempValue, ValueType::TEMPERAURE);
+		if(!m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex])
+			m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex] = std::make_shared<MocMeshField>();
+		m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetMaterialName(vMocField[i].cMaterialName);
+		m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetTemperatureName(vMocField[i].cTempName);
+		double dOriginalDesityValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::DENSITY);
+		double dOriginalTempValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::TEMPERAURE);
+
+		SetValueAtIndex(smTemp, vMocField[i].dDensityValue+ dOriginalDesityValue, ValueType::DENSITY);
+		SetValueAtIndex(smTemp, vMocField[i].dTempValue+ dOriginalTempValue, ValueType::TEMPERAURE);
 	}
 }
 

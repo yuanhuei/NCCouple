@@ -268,6 +268,8 @@ void CFDFieldsToMOC()
 		{
 			Logger::LogError("in CFDFieldsToMOC, " + inputVTKList[i] + " is not a .vtk file");
 		}
+		int iPos = inputVTKList[i].find(".vtk");
+		inputVTKList[i] = inputVTKList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
 	}
 	if (mocMeshFile.find(".apl") == std::string::npos)
 	{
@@ -317,10 +319,11 @@ void CFDFieldsToMOC()
 	}
 	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	//mocMesh.OutputStatus(outMocFieldFile);
-	mocMesh.WriteFieldInfortoFile();
-	//std::vector<STRMocField> vMocField;
-	//mocMesh.SetFieldValueToMpiType(vMocField);
-	//SendFieldForTest(vMocField);
+	// 
+	//mocMesh.WriteFieldInfortoFile();
+	std::vector<STRMocField> vMocField;
+	mocMesh.SetFieldValueToMpiType(vMocField);
+	SendFieldForTest(vMocField);
 	return;
 }
 

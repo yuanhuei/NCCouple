@@ -351,9 +351,10 @@ void FinalCFDFieldsToMOC()
 
 	//checking file names
 	std::vector<std::string> vStrMocFileName;
-	for (int i = 1; i < g_iNumProcs; i++)
+	vStrMocFileName.resize(g_iNumProcs-1);
+	for (int i = 0; i < g_iNumProcs-1; i++)
 	{
-		vStrMocFileName[i] = "Mocfield_" + std::to_string(i);
+		vStrMocFileName[i] = "MocField_" + std::to_string(i+1);
 	}
 		
 	MOCMesh mocMesh(vStrMocFileName,true);
@@ -447,21 +448,23 @@ int main(int argc, char** argv)
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
 		//if(parameterList[0] != "cfdtomoc")
 		//{
+		if (parameterList[0] != "cfdtomoc")
+		{
 			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
-				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99,MPI_COMM_WORLD, &status);
+				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
+		}
 		//}
-		/*for debug 
-		* int num = 10;
-		while (num == 10)
+		int num = 10;
+		while (num == 11)
 		{
 		#ifdef _WIN32
 			Sleep(10);
 		#else
 			sleep(10);
 		#endif
-		}*/
+		}
 		if(argc==2 && parameterList[0]=="createmapper")
 		{
 			ConvergeMocMapInfor();
@@ -469,35 +472,40 @@ int main(int argc, char** argv)
 		}
 		if (argc == 2 && parameterList[0] == "cfdtomoc")
 		{
-			FinalCFDFieldsToMOC();
-			Logger::LogInfo("CFD to MOC finished.");
-			/*
-			std::vector<std::string> vStrMocFileName;
-			MOCMesh mocMesh(vStrMocFileName,true);
+			//FinalCFDFieldsToMOC();
+			//
 			
+			std::vector<std::string> vStrMocFileName;
+			MOCMesh mocMesh(vStrMocFileName,false);
+			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+			std::string mocFieldFile = GetFileName(configFile, "inputInp");
+			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
+
 			MPI_Datatype mpiMocField_type;
-			InitMocFieldToMpiType(mpiMocField_type)
+			InitMocFieldToMpiType(mpiMocField_type);
 
 			std::vector<STRMocField> vReciveField;
-			for (source = 1; source < iNumberOfProcs; source++) 
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++)
 			{
 				int iSize;
-				MPI_Recv(&iSize, 1, MPI_INT, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				std::cout << "receive isize:" << iSize <<"from process:"<<source<< std::endl;
+				MPI_Recv(&iSize, 1, MPI_INT, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				std::cout << "receive isize:" << iSize <<"from process:"<< iSourceID << std::endl;
 				vReciveField.resize(iSize);
-				MPI_Recv(&vReciveField[0], 2, person_type, source, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(&vReciveField[0], iSize, mpiMocField_type, iSourceID, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
 					//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
-				std::cout << "receive data from process: "<<source<< std::endl;
-				SetFieldByMpiType(vReciveField);
+				std::cout << "receive data from process: "<< iSourceID << std::endl;
+				mocMesh.SetFieldByMpiType(vReciveField);
+				vReciveField.clear();
 			}
+			mocMesh.GetAllMocIndex(mocMesh.m_vSMocIndex);
+
 			MPI_Type_free(&mpiMocField_type);
 			mocMesh.InitMOCFromInputFile(mocFieldFile);
 			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 			mocMesh.OutputStatus(outMocFieldFile);
-			
-			*/
-
+		
+			Logger::LogInfo("CFD to MOC finished.");
 		}
 		else if (argc == 2 && parameterList[0] == "moctcfd")
 		{

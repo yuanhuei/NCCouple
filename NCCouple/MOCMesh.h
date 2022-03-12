@@ -76,9 +76,11 @@ return m_temperature;
 		return m_materialName;
 	}
 	void SetMaterialName(std::string strName) { m_materialName = strName; };
+	void SetTemperatureName(std::string strName) { m_temperatureName = strName; };
+
 	std::string GetTemperatureName() const { return m_temperatureName; };
 	int m_iPointID = -1;
-	std::string m_temperatureName = "";
+	
 private:
 	double m_density = 0.0; //< Unit: kg/m3
 	double m_temperature = 0.0;
@@ -86,6 +88,7 @@ private:
 	//add 
 	double m_volume = 0;
 	std::string  m_materialName = "";
+	std::string m_temperatureName = "";
 	//std::string m_temperatureName;
 
 
@@ -252,7 +255,7 @@ public:
 	MOCMesh(const std::vector<std::string>& vMaterailName);
 	MOCMesh(std::string meshFileName, std::string outAplFileName,
 		MeshKernelType kernelType = MeshKernelType::MHT_KERNEL);
-	MOCMesh(const std::vector<std::string>& strMocFileName,bool bFirstCreated);
+	MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByFile);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
@@ -318,8 +321,14 @@ public://multi assembly multi cell
 	}
 	MocMeshField*  GetFieldPointerAtIndex(const SMocIndex& sIndex)
 	{
-		return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
+		if (m_firstCreated)
+			return &m_vAssembly[sIndex.iAssemblyIndex].v_field[sIndex.iCellIndex][sIndex.iMocIndex];
+
 	};
+	std::shared_ptr<MocMeshField> GetPointerAtIndex(const SMocIndex& sIndex)
+	{
+		return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex];
+	}
 	int GetPointIDAtIndex(const SMocIndex& sIndex)const
 	{
 		if (m_firstCreated)
@@ -386,11 +395,12 @@ public://multi assembly multi cell
 	void GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex,std::string strMaterial);
 	void SetFieldByMpiType(std::vector<STRMocField>& vMocField);
 	void SetFieldValueToMpiType(std::vector<STRMocField>& vMocField);
+	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
+
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();
 	//put all index in m_vSMocIndex
-	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
 	void ReWriteAplOutputFile(std::string outAplFileName);
 
 };

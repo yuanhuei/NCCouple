@@ -97,11 +97,11 @@ void ConvergeMocMapInfor()
 
 void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 {
-	STRMocField stField;
-	MPI_Datatype person_type;
-	InitMocFieldToMpiType(person_type);
+	//STRMocField stField;
+	MPI_Datatype STRMocFieldMPIType;
+	InitMocFieldToMpiType(STRMocFieldMPIType);
 
-
+	/*
 	std::vector<STRMocField> vField;
 	struct STRMocField buffer;
 	buffer.iAssemblyIndex = 20;
@@ -118,11 +118,12 @@ void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 	buffer.iAssemblyIndex = 40;
 	vField.push_back(buffer);
 	printf("MPI process  sends messge\n");
-	int iSize = 2;
+	*/
+	int iSize = vMocField.size();
 	MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-	MPI_Send(&vField[0], 2, person_type, 0, 1, MPI_COMM_WORLD);
+	MPI_Send(&vMocField[0], iSize, STRMocFieldMPIType, 0, 1, MPI_COMM_WORLD);
 
-	MPI_Type_free(&person_type);
+	MPI_Type_free(&STRMocFieldMPIType);
 
 	return;
 }

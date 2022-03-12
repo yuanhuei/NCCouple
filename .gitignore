@@ -344,3 +344,5 @@ healthchecksdb
 /.vscode
 /build
 /.VSCodeCounter
+/NCCouple.tar
+/NCCouple.tar.gz
