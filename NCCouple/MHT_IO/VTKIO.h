@@ -8,6 +8,7 @@
 #include "../MHT_mesh/UnGridFactory.h"
 #include "../MHT_mesh/RegionConnection.h"
 #include "../MHT_common/SystemControl.h"
+#include "../Structure.h"
 #include <memory>
 #include <iomanip>
 class Mesh;

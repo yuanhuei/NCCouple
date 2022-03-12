@@ -98,7 +98,10 @@ void MHTVTKReader::GetTranslation()
 			zmin = Min(zmin, node.z_);
 		}
 	}
-	this->translation = -Vector(xmin, ymin, zmin);
+	Vector minLocation = Vector(xmin, ymin, zmin);
+	//the minLocation is updated interporcessly
+	Vector minLocation= UpdateMinLocation(minLocation);
+	this->translation = -minLocation;
 	return;
 }
 
