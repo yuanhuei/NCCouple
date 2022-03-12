@@ -18,9 +18,11 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 		this->scaleRatio = ratio;
 	}
 	this->GetTranslation();
+	std::cout << "before TransformToMOC()" << std::endl;
+	DisplayCorrdinateRange();
 	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
-	
+	std::cout << "after TransformToMOC()" << std::endl;
 	DisplayCorrdinateRange();
 }
 
