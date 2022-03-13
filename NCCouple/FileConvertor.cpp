@@ -63,7 +63,7 @@ Scalar Integration
 	return integration;
 }
 
-void ConservationValidation
+std::pair<double,double> ConservationValidation
 (
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,
@@ -77,7 +77,7 @@ void ConservationValidation
 	double targetIntegralValue = Integration(targetMesh, vt, strZoneName, solverMapper);
 	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
 	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
-	return;
+	return std::make_pair(sourceIntegralValue,targetIntegralValue);
 }
 
 void DisplayHelpInfo()
@@ -314,8 +314,14 @@ void CFDFieldsToMOC()
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
 		solverMapper.CFDtoMOCinterception(ValueType::DENSITY);
 		solverMapper.CFDtoMOCinterception(ValueType::TEMPERAURE);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i], solverMapper);
-		ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i], solverMapper);
+		std::pair<double, double> pairDensity, pairTemerature;
+		pairDensity=ConservationValidation(cfdMesh, mocMesh, ValueType::DENSITY, materialList[i], solverMapper);
+		pairTemerature=ConservationValidation(cfdMesh, mocMesh, ValueType::TEMPERAURE, materialList[i], solverMapper);
+
+		ofstream oFile("CFD_VALUE_"+ materialList[i]+"_"+ std::to_string(g_iMpiID));
+		//ofstream oFile2("CFD_TEPERATURE_VALUE_" + materialList[i] + "_" + std::to_string(g_iMpiID));
+		oFile << pairDensity.first << " " << pairTemerature.first << std::endl;
+		oFile.close();
 	}
 	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	//mocMesh.OutputStatus(outMocFieldFile);

@@ -317,7 +317,13 @@ public://multi assembly multi cell
 	bool m_firstCreated = true;
 	std::string GetMaterialNameWithIDInField(const SMocIndex& sIndex)const 
 	{
-		return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetMaterialNameWithID();
+		if (m_firstCreated)
+		{
+			const MOCMeshPoint& mocPoint = dynamic_cast<const MOCMeshPoint&>(*GetMocMeshPointPtr(sIndex));
+			return mocPoint.GetMaterialNameWithID();
+		}
+		else
+			return m_vAssemblyField[sIndex.iAssemblyIndex][sIndex.iCellIndex][sIndex.iMocIndex]->GetMaterialNameWithID();
 	}
 	MocMeshField*  GetFieldPointerAtIndex(const SMocIndex& sIndex)
 	{
@@ -389,7 +395,17 @@ public://multi assembly multi cell
 	std::shared_ptr<MeshPoint> GetMocMeshPointPtr(const SMocIndex pointID) const {
 		return m_vAssembly[pointID.iAssemblyIndex].pAssembly_type->v_Cell[pointID.iCellIndex].vMeshPointPtrVec[pointID.iMocIndex];
 	};
-	
+	void SetDesityAndTemperatureToZero()
+	{
+		if (m_firstCreated)
+		{
+			for (int i = 0; i < m_vSMocIndex.size(); i++)
+			{
+				SetValueAtIndex(m_vSMocIndex[i], 0, ValueType::TEMPERAURE);
+				SetValueAtIndex(m_vSMocIndex[i], 0, ValueType::DENSITY);
+			}
+		}
+	}
 	void ReadMapFile(const std::vector<std::string>& materialList);
 
 	void GetMocIndexByMaterial(std::vector< SMocIndex>& vSMocIndex,std::string strMaterial);

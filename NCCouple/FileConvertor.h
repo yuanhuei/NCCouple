@@ -14,7 +14,7 @@ enum class Material
 
 void DisplayHelpInfo();
 
-void ConservationValidation
+std::pair<double, double> ConservationValidation
 (
 	const GeneralMesh& sourceMesh,
 	const GeneralMesh& targetMesh,

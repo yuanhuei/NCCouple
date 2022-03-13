@@ -362,6 +362,57 @@ void FinalCFDFieldsToMOC()
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
 }
+void TotalValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
+{
+	std::vector<Scalar> integrationDesityValue, integrationTemperatureValue;
+	double sourceDesityValue = 0, sourceTemperatureValue = 0, pointVolume = 0;
+	integrationDesityValue.resize(materialList.size());
+	integrationTemperatureValue.resize(materialList.size());
+	SMocIndex vSMocIndex;
+	for (int i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
+	{
+		vSMocIndex = mocMesh.m_vSMocIndex[i];
+		int k = -1;
+		for (int j = 0; j < materialList.size(); j++)
+		{
+			if (materialList[j] == mocMesh.GetMaterialNameAtIndex(vSMocIndex))
+			{
+				k = j;
+				break;
+			}
+		}
+		if (k == -1)
+			continue;
+		sourceDesityValue = mocMesh.GetValueAtIndex(vSMocIndex, ValueType::DENSITY);
+		sourceTemperatureValue = mocMesh.GetValueAtIndex(vSMocIndex, ValueType::TEMPERAURE);
+		pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex);
+		integrationDesityValue[k] += sourceDesityValue * pointVolume;
+		integrationTemperatureValue[k] += sourceTemperatureValue * pointVolume;
+	}
+
+	ifstream iFile;
+	for (int i = 0; i < materialList.size(); i++)
+	{
+		double dTotalDensity = 0, dTotalTemperature = 0;
+		for (int j = 1; j < g_iNumProcs; j++)
+		{
+			double dDensity = -1, dTemperature = -1;
+			std::string filename = "CFD_VALUE_" + materialList[i] + "_" + std::to_string(j);
+			iFile.open(filename);
+			iFile >> dDensity >> dTemperature;
+			std::cout << "desity " << dDensity << "  temperature " << dTemperature
+				<< "from process: " << i << "in file " << filename << std::endl;
+			dTotalDensity += dDensity;
+			dTotalTemperature += dTemperature;
+			iFile.close();
+		}
+		Logger::LogInfo(FormatStr("Moc total Integration of DesityValue for Material:%s is %.6lf", materialList[i].c_str(), integrationDesityValue[i]));
+		Logger::LogInfo(FormatStr("CFD total Integration of DesityValue for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
+		Logger::LogInfo(FormatStr("Moc total Integration of TemperatureValue for Material:%s is %.6lf", materialList[i].c_str(), integrationTemperatureValue[i]));
+		Logger::LogInfo(FormatStr("CFD total Integration of TemperatureValue for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
+	}
+}
+
 
 int main(int argc, char** argv)
 {
@@ -403,7 +454,7 @@ int main(int argc, char** argv)
 	if (iMpiProcessID > 0) {
 		std::cout << "this is child,pid=" << getpid() << std::endl;
 		//for debug
-		if (iMpiProcessID == 10)
+		if (iMpiProcessID == 11)
 		{
 			int num = 10;
 			
@@ -492,13 +543,23 @@ int main(int argc, char** argv)
 		{
 			//FinalCFDFieldsToMOC();
 			//
-			
+			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+			std::vector<std::string>& materialList = matches[0];
+			std::vector<std::string>& inputVTKList = matches[1];
+			std::string mocMeshFile = GetFileName(configFile, "inputApl");
+			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
+			std::string mocFieldFile = GetFileName(configFile, "inputInp");
+			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
+			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+			mocMesh.InitMOCFromInputFile(mocFieldFile);
+			mocMesh.SetDesityAndTemperatureToZero();
+			/*
 			std::vector<std::string> vStrMocFileName;
 			MOCMesh mocMesh(vStrMocFileName,false);
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 			std::string mocFieldFile = GetFileName(configFile, "inputInp");
 			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
-
+			*/
 			MPI_Datatype mpiMocField_type;
 			InitMocFieldToMpiType(mpiMocField_type);
 
@@ -516,10 +577,12 @@ int main(int argc, char** argv)
 				mocMesh.SetFieldByMpiType(vReciveField);
 				vReciveField.clear();
 			}
-			mocMesh.GetAllMocIndex(mocMesh.m_vSMocIndex);
+			//mocMesh.GetAllMocIndex(mocMesh.m_vSMocIndex);
+
+			TotalValueValidation(mocMesh, materialList);
 
 			MPI_Type_free(&mpiMocField_type);
-			mocMesh.InitMOCFromInputFile(mocFieldFile);
+			
 			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 			mocMesh.OutputStatus(outMocFieldFile);
 		

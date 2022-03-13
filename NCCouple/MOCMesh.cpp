@@ -2010,19 +2010,34 @@ MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByF
 
 void MOCMesh::SetFieldByMpiType(std::vector<STRMocField>& vMocField)
 {
+	
 	for (int i = 0; i < vMocField.size(); i++)
 	{
-
 		SMocIndex smTemp(vMocField[i].iAssemblyIndex, vMocField[i].iCellIndex, vMocField[i].iMeshIndex);
-		if(!m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex])
-			m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex] = std::make_shared<MocMeshField>();
-		m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetMaterialName(vMocField[i].cMaterialName);
-		m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetTemperatureName(vMocField[i].cTempName);
-		double dOriginalDesityValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::DENSITY);
-		double dOriginalTempValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::TEMPERAURE);
+		if (m_firstCreated)
+		{
+			double dOriginalDesityValue = GetValueAtIndex(smTemp,ValueType::DENSITY);
+			double dOriginalTempValue = GetValueAtIndex(smTemp,ValueType::TEMPERAURE);
 
-		SetValueAtIndex(smTemp, vMocField[i].dDensityValue+ dOriginalDesityValue, ValueType::DENSITY);
-		SetValueAtIndex(smTemp, vMocField[i].dTempValue+ dOriginalTempValue, ValueType::TEMPERAURE);
+			//SMocIndex smTemp(vMocField[i].iAssemblyIndex, vMocField[i].iCellIndex, vMocField[i].iMeshIndex);
+			SetValueAtIndex(smTemp, vMocField[i].dDensityValue + dOriginalDesityValue, ValueType::DENSITY);
+			SetValueAtIndex(smTemp, vMocField[i].dTempValue + dOriginalTempValue, ValueType::TEMPERAURE);
+		}
+		else
+		{
+			//SMocIndex smTemp(vMocField[i].iAssemblyIndex, vMocField[i].iCellIndex, vMocField[i].iMeshIndex);
+			if (!m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex])
+				m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex] = std::make_shared<MocMeshField>();
+			m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetMaterialName(vMocField[i].cMaterialName);
+			m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->SetTemperatureName(vMocField[i].cTempName);
+			double dOriginalDesityValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::DENSITY);
+			double dOriginalTempValue = m_vAssemblyField[smTemp.iAssemblyIndex][smTemp.iCellIndex][smTemp.iMocIndex]->GetValue(ValueType::TEMPERAURE);
+
+			SetValueAtIndex(smTemp, vMocField[i].dDensityValue + dOriginalDesityValue, ValueType::DENSITY);
+			SetValueAtIndex(smTemp, vMocField[i].dTempValue + dOriginalTempValue, ValueType::TEMPERAURE);
+
+
+		}
 	}
 }
 

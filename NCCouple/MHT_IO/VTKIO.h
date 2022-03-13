@@ -26,7 +26,7 @@ public:
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio, bool bTransform=false);
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	~MHTVTKReader();
-	void GetTranslation();
+	void GetTranslation(bool bTransform=false);
 	void TransformToMOC();
 	void TransformBack();
 	std::vector<FieldIO> GetFieldIOList() { return v_FieldIO; }

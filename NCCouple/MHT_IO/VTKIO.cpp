@@ -90,11 +90,8 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	{
 		this->scaleRatio = ratio;
 	}
-	if (bTransform)
-	{
-		this->GetTranslation();
-		this->TransformToMOC();
-	}
+	this->GetTranslation(bTransform);
+	this->TransformToMOC();
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 	
 	DisplayCorrdinateRange();
@@ -156,7 +153,7 @@ void MHTVTKReader::DisplayCorrdinateRange()
 	return;
 }
 
-void MHTVTKReader::GetTranslation()
+void MHTVTKReader::GetTranslation(bool bTransform)
 {
 	Scalar xmin = 1e10;
 	Scalar ymin = 1e10;
@@ -173,10 +170,14 @@ void MHTVTKReader::GetTranslation()
 		}
 	}
 	this->translation = -Vector(xmin, ymin, zmin);
-	Vector minLocation = Vector(xmin, ymin, zmin);
-	//the minLocation is updated interporcessly
-	minLocation = UpdateMinLocation(minLocation);
-	this->translation = -minLocation;
+	if (bTransform)
+	{
+		Vector minLocation = Vector(xmin, ymin, zmin);
+		//the minLocation is updated interporcessly
+		minLocation = UpdateMinLocation(minLocation);
+		this->translation = -minLocation;
+	}
+
 	return;
 }
 
