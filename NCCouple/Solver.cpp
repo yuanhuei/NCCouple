@@ -263,14 +263,15 @@ void Solver::DisplayEmptyMap()
 
 void Solver::GetMocIndexByMapValue(std::vector< SMocIndex>& vSMocIndex)
 {
-	for (int i = 0; i < m_MOC_CFD_MapWithID.size(); i++)
+
+	for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
 	{
-		for (int j = 0; j < m_MOC_CFD_MapWithID[i].size(); j++)
+		for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
 		{
-			for (int k = 0; k < m_MOC_CFD_MapWithID[i][j].size(); k++)
+			for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
 			{
 				std::unordered_map<int, double>::iterator it;
-				if(!m_MOC_CFD_MapWithID[i][j][k].empty())
+				if(!m_MOC_CFD_Map[i][j][k].empty())
 					vSMocIndex.push_back(SMocIndex(i, j, k));
 			}
 		}
@@ -459,7 +460,8 @@ void Solver::Interception_fromCFDToMOC
 
 		}
 		dMax = max(dMax, dValue);
-		dMin = min(dMin, dValue);
+		if(dValue!=0)
+			dMin = min(dMin, dValue);
 		if(dValue !=0)
 			targetMesh.SetValueAtIndex(vSMocIndex[i], interValue, vt);
 	}
@@ -543,12 +545,15 @@ void Solver::ReadMapInfor()
 	infile_MocMeshMaxSize_info.close();
 
 	m_MOC_CFD_MapWithID.resize(iAssemby);
+	m_MOC_CFD_Map.resize(iAssemby);
 	for (int i = 0; i < iAssemby; i++)
 	{
 		m_MOC_CFD_MapWithID[i].resize(iCell);
+		m_MOC_CFD_Map[i].resize(iCell);
 		for (int j = 0; j < iCell; j++)
 		{
 			m_MOC_CFD_MapWithID[i][j].resize(iMesh);
+			m_MOC_CFD_Map[i][j].resize(iMesh);
 		}
 	}
 
@@ -569,6 +574,27 @@ void Solver::ReadMapInfor()
 		stringline >> i >> j >>k>>m >>n >> dValue;
 		//m_MOC_CFD_MapWithID[i][iCell][iMesh].emplace(std::make_pair(i, n), k);
 		m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m,n),dValue);
+	}
+	infile.close();
+
+
+	fileName = "MapFile_" + materialName + "_MOCtoCFD" + "_" + std::to_string(g_iMpiID);;
+	infile.open(fileName);
+	if (!infile.is_open())
+	{
+		Logger::LogError("cannot find the MOC to CFD map file:" + fileName);
+		exit(EXIT_FAILURE);
+		return;
+	}
+	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
+	while (getline(infile, line))
+	{
+		int i, j, k, m;
+		double dValue;
+		stringstream stringline(line);
+		stringline >> i >> j >> k >> m  >> dValue;
+		//m_MOC_CFD_MapWithID[i][iCell][iMesh].emplace(std::make_pair(i, n), k);
+		m_MOC_CFD_Map[i][j][k].emplace(m, dValue);
 	}
 	infile.close();
 	return;

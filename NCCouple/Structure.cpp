@@ -150,16 +150,19 @@ void InitMocFieldToMpiType(MPI_Datatype &mpiMocField_type)
 
 Vector UpdateMinLocation(Vector vPoint)
 {
+	std::cout << "UpdateMinLocation called by:" << g_iMpiID << std::endl;
 	std::vector<double> vCoordinate;
 	vCoordinate.push_back(vPoint.x_);
 	vCoordinate.push_back(vPoint.y_);
-	vCoordinate.push_back(vPoint.y_);
-
+	vCoordinate.push_back(vPoint.z_);
+	
 	MPI_Send(&vCoordinate[0], 3, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+	std::cout << "MPI_Send " << vPoint << "from process : " << g_iMpiID << std::endl;
 	std::vector<double> vCoordinate_new;
 	vCoordinate_new.resize(3);
 	//MPI_Recv(&vCoordinate_new[0], 3, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	MPI_Bcast(&vCoordinate_new[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-	return Vector(vCoordinate_new[0], vCoordinate_new[1], vCoordinate_new[3]);
+	std::cout << "MPI_Bcast receive " << Vector(vCoordinate_new[0], vCoordinate_new[1], vCoordinate_new[2])
+		<< "from process : " << g_iMpiID << std::endl;
+	return Vector(vCoordinate_new[0], vCoordinate_new[1], vCoordinate_new[2]);
 }

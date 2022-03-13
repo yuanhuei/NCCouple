@@ -176,7 +176,7 @@ void CreateMapper()
 	//create an index for fast searching
 	Logger::LogInfo("Reading CFD mesh from input vtk files");
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
-	MHTVTKReader reader(inputVTKList, ratio);
+	MHTVTKReader reader(inputVTKList, ratio,true);
 	for (size_t i = 0; i < inputVTKList.size(); i++)
 	{
 		Mesh* pmesh = reader.GetMeshListPtr()[i];

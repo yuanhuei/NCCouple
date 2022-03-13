@@ -434,9 +434,9 @@ int main(int argc, char** argv)
 		else if (parameterList[0] == "cfdtomoc" && argc == 2)
 		{
 			CFDFieldsToMOC();
-			strMessage = "Process " + std::to_string(iMpiProcessID) + " cfdtomoc finished";
-			strcpy(message, strMessage.data());// "caclulation finished!");
-			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
+			//strMessage = "Process " + std::to_string(iMpiProcessID) + " cfdtomoc finished";
+			//strcpy(message, strMessage.data());// "caclulation finished!");
+			//MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
 		}
 		else
 		{
@@ -446,16 +446,7 @@ int main(int argc, char** argv)
 	else if(iMpiProcessID ==0) 
 	{
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
-		//if(parameterList[0] != "cfdtomoc")
-		//{
-		if (parameterList[0] != "cfdtomoc")
-		{
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
-				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
-				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
-			}
-		}
-		//}
+		//for debug
 		int num = 10;
 		while (num == 11)
 		{
@@ -473,9 +464,10 @@ int main(int argc, char** argv)
 			{
 				std::vector<double> vCoordinate;
 				vCoordinate.resize(3);
+				//std::cout << "MPI_Recv from process: " << g_iMpiID << std::endl;
 				MPI_Recv(&vCoordinate[0], 3, MPI_DOUBLE, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				vPoint.push_back(Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]));
-				std::cout << "receive CFD MIN coordinate:" << vPoint.back() << "from proc,ess:" << iSourceID << std::endl;
+				std::cout << "receive CFD MIN coordinate:" << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]) << "from proc,ess:" << iSourceID << std::endl;
 				xMin = min(xMin, vCoordinate[0]);
 				yMin=min(yMin, vCoordinate[1]);
 				zMin=min(zMin, vCoordinate[2]);
@@ -485,7 +477,13 @@ int main(int argc, char** argv)
 			vCoordinate.push_back(yMin);
 			vCoordinate.push_back(zMin);
 			MPI_Bcast(&vCoordinate[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			std::cout << "MPI_Bcast send " << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2])
+				<< "from process : " << g_iMpiID << std::endl;
 
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
+				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
+			}
 
 			ConvergeMocMapInfor();
 			Logger::LogInfo("All createmapper finished.");
@@ -509,12 +507,12 @@ int main(int argc, char** argv)
 			{
 				int iSize;
 				MPI_Recv(&iSize, 1, MPI_INT, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				std::cout << "receive isize:" << iSize <<"from process:"<< iSourceID << std::endl;
+				std::cout << "Receive isize:" << iSize <<"from process:"<< iSourceID << std::endl;
 				vReciveField.resize(iSize);
 				MPI_Recv(&vReciveField[0], iSize, mpiMocField_type, iSourceID, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
 					//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
-				std::cout << "receive data from process: "<< iSourceID << std::endl;
+				std::cout << "Receive data from process: "<< iSourceID << std::endl;
 				mocMesh.SetFieldByMpiType(vReciveField);
 				vReciveField.clear();
 			}
@@ -529,8 +527,14 @@ int main(int argc, char** argv)
 		}
 		else if (argc == 2 && parameterList[0] == "moctcfd")
 		{
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
+				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
+			}
 			Logger::LogInfo(" MOC to CFD finished.");
 		}
+
+
 	}
 	MPI_Finalize();
 	return 0;

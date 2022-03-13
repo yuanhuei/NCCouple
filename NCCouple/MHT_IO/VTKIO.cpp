@@ -78,7 +78,7 @@ MHTVTKReader::MHTVTKReader
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 }
 
-MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio)
+MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio,bool bTransform)
 	:translation(Vector(0.0, 0.0, 0.0))
 {
 	ReadMSHFromVTKFile(vtkFileNameList);
@@ -90,8 +90,11 @@ MHTVTKReader::MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar rat
 	{
 		this->scaleRatio = ratio;
 	}
-	this->GetTranslation();
-	this->TransformToMOC();
+	if (bTransform)
+	{
+		this->GetTranslation();
+		this->TransformToMOC();
+	}
 	this->vv_scalarFieldList.resize(this->v_pmesh.size());
 	
 	DisplayCorrdinateRange();
@@ -179,7 +182,7 @@ void MHTVTKReader::GetTranslation()
 
 void MHTVTKReader::TransformToMOC()
 {
-	this->GetTranslation();
+	//this->GetTranslation();
 	for (size_t i = 0;i < this->v_pmesh.size();i++)
 	{
 		Mesh* pmesh = v_pmesh[i];
