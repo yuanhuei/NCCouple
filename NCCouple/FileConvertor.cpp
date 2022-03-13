@@ -246,7 +246,12 @@ void MOCFieldsToCFD()
 		RenameFile(strOutput_inpName, GetFileNameOfPrevious(strOutput_inpName,"vtk"));
 		Logger::LogInfo("Writing CFD vtk file: " + strOutput_inpName);
 		heatpower.WriteVTK_Field(strOutput_inpName);
-		ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER, materialList[i], solverMapper);
+		std::pair<double, double> pairHeatpower;
+		pairHeatpower=ConservationValidation(mocMesh, cfdMesh, ValueType::HEATPOWER, materialList[i], solverMapper);
+
+		ofstream oFile("CFD_HeatPower_" + materialList[i] + "_" + std::to_string(g_iMpiID));
+		oFile << pairHeatpower.second << std::endl;
+		oFile.close();
 	}
 	return;
 }

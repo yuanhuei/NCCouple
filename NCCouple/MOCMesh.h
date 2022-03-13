@@ -47,10 +47,9 @@ public:
 		switch (vt)
 		{
 		case ValueType::TEMPERAURE:
-return m_temperature;
+			return m_temperature;
 		case ValueType::HEATPOWER:
 			return m_heatPower;
-			break;
 		case ValueType::DENSITY:
 			return m_density;
 		default:

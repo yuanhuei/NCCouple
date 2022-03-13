@@ -1358,7 +1358,6 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 		exit(EXIT_FAILURE);
 	}
 	std::vector<std::vector<double>> vHeatPowerValue;
-	//vHeatPowerValue.resize(m_vAssemblyField.size());
 	
 	string line;
 	while (getline(ifs, line))  //read mesh data
@@ -1370,69 +1369,56 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 			int iAssembly_index = stod(line.substr(0, iPos));
 			int iNumb_Value = stod(line.substr(iPos + 1, line.length()));
 			std::vector<double> vValue;
-			//vValue.resize(iNumb_Value);
 
 			string tokenMeshId = "";
 			int out0 = 1;
 			std::streampos pos;
 			while (getline(ifs, line))
 			{
-				//pos = infile.tellg();
-				//getline(ifs, line);
-				//outFile << line << endl;
 				stringstream stringlineMeshID(line);
 				while (stringlineMeshID >> tokenMeshId)
 				{
 					if (tokenMeshId.find("_") != std::string::npos)
 					{
 						vHeatPowerValue.push_back(vValue);
-						//out0 = 0;
-						//stringlineMeshID >> token;
 						goto loop_;
-						//infile.seekg(pos);
 						break;
 					}
 					vValue.push_back(stod(tokenMeshId));
 				}
-				//out0 = 0;
 			}
-			vHeatPowerValue.push_back(vValue);
-
-			/*
-			for (int i = 0; i < iNumb_Value;i++)
-			{
-
-				getline(ifs, line);
-				vValue[i] = stod(line);
-			}*/
-			
+			vHeatPowerValue.push_back(vValue);			
 		}
 		
 	}
-	/*
-	if (powerInput.size() != m_vSMocIndex.size())
+
+	if (m_firstCreated)
 	{
-		Logger::LogError("Wrong number in heatpower.txt");
-		exit(EXIT_FAILURE);
-	}
-	*/
-	int kk = 0;
-	for (int i = 0; i < m_vAssemblyField.size(); i++)
-	{
-		for (int j = 0; j < m_vAssemblyField[i].size(); j++)
+		for (int i = 0; i < m_vSMocIndex.size(); i++)
 		{
-			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+			double value = vHeatPowerValue[m_vSMocIndex[i].iAssemblyIndex][GetPointIDAtIndex(m_vSMocIndex[i]) - 1];
+			SetValueAtIndex(m_vSMocIndex[i], value, ValueType::HEATPOWER);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < m_vAssemblyField.size(); i++)
+		{
+			for (int j = 0; j < m_vAssemblyField[i].size(); j++)
 			{
-				if (m_vAssemblyField[i][j][k])
+				for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
 				{
-					double value = vHeatPowerValue[i][m_vAssemblyField[i][j][k]->m_iPointID - 1];
-					//SetValueAtIndex(SMocIndex(i, j, k), powerInput[kk++], ValueType::HEATPOWER);
-					SetValueAtIndex(SMocIndex(i, j, k), value, ValueType::HEATPOWER);
+					if (m_vAssemblyField[i][j][k])
+					{
+						double value = vHeatPowerValue[i][m_vAssemblyField[i][j][k]->m_iPointID - 1];
+						SetValueAtIndex(SMocIndex(i, j, k), value, ValueType::HEATPOWER);
+					}
 				}
 			}
 		}
 	}
 	ifs.close();	
+	return;
 }
 
 void MOCMesh::WriteTecplotFile

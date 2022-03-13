@@ -362,7 +362,7 @@ void FinalCFDFieldsToMOC()
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
 }
-void TotalValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
+void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
 {
 	std::vector<Scalar> integrationDesityValue, integrationTemperatureValue;
 	double sourceDesityValue = 0, sourceTemperatureValue = 0, pointVolume = 0;
@@ -406,10 +406,54 @@ void TotalValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialLi
 			dTotalTemperature += dTemperature;
 			iFile.close();
 		}
-		Logger::LogInfo(FormatStr("Moc total Integration of DesityValue for Material:%s is %.6lf", materialList[i].c_str(), integrationDesityValue[i]));
-		Logger::LogInfo(FormatStr("CFD total Integration of DesityValue for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
-		Logger::LogInfo(FormatStr("Moc total Integration of TemperatureValue for Material:%s is %.6lf", materialList[i].c_str(), integrationTemperatureValue[i]));
-		Logger::LogInfo(FormatStr("CFD total Integration of TemperatureValue for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
+		Logger::LogInfo(FormatStr("Moc total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), integrationDesityValue[i]));
+		Logger::LogInfo(FormatStr("CFD total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
+		Logger::LogInfo(FormatStr("Moc total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), integrationTemperatureValue[i]));
+		Logger::LogInfo(FormatStr("CFD total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
+	}
+}
+void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
+{
+	std::vector<Scalar> integrationHeatpower;
+	double sourceHeatpower = 0, pointVolume = 0;
+	integrationHeatpower.resize(materialList.size());
+	SMocIndex vSMocIndex;
+	for (int i = 0; i < mocMesh.m_vSMocIndex.size(); i++)
+	{
+		vSMocIndex = mocMesh.m_vSMocIndex[i];
+		int k = -1;
+		for (int j = 0; j < materialList.size(); j++)
+		{
+			if (materialList[j] == mocMesh.GetMaterialNameAtIndex(vSMocIndex))
+			{
+				k = j;
+				break;
+			}
+		}
+		if (k == -1)
+			continue;
+		sourceHeatpower = mocMesh.GetValueAtIndex(vSMocIndex, ValueType::HEATPOWER);
+		pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex);
+		integrationHeatpower[k] += sourceHeatpower * pointVolume;
+	}
+
+	ifstream iFile;
+	for (int i = 0; i < materialList.size(); i++)
+	{
+		double dTotalHeatPower = 0;
+		for (int j = 1; j < g_iNumProcs; j++)
+		{
+			double dHeatPower = -1;
+			std::string filename = "CFD_HeatPower_" + materialList[i] + "_" + std::to_string(j);
+			iFile.open(filename);
+			iFile >> dHeatPower;
+			std::cout << "HeatPower " << dHeatPower 
+				<< "from process: " << i << "in file " << filename << std::endl;
+			dTotalHeatPower += dHeatPower;
+			iFile.close();
+		}
+		Logger::LogInfo(FormatStr("Moc total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), integrationHeatpower[i]));
+		Logger::LogInfo(FormatStr("CFD total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), dTotalHeatPower));
 	}
 }
 
@@ -579,7 +623,7 @@ int main(int argc, char** argv)
 			}
 			//mocMesh.GetAllMocIndex(mocMesh.m_vSMocIndex);
 
-			TotalValueValidation(mocMesh, materialList);
+			CFDTOMOC_ValueValidation(mocMesh, materialList);
 
 			MPI_Type_free(&mpiMocField_type);
 			
@@ -588,12 +632,23 @@ int main(int argc, char** argv)
 		
 			Logger::LogInfo("CFD to MOC finished.");
 		}
-		else if (argc == 2 && parameterList[0] == "moctcfd")
+		else if (argc == 2 && parameterList[0] == "moctocfd")
 		{
 			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
+
+			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+			std::vector<std::string>& materialList = matches[0];
+			std::vector<std::string>& inputVTKList = matches[1];
+			std::string mocMeshFile = GetFileName(configFile, "inputApl");
+			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
+			std::string mocPowerFile = GetFileName(configFile, "mocPower");
+
+			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+			mocMesh.InitMOCHeatPower(mocPowerFile);
+			MOCTOCFD_ValueValidation(mocMesh, materialList);
 			Logger::LogInfo(" MOC to CFD finished.");
 		}
 
