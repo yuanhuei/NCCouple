@@ -557,7 +557,10 @@ void Solver::ReadMapInfor()
 		}
 	}
 
+	stringstream strTemp;
 	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
+	MPI_OpenFile_To_Stream(fileName, strTemp);
+	/*
 	infile.open(fileName);
 	if (!infile.is_open())
 	{
@@ -565,8 +568,9 @@ void Solver::ReadMapInfor()
 		exit(EXIT_FAILURE);
 		return;
 	}
+	*/
 	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
-	while (getline(infile, line))
+	while (getline(strTemp, line))
 	{
 		int i, j,k,m,n;
 		double dValue;
@@ -575,7 +579,7 @@ void Solver::ReadMapInfor()
 		//m_MOC_CFD_MapWithID[i][iCell][iMesh].emplace(std::make_pair(i, n), k);
 		m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m,n),dValue);
 	}
-	infile.close();
+	//infile.close();
 
 
 	fileName = "MapFile_" + materialName + "_MOCtoCFD" + "_" + std::to_string(g_iMpiID);;

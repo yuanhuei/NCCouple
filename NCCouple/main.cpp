@@ -458,15 +458,7 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 }
 #include <sys/stat.h>//包含头文件。
 
-int file_size(char* filename)//获取文件名为filename的文件大小。
 
-{
-	struct stat statbuf;
-	int ret;
-	ret = stat(filename, &statbuf);//调用stat函数
-	if (ret != 0) return -1;//获取失败。
-	return statbuf.st_size;//返回文件大小。
-}
 
 void test()
 {
@@ -479,12 +471,9 @@ void test()
 	}
 	iFile.close();
 	oFile.close();
-	int iFileSize = file_size("3_3cells.apl");
+	int iFileSize = File_size("3_3cells.apl");
 
-	int size, rank, i;
-	int n, m;
 	char* cFile = new char[iFileSize+1];
-	float* array;
 	MPI_File fh;
 	MPI_Status status;
 	MPI_File_open(MPI_COMM_WORLD, "3_3cells.apl", MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
@@ -515,8 +504,8 @@ int main(int argc, char** argv)
 	g_iNumProcs = iNumberOfProcs;
 
 	//test
-	test();
-	return 0;
+	//test();
+	//return 0;
 	//test
 
 
@@ -610,6 +599,11 @@ int main(int argc, char** argv)
 		}
 		if(argc==2 && parameterList[0]=="createmapper")
 		{
+			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+			std::string mocMeshFile = GetFileName(configFile, "inputApl");
+			stringstream strTemp;
+			MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
+
 			std::vector<Vector> vPoint;
 			double xMin=100000, yMin=100000,zMin=100000;
 			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++)
@@ -643,6 +637,10 @@ int main(int argc, char** argv)
 		if (argc == 2 && parameterList[0] == "cfdtomoc")
 		{
 			//FinalCFDFieldsToMOC();
+			// 
+			// 	stringstream strTemp;
+
+
 			//
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 			std::vector<std::string>& materialList = matches[0];
@@ -651,7 +649,14 @@ int main(int argc, char** argv)
 			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 			std::string mocFieldFile = GetFileName(configFile, "inputInp");
 			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
-			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+			for (int i = 0; i < materialList.size(); i++)
+			{
+				stringstream strTemp;
+				std::string fileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+				MPI_OpenFile_To_Stream(fileName, strTemp);
+			}
+
+			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 			mocMesh.InitMOCFromInputFile(mocFieldFile);
 			mocMesh.SetDesityAndTemperatureToZero();
 			/*
@@ -691,10 +696,7 @@ int main(int argc, char** argv)
 		}
 		else if (argc == 2 && parameterList[0] == "moctocfd")
 		{
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
-				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
-				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
-			}
+
 
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 			std::vector<std::string>& materialList = matches[0];
@@ -702,9 +704,19 @@ int main(int argc, char** argv)
 			std::string mocMeshFile = GetFileName(configFile, "inputApl");
 			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 			std::string mocPowerFile = GetFileName(configFile, "mocPower");
-
-			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
+			for (int i = 0; i < materialList.size(); i++)
+			{
+				stringstream strTemp;
+				std::string fileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+				MPI_OpenFile_To_Stream(fileName, strTemp);
+			}
+			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 			mocMesh.InitMOCHeatPower(mocPowerFile);
+
+			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
+				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
+			}
 			MOCTOCFD_ValueValidation(mocMesh, materialList);
 			Logger::LogInfo(" MOC to CFD finished.");
 		}

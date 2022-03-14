@@ -166,3 +166,28 @@ Vector UpdateMinLocation(Vector vPoint)
 		<< "from process : " << g_iMpiID << std::endl;
 	return Vector(vCoordinate_new[0], vCoordinate_new[1], vCoordinate_new[2]);
 }
+
+int File_size(const char* filename)//get size(byte) of file
+
+{
+	struct stat statbuf;
+	int ret;
+	ret = stat(filename, &statbuf);
+	if (ret != 0) return -1;
+	return statbuf.st_size;
+}
+
+void MPI_OpenFile_To_Stream(std::string strFileName,stringstream& strTempStream)
+{
+
+	int iFileSize = File_size(strFileName.c_str());
+	char* cFile = new char[iFileSize + 1];
+	MPI_File fh;
+	MPI_Status status;
+	MPI_File_open(MPI_COMM_WORLD, strFileName.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+	MPI_File_read_at_all(fh, 0, cFile, iFileSize, MPI_CHAR, &status);
+	cFile[iFileSize] = '\0';
+	strTempStream << cFile;
+	MPI_File_close(&fh);
+	delete[] cFile;
+}

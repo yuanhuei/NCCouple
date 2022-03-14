@@ -239,16 +239,42 @@ void MOCMesh::ReWriteAplOutputFile(std::string outAplFileName)
 	MocMeshMaxSize_info << m_vAssembly.size()<<" " << iMaxCell<<" " << iMaxMesh << std::endl;
 }
 
-MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType)
+MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType, bool bCreateByAllProcess )
 {
 	Logger::LogInfo("MOCMesh generation begin");
-	stringstream outFile;
-	ifstream infile(meshFileName);
-	if (!infile.is_open())
+	/*
+	int iFileSize = file_size(meshFileName.c_str());
+	char* cFile = new char[iFileSize + 1];
+	MPI_File fh;
+	MPI_Status status;
+	MPI_File_open(MPI_COMM_WORLD, meshFileName.c_str(), MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+	MPI_File_read_at_all(fh, 0, cFile, iFileSize, MPI_CHAR, &status);
+	cFile[iFileSize] = '\0';
+	stringstream infile;
+	infile << cFile;
+	MPI_File_close(&fh);
+	delete[] cFile;
+	*/
+
+	stringstream infile;
+	if(bCreateByAllProcess)
+		MPI_OpenFile_To_Stream(meshFileName, infile);
+	else
 	{
-		Logger::LogError("cannot find the MOC mesh file:" + meshFileName);
-		exit(EXIT_FAILURE);
+		ifstream inFileStream(meshFileName);
+		if (!inFileStream.is_open())
+		{
+			Logger::LogError("cannot find the MOC mesh file:" + meshFileName);
+			exit(EXIT_FAILURE);
+		}
+		std:string line;
+		while (getline(inFileStream,line))
+		{
+			infile << line.c_str() << std::endl;
+		}
 	}
+	stringstream outFile;
+
 	string line;
 	m_pAssemblyIndex = std::make_shared<AssemblyIndex>(*this);
 
@@ -642,7 +668,7 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		}
 		strpos = infile.tellg();
 	}
-	//outFile.close();
+	//infile.close();
 	InitAssembly();
 	m_pAssemblyIndex->buildIndex();
 	GetAllMocIndex(m_vSMocIndex);

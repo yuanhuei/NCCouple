@@ -253,7 +253,7 @@ public:
 	MOCMesh()= delete;
 	MOCMesh(const std::vector<std::string>& vMaterailName);
 	MOCMesh(std::string meshFileName, std::string outAplFileName,
-		MeshKernelType kernelType = MeshKernelType::MHT_KERNEL);
+		MeshKernelType kernelType = MeshKernelType::MHT_KERNEL,bool bCreateByAllProcess=false);
 	MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByFile);
 
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
