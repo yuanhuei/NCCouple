@@ -456,8 +456,50 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 		Logger::LogInfo(FormatStr("CFD total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), dTotalHeatPower));
 	}
 }
+#include <sys/stat.h>//包含头文件。
 
+int file_size(char* filename)//获取文件名为filename的文件大小。
 
+{
+	struct stat statbuf;
+	int ret;
+	ret = stat(filename, &statbuf);//调用stat函数
+	if (ret != 0) return -1;//获取失败。
+	return statbuf.st_size;//返回文件大小。
+}
+
+void test()
+{
+	ifstream iFile("3_3cells.apl");
+	ofstream oFile("3_3cells_bin.apl",std::ios_base::binary);
+	std::string line;
+	while (getline(iFile, line))
+	{
+		oFile << line << std::endl;
+	}
+	iFile.close();
+	oFile.close();
+	int iFileSize = file_size("3_3cells.apl");
+
+	int size, rank, i;
+	int n, m;
+	char* cFile = new char[iFileSize+1];
+	float* array;
+	MPI_File fh;
+	MPI_Status status;
+	MPI_File_open(MPI_COMM_WORLD, "3_3cells.apl", MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+	MPI_File_read_at_all(fh, 0, cFile, iFileSize, MPI_CHAR, &status);
+	cFile[iFileSize] = '\0';
+	stringstream ss;
+	ss << cFile;
+	oFile.open("3_3cells_bin_temp.apl");
+	getline(ss, line);
+	oFile << ss.str();
+	oFile.close();
+	MPI_File_close(&fh);
+	delete[] cFile;
+
+}
 int main(int argc, char** argv)
 {
 	//SendFieldForTest(argc, argv);
@@ -471,6 +513,12 @@ int main(int argc, char** argv)
 	//myid = 1;
 	g_iMpiID = iMpiProcessID;
 	g_iNumProcs = iNumberOfProcs;
+
+	//test
+	test();
+	return 0;
+	//test
+
 
 	std::vector<std::string> parameterList;
 	if (argc > 1)
