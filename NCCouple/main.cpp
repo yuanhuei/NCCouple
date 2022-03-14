@@ -473,7 +473,6 @@ int main(int argc, char** argv)
 	g_iNumProcs = iNumberOfProcs;
 
 	std::vector<std::string> parameterList;
-
 	if (argc > 1)
 	{
 		parameterList.resize(argc - 1);
@@ -488,13 +487,22 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
+	if (iNumberOfProcs == 1)
 	{
-		if (iMpiProcessID == 0)
+		if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
+		{
 			RunWithParameters(parameterList);
+		}
+		else
+		{
+			Logger::LogError("Wrong input parameter");
+			DisplayHelpInfo();
+		}
 		MPI_Finalize();
 		return 0;
 	}
+
+
 	if (iMpiProcessID > 0) {
 		std::cout << "this is child,pid=" << getpid() << std::endl;
 		//for debug
@@ -536,9 +544,10 @@ int main(int argc, char** argv)
 		else
 		{
 			Logger::LogError("Wrong input parameter");
+			DisplayHelpInfo();
 		}
 	}
-	else if(iMpiProcessID ==0) 
+	else if(iMpiProcessID ==0&& g_iNumProcs>1)
 	{
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
 		//for debug
@@ -653,6 +662,11 @@ int main(int argc, char** argv)
 		}
 
 
+	}
+	else
+	{
+		Logger::LogInfo(" Wrong input parameter");
+		DisplayHelpInfo();
 	}
 	MPI_Finalize();
 	return 0;

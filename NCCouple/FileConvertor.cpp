@@ -83,13 +83,12 @@ std::pair<double,double> ConservationValidation
 void DisplayHelpInfo()
 {
 	std::cout << "Please input command like one list below:" << std::endl;
-	std::cout << "1. NCCouple" << std::endl;
-	std::cout << "2. NCCouple --help" << std::endl;
-	std::cout << "3. NCCouple clear" << std::endl;
-	std::cout << "4. NCCouple createmapper" << std::endl;
-	std::cout << "5. NCCouple cfdtomoc" << std::endl;
-	std::cout << "6. NCCouple moctocfd" << std::endl;
-	std::cout << "7. NCCouple register (MOCMesh) (MOCMesh_out)" << std::endl;
+	std::cout << "1. NCCouple --help" << std::endl;
+	std::cout << "2. NCCouple clear" << std::endl;
+	std::cout << "3. mpirun -np (n) NCCouple createmapper" << std::endl;
+	std::cout << "4. mpirun -np (n) NCCouple cfdtomoc" << std::endl;
+	std::cout << "5. mpirun -np (n) NCCouple moctocfd" << std::endl;
+	std::cout << "6. NCCouple register (MOCMesh) (MOCMesh_out)" << std::endl;
 	return;
 }
 
