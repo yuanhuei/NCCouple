@@ -15,27 +15,48 @@
 #include <string>
 #include <string.h>
 #endif
-
+#include <sys/stat.h>
+void WriteToLog(std::string strInfo, int iMpiID)
+{
+	std::string strLogName = "log_" + std::to_string(iMpiID) + ".txt";
+	ofstream iFile(strLogName,std::ios::app);
+	time_t timep;
+	time(&timep);
+	char* cTime = ctime(&timep);
+	cTime[strlen(cTime) - 2] = '\0';
+	iFile << "[" << cTime << "]" << strInfo << std::endl;
+	iFile.close();
+	return;
+}
 void ConvergeMocMapInfor()
 {
 	//m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
+	/*
 	std::string fileName = "MocMeshMaxSize_info";
 	ifstream infile(fileName);
 	std::string line;
 	//getline(infile, line);
 	//stringstream stringline(line);
 	int iAssemby, iCell, iMesh;
-	infile >> iAssemby >> iCell >> iMesh ;
-	infile.close();
+	infile >> iAssemby >> iCell >> iMesh;
+	infile.close();*/
+
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
+	iMax_iAssembly = std::get<0>(tupIndex);
+	iMax_iCell = std::get<1>(tupIndex);
+	iMax_iMoc = std::get<2>(tupIndex);
+
+
 	std::vector<std::vector<std::vector<std::unordered_map<std::pair<int,int>, double, pair_hash>>>> MOC_CFD_Map;
 
-	MOC_CFD_Map.resize(iAssemby);
-	for (int i = 0; i <iAssemby; i++)
+	MOC_CFD_Map.resize(iMax_iAssembly);
+	for (int i = 0; i < iMax_iAssembly; i++)
 	{
-		MOC_CFD_Map[i].resize(iCell);
-		for (int j = 0; j < iCell; j++)
+		MOC_CFD_Map[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j++)
 		{
-			MOC_CFD_Map[i][j].resize(iMesh);
+			MOC_CFD_Map[i][j].resize(iMax_iMoc);
 		}
 	}
 	//configFile = "MapFile_FileNames";
@@ -44,7 +65,8 @@ void ConvergeMocMapInfor()
 	std::string mocPowerFile = GetFileName(configFile, "mocPower");
 	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 	std::vector<std::string>& materialList = matches[0];
-
+	std::string fileName,line;
+	ifstream infile;
 	for (int j = 0; j < materialList.size(); j++ )
 	{
 		for (int i = 1; i < g_iNumProcs; i++)
@@ -90,7 +112,7 @@ void ConvergeMocMapInfor()
 		}
 		MOCtoCFD_MapFile.close();
 	}
-	std::cout << "Writing Moc finished" << std::endl;
+	Logger::LogInfo("Writing Moc finished." );
 	return;
 }
 
@@ -190,4 +212,24 @@ void MPI_OpenFile_To_Stream(std::string strFileName,stringstream& strTempStream)
 	strTempStream << cFile;
 	MPI_File_close(&fh);
 	delete[] cFile;
+}
+
+std::tuple<int, int, int>GetMaxIndexOfMoc()
+{
+	std::string fileName;
+	if(g_iMpiID==0)
+		fileName = "MocMeshMaxSize_info_"+std::to_string(1);
+	else
+		fileName = "MocMeshMaxSize_info_" + std::to_string(g_iMpiID);
+
+	ifstream infile_MocMeshMaxSize_info(fileName);
+	if (!infile_MocMeshMaxSize_info.is_open())
+	{
+		Logger::LogError("cannot find the MocMeshMaxSize_info file:" + fileName);
+		exit(EXIT_FAILURE);
+	}
+	int iAssembly = -1, iCell = -1, iMesh = -1;
+	infile_MocMeshMaxSize_info >> iAssembly >> iCell >> iMesh;
+	infile_MocMeshMaxSize_info.close();
+	return std::make_tuple(iAssembly, iCell, iMesh);
 }

@@ -318,7 +318,7 @@ void Solver::CheckMappingWeights()
 		if (sumSumWeight < SMALL)
 		{
 			std::stringstream streamTemp;
-			streamTemp << "0 sumSumWeight mod id" << vSMocIndex[j].iAssemblyIndex
+			streamTemp << "0 sumSumWeight moc id: " << vSMocIndex[j].iAssemblyIndex
 				<<" "<< vSMocIndex[j].iCellIndex<<" "<< vSMocIndex[j].iMocIndex<< std::endl;
 			Logger::LogInfo(streamTemp.str(),true);
 			sumOfZero++;
@@ -537,23 +537,28 @@ void Solver::ReadMapInfor()
 
 	}
 	infile.close();
-
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
+	iMax_iAssembly = std::get<0>(tupIndex);
+	iMax_iCell = std::get<1>(tupIndex);
+	iMax_iMoc = std::get<2>(tupIndex);
+	/*
 	fileName = "MocMeshMaxSize_info";
 	ifstream infile_MocMeshMaxSize_info(fileName);
 	int iAssemby, iCell, iMesh;
 	infile_MocMeshMaxSize_info >> iAssemby >> iCell >> iMesh;
-	infile_MocMeshMaxSize_info.close();
+	infile_MocMeshMaxSize_info.close();*/
 
-	m_MOC_CFD_MapWithID.resize(iAssemby);
-	m_MOC_CFD_Map.resize(iAssemby);
-	for (int i = 0; i < iAssemby; i++)
+	m_MOC_CFD_MapWithID.resize(iMax_iAssembly);
+	m_MOC_CFD_Map.resize(iMax_iAssembly);
+	for (int i = 0; i < iMax_iAssembly; i++)
 	{
-		m_MOC_CFD_MapWithID[i].resize(iCell);
-		m_MOC_CFD_Map[i].resize(iCell);
-		for (int j = 0; j < iCell; j++)
+		m_MOC_CFD_MapWithID[i].resize(iMax_iCell);
+		m_MOC_CFD_Map[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j++)
 		{
-			m_MOC_CFD_MapWithID[i][j].resize(iMesh);
-			m_MOC_CFD_Map[i][j].resize(iMesh);
+			m_MOC_CFD_MapWithID[i][j].resize(iMax_iMoc);
+			m_MOC_CFD_Map[i][j].resize(iMax_iMoc);
 		}
 	}
 

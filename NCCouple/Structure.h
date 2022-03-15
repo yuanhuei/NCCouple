@@ -77,5 +77,8 @@ Vector UpdateMinLocation(Vector vPoint);
 int File_size(const char* filename);//get size(byte) of file
 void MPI_OpenFile_To_Stream(std::string strFileName, stringstream& strTempStream);
 
+std::tuple<int, int, int>GetMaxIndexOfMoc();
+
+void WriteToLog(std::string strInfo, int iMpiID = 0);
 
 #endif

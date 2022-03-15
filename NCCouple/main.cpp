@@ -32,6 +32,7 @@
 #include "./MHT_IO/VTKIO.h"
 int g_iMpiID = -1;
 int g_iNumProcs = 0;
+std::string strLogName = "log.txt";
 
 //this example was designed for test of
 //(1) rewriting a apl file
@@ -456,7 +457,7 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 		Logger::LogInfo(FormatStr("CFD total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), dTotalHeatPower));
 	}
 }
-#include <sys/stat.h>//包含头文件。
+
 
 
 
@@ -502,12 +503,13 @@ int main(int argc, char** argv)
 	//myid = 1;
 	g_iMpiID = iMpiProcessID;
 	g_iNumProcs = iNumberOfProcs;
-
+	if (iMpiProcessID == 0 && iNumberOfProcs>1)
+		strLogName = "log_0.txt";
 	//test
 	//test();
 	//return 0;
 	//test
-
+	//WriteToLog("test");
 
 	std::vector<std::string> parameterList;
 	if (argc > 1)
@@ -599,6 +601,7 @@ int main(int argc, char** argv)
 		}
 		if(argc==2 && parameterList[0]=="createmapper")
 		{
+			WriteToLog("Createmapper start.");
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 			std::string mocMeshFile = GetFileName(configFile, "inputApl");
 			stringstream strTemp;
@@ -633,9 +636,11 @@ int main(int argc, char** argv)
 
 			ConvergeMocMapInfor();
 			Logger::LogInfo("All createmapper finished.");
+			WriteToLog("Createmapper end.");
 		}
 		if (argc == 2 && parameterList[0] == "cfdtomoc")
 		{
+			WriteToLog("cfdtomoc start.");
 			//FinalCFDFieldsToMOC();
 			// 
 			// 	stringstream strTemp;
@@ -693,10 +698,11 @@ int main(int argc, char** argv)
 			mocMesh.OutputStatus(outMocFieldFile);
 		
 			Logger::LogInfo("CFD to MOC finished.");
+			WriteToLog("cfdtomoc end.");
 		}
 		else if (argc == 2 && parameterList[0] == "moctocfd")
 		{
-
+			WriteToLog("moctocfd start.");
 
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
 			std::vector<std::string>& materialList = matches[0];
@@ -719,9 +725,8 @@ int main(int argc, char** argv)
 			}
 			MOCTOCFD_ValueValidation(mocMesh, materialList);
 			Logger::LogInfo(" MOC to CFD finished.");
+			WriteToLog("moctocfd end.");
 		}
-
-
 	}
 	else
 	{

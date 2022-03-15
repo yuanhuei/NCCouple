@@ -417,6 +417,6 @@ private:
 	void InitAssembly();
 	//put all index in m_vSMocIndex
 	void ReWriteAplOutputFile(std::string outAplFileName);
-
+	void WriteMaxIndexToFile();
 };
 #endif

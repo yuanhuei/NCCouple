@@ -226,17 +226,7 @@ void MOCMesh::ReWriteAplOutputFile(std::string outAplFileName)
 	RemoveFile(outAplFileTempName);
 	RemoveFile(outAplFileNewName);
 
-	size_t iMaxCell=0, iMaxMesh=0;
-	for (int i = 0; i < m_vAssembly.size(); i++)
-	{
-		iMaxCell = max(iMaxCell, m_vAssembly[i].pAssembly_type->v_Cell.size());
-		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
-		{
-			iMaxMesh = max(iMaxMesh, m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
-		}
-	}
-	ofstream MocMeshMaxSize_info("MocMeshMaxSize_info");
-	MocMeshMaxSize_info << m_vAssembly.size()<<" " << iMaxCell<<" " << iMaxMesh << std::endl;
+
 }
 
 MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKernelType kernelType, bool bCreateByAllProcess )
@@ -267,11 +257,13 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 			Logger::LogError("cannot find the MOC mesh file:" + meshFileName);
 			exit(EXIT_FAILURE);
 		}
-		std:string line;
-		while (getline(inFileStream,line))
-		{
-			infile << line.c_str() << std::endl;
-		}
+		infile <<inFileStream.rdbuf();
+		inFileStream.close();
+		//std:string line;
+		//while (getline(inFileStream,line))
+		//{
+			//infile << line.c_str() << std::endl;
+		//}
 	}
 	stringstream outFile;
 
@@ -679,9 +671,22 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 		outputAplFile.close();
 		ReWriteAplOutputFile(outAplFileName);
 	}
-
-
+	WriteMaxIndexToFile();
 	Logger::LogInfo("MOCMesh generation ends");
+}
+void MOCMesh::WriteMaxIndexToFile()
+{
+	size_t iMaxCell = 0, iMaxMesh = 0;
+	for (int i = 0; i < m_vAssembly.size(); i++)
+	{
+		iMaxCell = max(iMaxCell, m_vAssembly[i].pAssembly_type->v_Cell.size());
+		for (int j = 0; j < m_vAssembly[i].pAssembly_type->v_Cell.size(); j++)
+		{
+			iMaxMesh = max(iMaxMesh, m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
+		}
+	}
+	ofstream MocMeshMaxSize_info("MocMeshMaxSize_info_" + std::to_string(g_iMpiID));
+	MocMeshMaxSize_info << m_vAssembly.size() << " " << iMaxCell << " " << iMaxMesh << std::endl;
 }
 
 void MOCMesh::GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex)
@@ -1977,11 +1982,19 @@ void MOCMesh::WriteFieldInfortoFile()
 MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByFile)
 {
 	m_firstCreated = false;
+	/*
 	std::string fileName = "MocMeshMaxSize_info";
 	ifstream infile_MocMeshMaxSize_info(fileName);
-	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	
 	infile_MocMeshMaxSize_info >> iMax_iAssembly >> iMax_iCell >> iMax_iMoc;
 	infile_MocMeshMaxSize_info.close();
+	*/
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
+	iMax_iAssembly = std::get<0>(tupIndex);
+	iMax_iCell = std::get<1>(tupIndex);
+	iMax_iMoc = std::get<2>(tupIndex);
+
 	m_vAssemblyField.resize(iMax_iAssembly);
 
 	for (int i = 0; i < iMax_iAssembly; i++)
