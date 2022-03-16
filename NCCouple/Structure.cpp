@@ -213,6 +213,18 @@ void MPI_OpenFile_To_Stream(std::string strFileName,stringstream& strTempStream)
 	MPI_File_close(&fh);
 	delete[] cFile;
 }
+void MPI_WriteStream_To_File(std::string strFileName, stringstream& strTempStream)
+{
+
+	//int iFileSize = File_size(strFileName.c_str());
+	std::string strTemp = strTempStream.str().c_str();
+	MPI_File fh;
+	MPI_Status status;
+	MPI_File_open(MPI_COMM_WORLD, strFileName.c_str(),MPI_MODE_CREATE+MPI_MODE_RDWR, MPI_INFO_NULL, &fh);
+	MPI_File_write_all(fh,strTemp.c_str(), strTemp.length(), MPI_CHAR, &status);
+	MPI_File_close(&fh);
+	//delete[] cFile;
+}
 
 std::tuple<int, int, int>GetMaxIndexOfMoc()
 {

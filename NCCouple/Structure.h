@@ -76,6 +76,7 @@ void InitMocFieldToMpiType( MPI_Datatype& person_type);
 Vector UpdateMinLocation(Vector vPoint);
 int File_size(const char* filename);//get size(byte) of file
 void MPI_OpenFile_To_Stream(std::string strFileName, stringstream& strTempStream);
+void MPI_WriteStream_To_File(std::string strFileName, stringstream& strTempStream);
 
 std::tuple<int, int, int>GetMaxIndexOfMoc();
 

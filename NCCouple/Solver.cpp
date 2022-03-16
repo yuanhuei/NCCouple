@@ -475,6 +475,8 @@ void Solver::WriteMapInfortoFile()
 {
 	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
 	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
+	stringstream MOCtoCFD_MapFile_stream;
+
 	CFDtoMOC_MapFile << m_CFD_MOC_Map.size() << std::endl;
 	for (int i = 0; i < m_CFD_MOC_Map.size(); i++)
 	{
@@ -500,13 +502,17 @@ void Solver::WriteMapInfortoFile()
 			{
 				std::unordered_map<int, double>::iterator it;
 				for (it = m_MOC_CFD_Map[i][j][k].begin(); it != m_MOC_CFD_Map[i][j][k].end(); it++)
-					MOCtoCFD_MapFile << i << " "<< j <<" "<< k <<" " << it->first << " " << it->second << std::endl;
+				{
+					MOCtoCFD_MapFile << i << " " << j << " " << k << " " << it->first << " " << it->second << std::endl;
+					MOCtoCFD_MapFile_stream << i << " " << j << " " << k << " "
+						<< g_iMpiID <<" " << it->first << " " << it->second << std::endl;
+				}
 			}
 		}
 	}
 	CFDtoMOC_MapFile.close();
 	MOCtoCFD_MapFile.close();
-
+	MPI_WriteStream_To_File(("MapFile_" + materialName + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
 }
 
 void Solver::ReadMapInfor()

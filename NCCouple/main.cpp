@@ -503,8 +503,8 @@ int main(int argc, char** argv)
 	//myid = 1;
 	g_iMpiID = iMpiProcessID;
 	g_iNumProcs = iNumberOfProcs;
-	if (iMpiProcessID == 0 && iNumberOfProcs>1)
-		strLogName = "log_0.txt";
+	//if (iMpiProcessID == 0 && iNumberOfProcs>1)
+		//strLogName = "log_0.txt";
 	//test
 	//test();
 	//return 0;
@@ -603,9 +603,10 @@ int main(int argc, char** argv)
 		{
 			WriteToLog("Createmapper start.");
 			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+			std::vector<std::string>& materialList = matches[0];
 			std::string mocMeshFile = GetFileName(configFile, "inputApl");
 			stringstream strTemp;
-			MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
+			//MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
 
 			std::vector<Vector> vPoint;
 			double xMin=100000, yMin=100000,zMin=100000;
@@ -629,12 +630,21 @@ int main(int argc, char** argv)
 			std::cout << "MPI_Bcast send " << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2])
 				<< "from process : " << g_iMpiID << std::endl;
 
+
+			
+			
+			//solution 2
+			stringstream  MOCtoCFD_MapFile_stream;
+			for(int i=0;i< materialList.size();i++)
+				MPI_WriteStream_To_File(("MapFile_" + materialList[i] + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
+			//solution end
+
 			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
-
-			ConvergeMocMapInfor();
+			//solution 1 
+			//ConvergeMocMapInfor();
 			Logger::LogInfo("All createmapper finished.");
 			WriteToLog("Createmapper end.");
 		}
@@ -710,6 +720,8 @@ int main(int argc, char** argv)
 			std::string mocMeshFile = GetFileName(configFile, "inputApl");
 			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
 			std::string mocPowerFile = GetFileName(configFile, "mocPower");
+			stringstream ifs;
+			MPI_OpenFile_To_Stream(mocPowerFile, ifs);
 			for (int i = 0; i < materialList.size(); i++)
 			{
 				stringstream strTemp;

@@ -1380,14 +1380,27 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 	return;
 }
 
-void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
+void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName,bool bCreateByAllProcess)
 {
-	std::ifstream ifs(heatPowerFileName);
-	if (!ifs.is_open())
+	stringstream ifs;
+	if (bCreateByAllProcess)
+		MPI_OpenFile_To_Stream(heatPowerFileName, ifs);
+	else
 	{
-		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
-		exit(EXIT_FAILURE);
+		ifstream inFileStream(heatPowerFileName);
+		if (!inFileStream.is_open())
+		{
+			Logger::LogError("cannot find the MOC mesh file:" + heatPowerFileName);
+			exit(EXIT_FAILURE);
+		}
+		ifs << inFileStream.rdbuf();
+		inFileStream.close();
+
 	}
+	//stringstream outFile;
+
+	//std::ifstream ifs(heatPowerFileName);
+
 	std::vector<std::vector<double>> vHeatPowerValue;
 	
 	string line;
@@ -1448,7 +1461,7 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 			}
 		}
 	}
-	ifs.close();	
+	//ifs.close();	
 	return;
 }
 

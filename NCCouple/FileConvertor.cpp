@@ -171,7 +171,7 @@ void CreateMapper()
 		}
 		inputVTKList[i] = inputVTKList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
 	}
-	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,true);
+	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 	//create an index for fast searching
 	Logger::LogInfo("Reading CFD mesh from input vtk files");
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
@@ -227,7 +227,7 @@ void MOCFieldsToCFD()
 
 	//MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL);
 	MOCMesh mocMesh(materialList);
-	mocMesh.InitMOCHeatPower(mocPowerFile);
+	mocMesh.InitMOCHeatPower(mocPowerFile,true);
 	//initialize with meshFile
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
 	MHTVTKReader reader(inputVTKList, ratio);
