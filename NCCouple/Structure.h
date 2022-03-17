@@ -61,16 +61,8 @@ struct STRMocField
 	double dTempValue, dDensityValue;
 	char cMaterialName[20], cTempName[20];
 };
-/*
-struct hash_name {
-	hash_name() {};
-	size_t operator()(const SMocIndex& p) const {
-		return std::hash<int>()(p.iAssemblyIndex) ^ std::hash<int>()(p.iCellIndex) ^ std::hash<int>()(p.iMocIndex);
-	};
-};
-*/
 
-void SendFieldForTest(const std::vector<STRMocField>& vMocField);
+void SendMocValueToMainProcess(const std::vector<STRMocField>& vMocField);
 void InitMocFieldToMpiType( MPI_Datatype& person_type);
 
 Vector UpdateMinLocation(Vector vPoint);

@@ -37,7 +37,7 @@ if(WIN32)
 	include_directories(include ${Boost_INCLUDE_DIR})
 	link_libraries(${Boost_LIBRARIES})
 	add_definitions(-D_BasePlatformWinddows_ )
-	set(STATIC_LIBRARY_DIR ./tools/winlib )
+	set(STATIC_LIBRARY_DIR "C:/Program Files (x86)/Microsoft SDKs/MPI/Lib/x64" )
 	set(STATIC_LIBRARY_NAME "msmpi")
 elseif(UNIX)
 	#设置MPI的编译器,不用MPI的话需要去掉

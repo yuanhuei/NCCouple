@@ -4,7 +4,6 @@
 extern int g_iMpiID;
 extern int g_iNumProcs;
 static auto my_logger = spdlog::basic_logger_mt("basic_logger","log.txt");
-//static auto my_logger_mainprocess = spdlog::basic_logger_mt("basic_logger", "log_0.txt");
 
 void Logger::LogInfo(std::string info,bool bOnlyInLogFile) {
 	

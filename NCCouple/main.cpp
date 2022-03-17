@@ -26,13 +26,10 @@
 #include "./MHT_mesh/Mesh.h"
 #include "./MHT_field/Field.h"
 #include "./MHT_IO/FieldIO.h"
-
-
-
 #include "./MHT_IO/VTKIO.h"
+
 int g_iMpiID = -1;
 int g_iNumProcs = 0;
-std::string strLogName = "log.txt";
 
 //this example was designed for test of
 //(1) rewriting a apl file
@@ -461,7 +458,7 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 
 
 
-void test()
+void Test()
 {
 	ifstream iFile("3_3cells.apl");
 	ofstream oFile("3_3cells_bin.apl",std::ios_base::binary);
@@ -490,27 +487,64 @@ void test()
 	delete[] cFile;
 
 }
+void CaculateMinCoordinate()
+{
+	// recvied all min Coordinate from all cfd vtk file,caculuat the min x y z and send back
+	std::vector<Vector> vPoint;
+	double xMin = 100000, yMin = 100000, zMin = 100000;
+	for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++)
+	{
+		std::vector<double> vCoordinate;
+		vCoordinate.resize(3);
+		//std::cout << "MPI_Recv from process: " << g_iMpiID << std::endl;
+		MPI_Recv(&vCoordinate[0], 3, MPI_DOUBLE, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		vPoint.push_back(Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]));
+		std::cout << "receive CFD MIN coordinate:" << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]) << "from proc,ess:" << iSourceID << std::endl;
+		xMin = min(xMin, vCoordinate[0]);
+		yMin = min(yMin, vCoordinate[1]);
+		zMin = min(zMin, vCoordinate[2]);
+	}
+	std::vector<double> vCoordinate;
+	vCoordinate.push_back(xMin);
+	vCoordinate.push_back(yMin);
+	vCoordinate.push_back(zMin);
+	MPI_Bcast(&vCoordinate[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	std::cout << "MPI_Bcast send " << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2])
+		<< "from process : " << g_iMpiID << std::endl;
+
+}
+
+void ReceiveAndSetMocValue(MOCMesh &mocMesh)
+{
+	MPI_Datatype mpiMocField_type;
+	InitMocFieldToMpiType(mpiMocField_type);
+	std::vector<STRMocField> vReciveField;
+	for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++)
+	{
+		int iSize;
+		MPI_Recv(&iSize, 1, MPI_INT, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		std::cout << "Receive isize:" << iSize << "from process:" << iSourceID << std::endl;
+		vReciveField.resize(iSize);
+		MPI_Recv(&vReciveField[0], iSize, mpiMocField_type, iSourceID, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
+			//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
+		std::cout << "Receive data from process: " << iSourceID << std::endl;
+		mocMesh.SetFieldByMpiType(vReciveField);
+		vReciveField.clear();
+	}
+	MPI_Type_free(&mpiMocField_type);
+}
+
 int main(int argc, char** argv)
 {
-	//SendFieldForTest(argc, argv);
-	//return 0;
-	int iNumberOfProcs=0, iMpiProcessID =-1, iSourceID;
 	MPI_Status status;
 	char message[100];
 	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &iMpiProcessID);
-	MPI_Comm_size(MPI_COMM_WORLD, &iNumberOfProcs);
-	//myid = 1;
-	g_iMpiID = iMpiProcessID;
-	g_iNumProcs = iNumberOfProcs;
-	//if (iMpiProcessID == 0 && iNumberOfProcs>1)
-		//strLogName = "log_0.txt";
-	//test
-	//test();
-	//return 0;
-	//test
-	//WriteToLog("test");
-
+	MPI_Comm_rank(MPI_COMM_WORLD, &g_iMpiID);
+	MPI_Comm_size(MPI_COMM_WORLD, &g_iNumProcs);
+	//for test
+	//addbytes();
+	//for test
 	std::vector<std::string> parameterList;
 	if (argc > 1)
 	{
@@ -520,13 +554,13 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		if(iMpiProcessID==0)
+		if(g_iMpiID==0)
 			DisplayHelpInfo();
 		MPI_Finalize();
 		return 0;
 	}
 
-	if (iNumberOfProcs == 1)
+	if (g_iNumProcs == 1)
 	{
 		if (parameterList[0] != "createmapper" && parameterList[0] != "cfdtomoc" && parameterList[0] != "moctocfd")
 		{
@@ -541,44 +575,40 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-
-	if (iMpiProcessID > 0) {
+	//sub process
+	if (g_iMpiID > 0) {
 		std::cout << "this is child,pid=" << getpid() << std::endl;
 		//for debug
-		if (iMpiProcessID == 11)
+		int num = 10;
+		while (num == 11)
 		{
-			int num = 10;
-			
-			while (num == 10)
-			{
-			#ifdef _WIN32
-				Sleep(10);
-			#else
-				sleep(10);
-			#endif
-			}
+		#ifdef _WIN32
+			Sleep(10);
+		#else
+			sleep(10);
+		#endif
 		}
 		std::string strMessage;
 		if (parameterList[0] == "createmapper"&&argc==2)
 		{
 			CreateMapper();
-			strMessage = "Process " + std::to_string(iMpiProcessID) + " createmapper finished";
+			//notify to primary process
+			strMessage = "Process " + std::to_string(g_iMpiID) + " createmapper finished";
 			strcpy(message, strMessage.data());// "caclulation finished!");
 			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
 		}
 		else if (parameterList[0] == "moctocfd" && argc == 2)
 		{
 			MOCFieldsToCFD();
-			strMessage = "Process " + std::to_string(iMpiProcessID) + " moctocfd finished";
+			//notify to primary process
+			strMessage = "Process " + std::to_string(g_iMpiID) + " moctocfd finished";
 			strcpy(message, strMessage.data());// "caclulation finished!");
 			MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
 		}
 		else if (parameterList[0] == "cfdtomoc" && argc == 2)
 		{
 			CFDFieldsToMOC();
-			//strMessage = "Process " + std::to_string(iMpiProcessID) + " cfdtomoc finished";
-			//strcpy(message, strMessage.data());// "caclulation finished!");
-			//MPI_Send(message, strlen(message) + 1, MPI_CHAR, 0, 99,MPI_COMM_WORLD);
+
 		}
 		else
 		{
@@ -586,7 +616,7 @@ int main(int argc, char** argv)
 			DisplayHelpInfo();
 		}
 	}
-	else if(iMpiProcessID ==0&& g_iNumProcs>1)
+	else if(g_iMpiID ==0&& g_iNumProcs>1)//primary process
 	{
 		std::cout << "this is 0 Process,pid=" << getpid() << std::endl;
 		//for debug
@@ -599,6 +629,13 @@ int main(int argc, char** argv)
 			sleep(10);
 		#endif
 		}
+		std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
+		std::vector<std::string>& materialList = matches[0];
+		std::string mocMeshFile = GetFileName(configFile, "inputApl");
+		std::string outMocMeshFile = GetFileName(configFile, "outputApl");
+		std::string mocPowerFile = GetFileName(configFile, "mocPower");
+		std::string mocFieldFile = GetFileName(configFile, "inputInp");
+		std::string outMocFieldFile = GetFileName(configFile, "outputInp");
 		if(argc==2 && parameterList[0]=="createmapper")
 		{
 			WriteToLog("Createmapper start.");
@@ -606,40 +643,20 @@ int main(int argc, char** argv)
 			std::vector<std::string>& materialList = matches[0];
 			std::string mocMeshFile = GetFileName(configFile, "inputApl");
 			stringstream strTemp;
-			//MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
+			//MPI_File_open moc date file need all process involed 
+			MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
 
-			std::vector<Vector> vPoint;
-			double xMin=100000, yMin=100000,zMin=100000;
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++)
-			{
-				std::vector<double> vCoordinate;
-				vCoordinate.resize(3);
-				//std::cout << "MPI_Recv from process: " << g_iMpiID << std::endl;
-				MPI_Recv(&vCoordinate[0], 3, MPI_DOUBLE, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				vPoint.push_back(Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]));
-				std::cout << "receive CFD MIN coordinate:" << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2]) << "from proc,ess:" << iSourceID << std::endl;
-				xMin = min(xMin, vCoordinate[0]);
-				yMin=min(yMin, vCoordinate[1]);
-				zMin=min(zMin, vCoordinate[2]);
-			}
-			std::vector<double> vCoordinate;
-			vCoordinate.push_back(xMin);
-			vCoordinate.push_back(yMin);
-			vCoordinate.push_back(zMin);
-			MPI_Bcast(&vCoordinate[0], 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-			std::cout << "MPI_Bcast send " << Vector(vCoordinate[0], vCoordinate[1], vCoordinate[2])
-				<< "from process : " << g_iMpiID << std::endl;
+			// recvied all min Coordinate from all cfd vtk file,caculuat the min x y z and send back
+			CaculateMinCoordinate();
 
-
-			
-			
 			//solution 2
 			stringstream  MOCtoCFD_MapFile_stream;
+			MOCtoCFD_MapFile_stream << "";
 			for(int i=0;i< materialList.size();i++)
 				MPI_WriteStream_To_File(("MapFile_" + materialList[i] + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
 			//solution end
 
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+			for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++) {
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
@@ -651,77 +668,36 @@ int main(int argc, char** argv)
 		if (argc == 2 && parameterList[0] == "cfdtomoc")
 		{
 			WriteToLog("cfdtomoc start.");
-			//FinalCFDFieldsToMOC();
-			// 
-			// 	stringstream strTemp;
-
-
-			//
-			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
-			std::vector<std::string>& materialList = matches[0];
-			std::vector<std::string>& inputVTKList = matches[1];
-			std::string mocMeshFile = GetFileName(configFile, "inputApl");
-			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
-			std::string mocFieldFile = GetFileName(configFile, "inputInp");
-			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
+			//MPI_File_read_at_all read MapFile_***_MOCtoCFD.   all process need to be  involved
 			for (int i = 0; i < materialList.size(); i++)
 			{
 				stringstream strTemp;
 				std::string fileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
 				MPI_OpenFile_To_Stream(fileName, strTemp);
 			}
-
+			//solution 2
+			//FinalCFDFieldsToMOC();
+			//solution 1
 			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 			mocMesh.InitMOCFromInputFile(mocFieldFile);
 			mocMesh.SetDesityAndTemperatureToZero();
-			/*
-			std::vector<std::string> vStrMocFileName;
-			MOCMesh mocMesh(vStrMocFileName,false);
-			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
-			std::string mocFieldFile = GetFileName(configFile, "inputInp");
-			std::string outMocFieldFile = GetFileName(configFile, "outputInp");
-			*/
-			MPI_Datatype mpiMocField_type;
-			InitMocFieldToMpiType(mpiMocField_type);
 
-			std::vector<STRMocField> vReciveField;
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++)
-			{
-				int iSize;
-				MPI_Recv(&iSize, 1, MPI_INT, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				std::cout << "Receive isize:" << iSize <<"from process:"<< iSourceID << std::endl;
-				vReciveField.resize(iSize);
-				MPI_Recv(&vReciveField[0], iSize, mpiMocField_type, iSourceID, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
-					//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
-				std::cout << "Receive data from process: "<< iSourceID << std::endl;
-				mocMesh.SetFieldByMpiType(vReciveField);
-				vReciveField.clear();
-			}
-			//mocMesh.GetAllMocIndex(mocMesh.m_vSMocIndex);
-
+			ReceiveAndSetMocValue(mocMesh);
 			CFDTOMOC_ValueValidation(mocMesh, materialList);
-
-			MPI_Type_free(&mpiMocField_type);
 			
 			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 			mocMesh.OutputStatus(outMocFieldFile);
-		
+			
 			Logger::LogInfo("CFD to MOC finished.");
 			WriteToLog("cfdtomoc end.");
 		}
 		else if (argc == 2 && parameterList[0] == "moctocfd")
 		{
 			WriteToLog("moctocfd start.");
-
-			std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
-			std::vector<std::string>& materialList = matches[0];
-			std::vector<std::string>& inputVTKList = matches[1];
-			std::string mocMeshFile = GetFileName(configFile, "inputApl");
-			std::string outMocMeshFile = GetFileName(configFile, "outputApl");
-			std::string mocPowerFile = GetFileName(configFile, "mocPower");
 			stringstream ifs;
+			//MPI_File_open heatepower date file need all process involed 
 			MPI_OpenFile_To_Stream(mocPowerFile, ifs);
+			//MPI_File_open MapFile_***_MOCtoCFD file need all process involed 
 			for (int i = 0; i < materialList.size(); i++)
 			{
 				stringstream strTemp;
@@ -731,7 +707,7 @@ int main(int argc, char** argv)
 			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 			mocMesh.InitMOCHeatPower(mocPowerFile);
 
-			for (iSourceID = 1; iSourceID < iNumberOfProcs; iSourceID++) {
+			for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++) {
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}

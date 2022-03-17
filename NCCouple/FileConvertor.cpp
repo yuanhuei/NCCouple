@@ -171,7 +171,7 @@ void CreateMapper()
 		}
 		inputVTKList[i] = inputVTKList[i].substr(0, iPos) + "_" + std::to_string(g_iMpiID) + ".vtk";
 	}
-	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
+	MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,true);
 	//create an index for fast searching
 	Logger::LogInfo("Reading CFD mesh from input vtk files");
 	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
@@ -239,6 +239,7 @@ void MOCFieldsToCFD()
 		//read cfd mesh and create solver
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i]);
+		Logger::LogInfo(" solverMapper  ");
 		solverMapper.MOCtoCFDinterception(ValueType::HEATPOWER);
 		cfdMesh.SetFieldValue(heatpower.elementField.v_value, ValueType::HEATPOWER);
 		std::string strOutput_inpName = outputVtkList[i];
@@ -329,11 +330,13 @@ void CFDFieldsToMOC()
 	}
 	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	//mocMesh.OutputStatus(outMocFieldFile);
-	// 
+	// solution 2
 	//mocMesh.WriteFieldInfortoFile();
+
+	//solution 1
 	std::vector<STRMocField> vMocField;
 	mocMesh.SetFieldValueToMpiType(vMocField);
-	SendFieldForTest(vMocField);
+	SendMocValueToMainProcess(vMocField);
 	return;
 }
 

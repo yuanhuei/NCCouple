@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 void WriteToLog(std::string strInfo, int iMpiID)
 {
-	std::string strLogName = "log_" + std::to_string(iMpiID) + ".txt";
+	std::string strLogName = "log" + std::to_string(iMpiID) + ".txt";
 	ofstream iFile(strLogName,std::ios::app);
 	time_t timep;
 	time(&timep);
@@ -30,16 +30,7 @@ void WriteToLog(std::string strInfo, int iMpiID)
 }
 void ConvergeMocMapInfor()
 {
-	//m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
-	/*
-	std::string fileName = "MocMeshMaxSize_info";
-	ifstream infile(fileName);
-	std::string line;
-	//getline(infile, line);
-	//stringstream stringline(line);
-	int iAssemby, iCell, iMesh;
-	infile >> iAssemby >> iCell >> iMesh;
-	infile.close();*/
+
 
 	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
 	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
@@ -117,7 +108,7 @@ void ConvergeMocMapInfor()
 }
 
 
-void SendFieldForTest(const std::vector<STRMocField>& vMocField)
+void SendMocValueToMainProcess(const std::vector<STRMocField>& vMocField)
 {
 	//STRMocField stField;
 	MPI_Datatype STRMocFieldMPIType;
@@ -136,13 +127,6 @@ void SendFieldForTest(const std::vector<STRMocField>& vMocField)
 void InitMocFieldToMpiType(MPI_Datatype &mpiMocField_type)
 {
 	STRMocField stField;
-	/*
-	struct STRMocField
-	{
-		int iAssemblyIndex, iCellIndex, iMeshIndex;
-		double dTempValue, dDensityValue;
-		char cMaterialName[20], cTempName[20];
-	};*/
 	// Create the datatype
 
 	int lengths[7] = { 1, 1,1,1,1,20,20 };
@@ -216,14 +200,12 @@ void MPI_OpenFile_To_Stream(std::string strFileName,stringstream& strTempStream)
 void MPI_WriteStream_To_File(std::string strFileName, stringstream& strTempStream)
 {
 
-	//int iFileSize = File_size(strFileName.c_str());
 	std::string strTemp = strTempStream.str().c_str();
 	MPI_File fh;
 	MPI_Status status;
 	MPI_File_open(MPI_COMM_WORLD, strFileName.c_str(),MPI_MODE_CREATE+MPI_MODE_RDWR, MPI_INFO_NULL, &fh);
-	MPI_File_write_all(fh,strTemp.c_str(), strTemp.length(), MPI_CHAR, &status);
+	MPI_File_write_ordered(fh,strTemp.c_str(), strTemp.length(), MPI_CHAR, &status);
 	MPI_File_close(&fh);
-	//delete[] cFile;
 }
 
 std::tuple<int, int, int>GetMaxIndexOfMoc()

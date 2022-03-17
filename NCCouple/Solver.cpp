@@ -548,12 +548,6 @@ void Solver::ReadMapInfor()
 	iMax_iAssembly = std::get<0>(tupIndex);
 	iMax_iCell = std::get<1>(tupIndex);
 	iMax_iMoc = std::get<2>(tupIndex);
-	/*
-	fileName = "MocMeshMaxSize_info";
-	ifstream infile_MocMeshMaxSize_info(fileName);
-	int iAssemby, iCell, iMesh;
-	infile_MocMeshMaxSize_info >> iAssemby >> iCell >> iMesh;
-	infile_MocMeshMaxSize_info.close();*/
 
 	m_MOC_CFD_MapWithID.resize(iMax_iAssembly);
 	m_MOC_CFD_Map.resize(iMax_iAssembly);
@@ -571,15 +565,6 @@ void Solver::ReadMapInfor()
 	stringstream strTemp;
 	fileName = "MapFile_"  + materialName + "_MOCtoCFD";
 	MPI_OpenFile_To_Stream(fileName, strTemp);
-	/*
-	infile.open(fileName);
-	if (!infile.is_open())
-	{
-		Logger::LogError("cannot find the MOC to CFD map file:" + fileName);
-		exit(EXIT_FAILURE);
-		return;
-	}
-	*/
 	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
 	while (getline(strTemp, line))
 	{
@@ -587,12 +572,11 @@ void Solver::ReadMapInfor()
 		double dValue;
 		stringstream stringline(line);
 		stringline >> i >> j >>k>>m >>n >> dValue;
-		//m_MOC_CFD_MapWithID[i][iCell][iMesh].emplace(std::make_pair(i, n), k);
+		//std::cout << i << " " << j << " " << k << " " << m << " " << n << " " << dValue << std::endl;
 		m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m,n),dValue);
+		
 	}
-	//infile.close();
-
-
+	
 	fileName = "MapFile_" + materialName + "_MOCtoCFD" + "_" + std::to_string(g_iMpiID);;
 	infile.open(fileName);
 	if (!infile.is_open())
@@ -601,7 +585,8 @@ void Solver::ReadMapInfor()
 		exit(EXIT_FAILURE);
 		return;
 	}
-	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
+	Logger::LogInfo("reading MOC to CFD_xx map file in material: " + materialName);
+	
 	while (getline(infile, line))
 	{
 		int i, j, k, m;
