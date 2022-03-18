@@ -319,8 +319,8 @@ void Solver::CheckMappingWeights()
 		{
 			std::stringstream streamTemp;
 			streamTemp << "0 sumSumWeight moc id: " << vSMocIndex[j].iAssemblyIndex
-				<<" "<< vSMocIndex[j].iCellIndex<<" "<< vSMocIndex[j].iMocIndex<< std::endl;
-			Logger::LogInfo(streamTemp.str(),true);
+				<<" "<< vSMocIndex[j].iCellIndex<<" "<< vSMocIndex[j].iMocIndex <<std::endl;
+			//Logger::LogInfo(streamTemp.str(),true);
 			sumOfZero++;
 		}
 	}

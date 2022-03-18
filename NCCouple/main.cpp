@@ -534,7 +534,75 @@ void ReceiveAndSetMocValue(MOCMesh &mocMesh)
 	}
 	MPI_Type_free(&mpiMocField_type);
 }
+void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& materialList)
+{
+	std::vector < std::vector < std::vector < std::unordered_map < std::pair<int, int>, double, pair_hash>>>> m_MOC_CFD_MapWithID;
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
+	iMax_iAssembly = std::get<0>(tupIndex);
+	iMax_iCell = std::get<1>(tupIndex);
+	iMax_iMoc = std::get<2>(tupIndex);
 
+	m_MOC_CFD_MapWithID.resize(iMax_iAssembly);
+	for (int i = 0; i < iMax_iAssembly; i++)
+	{
+		m_MOC_CFD_MapWithID[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j++)
+		{
+			m_MOC_CFD_MapWithID[i][j].resize(iMax_iMoc);
+		}
+	}
+	std::string strFileName,line;
+	fstream iFile;
+	for (int i = 0; i < materialList.size(); i++)
+	{
+
+		strFileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+		iFile.open(strFileName);
+		Logger::LogInfo("reading MOC to CFD map file in material: " + materialList[i]);
+		while (getline(iFile, line))
+		{
+			int i, j, k, m, n;
+			double dValue;
+			stringstream stringline(line);
+			stringline >> i >> j >> k >> m >> n >> dValue;
+			//std::cout << i << " " << j << " " << k << " " << m << " " << n << " " << dValue << std::endl;
+			m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m, n), dValue);
+			//for debug
+			//if(i==8&&j==0&&k==2391)
+				//Logger::LogInfo(FormatStr("8 0 2391 MOC dValue=%.6lf", dValue));
+		}
+		iFile.close();
+	}
+	double minSumWeight = 1;
+	double maxSumWeight = 0;
+	int sumOfZero = 0;
+	for (int j = 0; j < mocMesh.m_vSMocIndex.size(); j++)
+	{
+		double sumSumWeight = 0.0;
+		SMocIndex smocTemp= mocMesh.m_vSMocIndex[j];
+		for (auto& iter : m_MOC_CFD_MapWithID[smocTemp.iAssemblyIndex][smocTemp.iCellIndex][smocTemp.iMocIndex])
+		{
+			sumSumWeight += iter.second;
+		}
+		//for debug
+		//if (smocTemp == SMocIndex(8, 0, 2391))
+			//Logger::LogInfo(FormatStr("8 0 2391 MOC sumSumWeight=%.6lf", sumSumWeight));
+
+		minSumWeight = min(minSumWeight, sumSumWeight);
+		maxSumWeight = max(maxSumWeight, sumSumWeight);
+		if (sumSumWeight < SMALL)
+		{
+			std::stringstream streamTemp;
+			streamTemp << "0 sumSumWeight moc id: " <<mocMesh.GetMaterialNameAtIndex(smocTemp)<<" " << smocTemp.iAssemblyIndex
+				<< " " << smocTemp.iCellIndex << " " << smocTemp.iMocIndex << std::endl;
+			Logger::LogInfo(streamTemp.str(), true);
+			sumOfZero++;
+		}
+	}
+	Logger::LogInfo(FormatStr("sum of CFD->MOC weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
+	Logger::LogInfo(FormatStr("%d MOC cells have no weights from CFD cells", sumOfZero));
+}
 int main(int argc, char** argv)
 {
 	MPI_Status status;
@@ -660,6 +728,8 @@ int main(int argc, char** argv)
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
+			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL, false);
+			CheckMocMappingWeights(mocMesh, materialList);
 			//solution 1 
 			//ConvergeMocMapInfor();
 			Logger::LogInfo("All createmapper finished.");
