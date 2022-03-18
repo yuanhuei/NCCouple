@@ -47,7 +47,10 @@ Scalar Integration
 			//const MHTMocMeshPoint& mocPoint = dynamic_cast<const MHTMocMeshPoint&>(*mocMesh.GetMocMeshPointPtr(vSMocIndex[i]));
 			if (mocMesh.GetMaterialNameAtIndex(vSMocIndex[i]) != strZoneName) continue;
 			sourceValue = mocMesh.GetValueAtIndex(vSMocIndex[i],vt);
-			pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex[i]);
+			std::vector<int>vCFDID;
+			double dValue=solverMapper.GetMocMeshMapValue(vSMocIndex[i]);
+
+			pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex[i])* dValue;
 			integration += sourceValue * pointVolume;
 		}
 	}
@@ -73,10 +76,13 @@ std::pair<double,double> ConservationValidation
 )
 {
 	std::string valueName = NameOfValueType(vt);
-	double sourceIntegralValue = Integration(sourceMesh, vt, strZoneName, solverMapper);
-	double targetIntegralValue = Integration(targetMesh, vt, strZoneName, solverMapper);
-	Logger::LogInfo(FormatStr("Integral of %s on region %s of source mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
-	Logger::LogInfo(FormatStr("Integral of %s on region %s of target mesh: %.6lf", valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
+	double sourceIntegralValue = Integration(sourceMesh,vt, strZoneName, solverMapper);
+	double targetIntegralValue = Integration(targetMesh,vt, strZoneName, solverMapper);
+	Logger::LogInfo(FormatStr("Process %d,Integral of %s on region %s of source mesh: %.6lf",g_iMpiID, valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
+	Logger::LogInfo(FormatStr("Process %d,Integral of %s on region %s of target mesh: %.6lf", g_iMpiID,valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
+	WriteToLog(FormatStr("Process %d,Integral of %s on region %s of source mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), sourceIntegralValue), g_iMpiID);
+	WriteToLog(FormatStr("Process %d,Integral of %s on region %s of target mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), targetIntegralValue),g_iMpiID);
+
 	return std::make_pair(sourceIntegralValue,targetIntegralValue);
 }
 
@@ -326,6 +332,11 @@ void CFDFieldsToMOC()
 		ofstream oFile("CFD_VALUE_"+ materialList[i]+"_"+ std::to_string(g_iMpiID));
 		//ofstream oFile2("CFD_TEPERATURE_VALUE_" + materialList[i] + "_" + std::to_string(g_iMpiID));
 		oFile << pairDensity.first << " " << pairTemerature.first << std::endl;
+		oFile.close();
+
+		 oFile.open("MOC_VALUE_" + materialList[i] + "_" + std::to_string(g_iMpiID));
+		//ofstream oFile2("CFD_TEPERATURE_VALUE_" + materialList[i] + "_" + std::to_string(g_iMpiID));
+		oFile << pairDensity.second << " " << pairTemerature.second << std::endl;
 		oFile.close();
 	}
 	//RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));

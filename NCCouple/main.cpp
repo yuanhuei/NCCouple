@@ -392,6 +392,7 @@ void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 	for (int i = 0; i < materialList.size(); i++)
 	{
 		double dTotalDensity = 0, dTotalTemperature = 0;
+		double dMOCTotalDensity = 0, dMOCTotalTemperature = 0;
 		for (int j = 1; j < g_iNumProcs; j++)
 		{
 			double dDensity = -1, dTemperature = -1;
@@ -403,10 +404,19 @@ void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 			dTotalDensity += dDensity;
 			dTotalTemperature += dTemperature;
 			iFile.close();
+
+			dDensity = -1;
+			dTemperature = -1;
+			filename = "MOC_VALUE_" + materialList[i] + "_" + std::to_string(j);
+			iFile.open(filename);
+			iFile >> dDensity >> dTemperature;
+			dMOCTotalDensity += dDensity;
+			dMOCTotalTemperature += dTemperature;
+			iFile.close();
 		}
-		Logger::LogInfo(FormatStr("Moc total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), integrationDesityValue[i]));
+		Logger::LogInfo(FormatStr("Moc total Integration of Desity for Material:%s is %.6lf and %.6lf", materialList[i].c_str(), dMOCTotalDensity,integrationDesityValue[i]));
 		Logger::LogInfo(FormatStr("CFD total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
-		Logger::LogInfo(FormatStr("Moc total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), integrationTemperatureValue[i]));
+		Logger::LogInfo(FormatStr("Moc total Integration of Temperature for Material:%s is %.6lf  and %.6lf", materialList[i].c_str(), dMOCTotalTemperature,integrationTemperatureValue[i]));
 		Logger::LogInfo(FormatStr("CFD total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
 	}
 }
@@ -602,6 +612,8 @@ void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& material
 	}
 	Logger::LogInfo(FormatStr("sum of CFD->MOC weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
 	Logger::LogInfo(FormatStr("%d MOC cells have no weights from CFD cells", sumOfZero));
+	WriteToLog(FormatStr("sum of CFD->MOC weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
+	WriteToLog(FormatStr("%d MOC cells have no weights from CFD cells", sumOfZero));
 }
 int main(int argc, char** argv)
 {

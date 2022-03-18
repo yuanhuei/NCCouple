@@ -440,7 +440,9 @@ void Solver::Interception_fromCFDToMOC
 )
 {
 
-	std::vector< SMocIndex>& vSMocIndex = targetMesh.m_vSMocIndex;
+	//std::vector< SMocIndex>& vSMocIndex = targetMesh.m_vSMocIndex;
+	std::vector< SMocIndex> vSMocIndex;
+	GetMocIndexByMapValue(vSMocIndex);
 	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
 	double dMax = 0, dMin = 2;
 	for (int i = 0; i < vSMocIndex.size(); i++)
@@ -452,9 +454,11 @@ void Solver::Interception_fromCFDToMOC
 		{
 			dValue += pair.second;
 		}
-		for (auto& pair : m_MOC_CFD_MapWithID[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
+		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
 		{
-			int  iCFDMeshPointID = pair.first.second;
+			//if (pair.first.first != g_iMpiID)
+				//continue;
+			int  iCFDMeshPointID = pair.first;
 			double interCoe = pair.second/ dValue;
 			interValue += interCoe * sourceValueField[iCFDMeshPointID];
 
