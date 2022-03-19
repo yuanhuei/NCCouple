@@ -40,6 +40,15 @@ public:
 		}
 		return dValue;
 	}
+	double GetMocMeshMapTotalValue(SMocIndex mocIndex)
+	{
+		double dValue = 0;
+		for (auto& iter : m_MOC_CFD_MapWithID[mocIndex.iAssemblyIndex][mocIndex.iCellIndex][mocIndex.iMocIndex])
+		{
+			dValue += iter.second;
+		}
+		return dValue;
+	}
 private:
 	//void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 	void Interception_fromMocToCFD

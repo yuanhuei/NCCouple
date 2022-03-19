@@ -35,7 +35,7 @@ Scalar Integration
 		bSourceMoc = false;
 	}
 	Scalar integration = 0.0;
-	double sourceValue = 0, pointVolume = 0;
+	double sourceValue = 0, pointVolume = 0,cfdTotalVolume=0,mocTotalVolume=0;
 	if (bSourceMoc)
 	{
 		 const MOCMesh& mocMesh = dynamic_cast<const MOCMesh&> (mesh);
@@ -49,9 +49,13 @@ Scalar Integration
 			sourceValue = mocMesh.GetValueAtIndex(vSMocIndex[i],vt);
 			std::vector<int>vCFDID;
 			double dValue=solverMapper.GetMocMeshMapValue(vSMocIndex[i]);
+			double dTotalValue = solverMapper.GetMocMeshMapTotalValue(vSMocIndex[i]);
 
-			pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex[i])* dValue;
+			pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex[i])* dValue/ dTotalValue;
 			integration += sourceValue * pointVolume;
+
+
+			mocTotalVolume += pointVolume;
 		}
 	}
 	else
@@ -61,8 +65,12 @@ Scalar Integration
 			sourceValue = mesh.GetMeshPointPtr(i)->GetValue(vt);
 			pointVolume = mesh.GetMeshPointPtr(i)->Volume();
 			integration += sourceValue * pointVolume;
+
+			cfdTotalVolume += pointVolume;
 		}
 	}
+	if(g_iMpiID==1)
+		WriteToLog(FormatStr("the total cfd vulume is :%.6lf the total moc volume is:%.6lf", cfdTotalVolume, mocTotalVolume));
 	return integration;
 }
 
