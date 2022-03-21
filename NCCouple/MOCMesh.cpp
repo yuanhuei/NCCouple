@@ -2016,6 +2016,10 @@ MOCMesh::MOCMesh(const std::vector<std::string>& strMocFileName,bool bCreatedByF
 		for (int j = 0; j < iMax_iCell; j++)
 		{
 			m_vAssemblyField[i][j].resize(iMax_iMoc);
+			for (int k = 0; k < m_vAssemblyField[i][j].size(); k++)
+			{
+				m_vAssemblyField[i][j][k] = std::make_shared<MocMeshField>();
+			}
 		}
 	}
 	if (bCreatedByFile)

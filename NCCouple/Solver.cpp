@@ -450,12 +450,9 @@ void Solver::Interception_fromCFDToMOC
 	for (int i = 0; i < vSMocIndex.size(); i++)
 	{
 		double interValue = 0.0;
-		double dValue=0;
+		double dValue= GetMocMeshMapTotalValue(vSMocIndex[i]);
 		double iMin = 10000, iMax = 0;
-		for (auto& pair : m_MOC_CFD_MapWithID[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
-		{
-			dValue += pair.second;
-		}
+
 		for (auto& pair : m_MOC_CFD_Map[vSMocIndex[i].iAssemblyIndex][vSMocIndex[i].iCellIndex][vSMocIndex[i].iMocIndex])
 		{
 			//if (pair.first.first != g_iMpiID)
@@ -557,15 +554,15 @@ void Solver::ReadMapInfor()
 	iMax_iCell = std::get<1>(tupIndex);
 	iMax_iMoc = std::get<2>(tupIndex);
 
-	m_MOC_CFD_MapWithID.resize(iMax_iAssembly);
+	m_MOC_CFD_Map_Total.resize(iMax_iAssembly);
 	m_MOC_CFD_Map.resize(iMax_iAssembly);
 	for (int i = 0; i < iMax_iAssembly; i++)
 	{
-		m_MOC_CFD_MapWithID[i].resize(iMax_iCell);
+		m_MOC_CFD_Map_Total[i].resize(iMax_iCell);
 		m_MOC_CFD_Map[i].resize(iMax_iCell);
 		for (int j = 0; j < iMax_iCell; j++)
 		{
-			m_MOC_CFD_MapWithID[i][j].resize(iMax_iMoc);
+			m_MOC_CFD_Map_Total[i][j].resize(iMax_iMoc);
 			m_MOC_CFD_Map[i][j].resize(iMax_iMoc);
 		}
 	}
@@ -579,9 +576,9 @@ void Solver::ReadMapInfor()
 		int i, j, k, m, n;
 		double dValue;
 		stringstream stringline(line);
-		stringline >> i >> j >> k >> m >> n >> dValue;
+		stringline >> i >> j >> k >>dValue;
 		//std::cout << i << " " << j << " " << k << " " << m << " " << n << " " << dValue << std::endl;
-		m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m, n), dValue);
+		m_MOC_CFD_Map_Total[i][j][k]=dValue;
 
 	}
 
@@ -607,17 +604,14 @@ void Solver::ReadMapInfor()
 	infile.close();
 
 	double dMax = 0, dMin = 2.0;
-	for (int i = 0; i < m_MOC_CFD_MapWithID.size(); i++)
+	for (int i = 0; i < m_MOC_CFD_Map_Total.size(); i++)
 	{
-		for (int j = 0; j < m_MOC_CFD_MapWithID[i].size(); j++)
+		for (int j = 0; j < m_MOC_CFD_Map_Total[i].size(); j++)
 		{
-			for (int k = 0; k < m_MOC_CFD_MapWithID[i][j].size(); k++)
+			for (int k = 0; k < m_MOC_CFD_Map_Total[i][j].size(); k++)
 			{
-				double dValue = 0;
-				for (auto& iter : m_MOC_CFD_MapWithID[i][j][k])
-				{
-					dValue += iter.second;
-				}
+				double dValue = m_MOC_CFD_Map_Total[i][j][k];
+
 				dMax = max(dMax, dValue);
 				if(dValue!=0)
 					dMin = min(dMin, dValue);

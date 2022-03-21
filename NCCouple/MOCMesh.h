@@ -411,7 +411,7 @@ public://multi assembly multi cell
 	void SetFieldByMpiType(std::vector<STRMocField>& vMocField);
 	void SetFieldValueToMpiType(std::vector<STRMocField>& vMocField);
 	void GetAllMocIndex(std::vector< SMocIndex>& vSMocIndex);
-
+	void InitSMocIndex() { GetAllMocIndex(m_vSMocIndex); };
 private:
 	Assembly_Type* GetAssemblyTypePointer(int iAssemblyType);
 	void InitAssembly();

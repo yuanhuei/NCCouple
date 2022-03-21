@@ -42,12 +42,8 @@ public:
 	}
 	double GetMocMeshMapTotalValue(SMocIndex mocIndex)
 	{
-		double dValue = 0;
-		for (auto& iter : m_MOC_CFD_MapWithID[mocIndex.iAssemblyIndex][mocIndex.iCellIndex][mocIndex.iMocIndex])
-		{
-			dValue += iter.second;
-		}
-		return dValue;
+		return m_MOC_CFD_Map_Total[ mocIndex.iAssemblyIndex][mocIndex.iCellIndex][mocIndex.iMocIndex];
+
 	}
 	void SetMocMapValueToStruct(std::vector<STRMocMapValue>& vMocMapValue)
 	{
@@ -97,7 +93,7 @@ private:
 	//std::vector<std::unordered_map<int, double>> m_MOC_CFD_Map;
 	std::vector<std::vector<std::vector<std::unordered_map<int, double>>>> m_MOC_CFD_Map;
 	std::vector<std::unordered_map<SMocIndex, double>> m_CFD_MOC_Map;
-
+	std::vector<std::vector<std::vector<double>>> m_MOC_CFD_Map_Total;
 	std::vector < std::vector < std::vector < std::unordered_map < std::pair<int, int>, double, pair_hash>>>> m_MOC_CFD_MapWithID;
 
 };

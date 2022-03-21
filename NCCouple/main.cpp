@@ -360,7 +360,7 @@ void FinalCFDFieldsToMOC()
 	RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 	mocMesh.OutputStatus(outMocFieldFile);
 }
-void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
+void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList, MOCMesh& mocMesh_v)
 {
 	std::vector<Scalar> integrationDesityValue, integrationTemperatureValue;
 	double sourceDesityValue = 0, sourceTemperatureValue = 0, pointVolume = 0;
@@ -383,7 +383,7 @@ void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 			continue;
 		sourceDesityValue = mocMesh.GetValueAtIndex(vSMocIndex, ValueType::DENSITY);
 		sourceTemperatureValue = mocMesh.GetValueAtIndex(vSMocIndex, ValueType::TEMPERAURE);
-		pointVolume = mocMesh.GetVolumeAtIndex(vSMocIndex);
+		pointVolume = mocMesh_v.GetVolumeAtIndex(vSMocIndex);
 		integrationDesityValue[k] += sourceDesityValue * pointVolume;
 		integrationTemperatureValue[k] += sourceTemperatureValue * pointVolume;
 	}
@@ -846,12 +846,16 @@ int main(int argc, char** argv)
 			//solution 2
 			//FinalCFDFieldsToMOC();
 			//solution 1
-			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
+			std::vector<std::string> strMocFileName;
+			MOCMesh mocMesh_v(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
+			MOCMesh mocMesh(strMocFileName, false);
+			
+			//mocMesh.SetDesityAndTemperatureToZero();
 			mocMesh.InitMOCFromInputFile(mocFieldFile);
-			mocMesh.SetDesityAndTemperatureToZero();
-
 			ReceiveAndSetMocValue(mocMesh);
-			CFDTOMOC_ValueValidation(mocMesh, materialList);
+			
+			//mocMesh.InitSMocIndex();
+			CFDTOMOC_ValueValidation(mocMesh, materialList, mocMesh_v);
 			
 			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 			mocMesh.OutputStatus(outMocFieldFile);
