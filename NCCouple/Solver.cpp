@@ -514,9 +514,7 @@ void Solver::WriteMapInfortoFile()
 	CFDtoMOC_MapFile.close();
 	MOCtoCFD_MapFile.close();
 	//MPI_WriteStream_To_File(("MapFile_" + materialName + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
-	std::vector<STRMocMapValue> vMocMapValue;
-	SetMocMapValueToStruct(vMocMapValue);
-	SendMocMapValueToMainProcess(vMocMapValue);
+
 
 }
 
@@ -602,7 +600,7 @@ void Solver::ReadMapInfor()
 		m_MOC_CFD_Map[i][j][k].emplace(m, dValue);
 	}
 	infile.close();
-
+	/* for debug
 	double dMax = 0, dMin = 2.0;
 	for (int i = 0; i < m_MOC_CFD_Map_Total.size(); i++)
 	{
@@ -613,12 +611,12 @@ void Solver::ReadMapInfor()
 				double dValue = m_MOC_CFD_Map_Total[i][j][k];
 
 				dMax = max(dMax, dValue);
-				if(dValue!=0)
-					dMin = min(dMin, dValue);
+				dMin = min(dMin, dValue);
 			}
 		}
 	}
-	WriteToLog(FormatStr("the max value is:%.6lf,the min value is:&%.6lf", dMax, dMin));
+	//WriteToLog(FormatStr("the max value is:%.6lf,the min value is:&%.6lf", dMax, dMin));
+	*/
 	return;
 }
 

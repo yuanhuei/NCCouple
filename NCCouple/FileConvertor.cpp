@@ -69,8 +69,8 @@ Scalar Integration
 			cfdTotalVolume += pointVolume;
 		}
 	}
-	if(g_iMpiID==1)
-		WriteToLog(FormatStr("the total cfd vulume is :%.6lf the total moc volume is:%.6lf", cfdTotalVolume, mocTotalVolume));
+	//if(g_iMpiID==1)
+		//WriteToLog(FormatStr("the total cfd vulume is :%.6lf the total moc volume is:%.6lf", cfdTotalVolume, mocTotalVolume));
 	return integration;
 }
 
@@ -88,8 +88,8 @@ std::pair<double,double> ConservationValidation
 	double targetIntegralValue = Integration(targetMesh,vt, strZoneName, solverMapper);
 	Logger::LogInfo(FormatStr("Process %d,Integral of %s on region %s of source mesh: %.6lf",g_iMpiID, valueName.c_str(), strZoneName.c_str(), sourceIntegralValue));
 	Logger::LogInfo(FormatStr("Process %d,Integral of %s on region %s of target mesh: %.6lf", g_iMpiID,valueName.c_str(), strZoneName.c_str(), targetIntegralValue));
-	WriteToLog(FormatStr("Process %d,Integral of %s on region %s of source mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), sourceIntegralValue), g_iMpiID);
-	WriteToLog(FormatStr("Process %d,Integral of %s on region %s of target mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), targetIntegralValue),g_iMpiID);
+	//WriteToLog(FormatStr("Process %d,Integral of %s on region %s of source mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), sourceIntegralValue), g_iMpiID);
+	//WriteToLog(FormatStr("Process %d,Integral of %s on region %s of target mesh: %.6lf", g_iMpiID, valueName.c_str(), strZoneName.c_str(), targetIntegralValue),g_iMpiID);
 
 	return std::make_pair(sourceIntegralValue,targetIntegralValue);
 }
@@ -197,6 +197,11 @@ void CreateMapper()
 		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
 		Solver solverMapper(mocMesh, cfdMesh, materialList[i],true);
 		solverMapper.CheckMappingWeights();
+
+		//send to mainprocess
+		std::vector<STRMocMapValue> vMocMapValue;
+		solverMapper.SetMocMapValueToStruct(vMocMapValue);
+		SendMocMapValueToMainProcess(vMocMapValue);
 	}
 	return;
 }

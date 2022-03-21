@@ -418,6 +418,11 @@ void CFDTOMOC_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 		Logger::LogInfo(FormatStr("CFD total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
 		Logger::LogInfo(FormatStr("Moc total Integration of Temperature for Material:%s is %.6lf  and %.6lf", materialList[i].c_str(), dMOCTotalTemperature,integrationTemperatureValue[i]));
 		Logger::LogInfo(FormatStr("CFD total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
+		WriteToLog(FormatStr("Moc total Integration of Desity for Material:%s is %.6lf and %.6lf", materialList[i].c_str(), dMOCTotalDensity, integrationDesityValue[i]));
+		WriteToLog(FormatStr("CFD total Integration of Desity for Material:%s is %.6lf", materialList[i].c_str(), dTotalDensity));
+		WriteToLog(FormatStr("Moc total Integration of Temperature for Material:%s is %.6lf  and %.6lf", materialList[i].c_str(), dMOCTotalTemperature, integrationTemperatureValue[i]));
+		WriteToLog(FormatStr("CFD total Integration of Temperature for Material:%s is %.6lf", materialList[i].c_str(), dTotalTemperature));
+
 	}
 }
 void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materialList)
@@ -462,6 +467,8 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 		}
 		Logger::LogInfo(FormatStr("Moc total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), integrationHeatpower[i]));
 		Logger::LogInfo(FormatStr("CFD total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), dTotalHeatPower));
+		WriteToLog(FormatStr("Moc total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), integrationHeatpower[i]));
+		WriteToLog(FormatStr("CFD total Integration of HeatPower for Material:%s is %.6lf", materialList[i].c_str(), dTotalHeatPower));
 	}
 }
 
@@ -546,20 +553,20 @@ void ReceiveAndSetMocValue(MOCMesh &mocMesh)
 }
 void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& materialList)
 {
-	std::vector < std::vector < std::vector < std::unordered_map < std::pair<int, int>, double, pair_hash>>>> m_MOC_CFD_MapWithID;
+	std::vector < std::vector < std::vector < double>>> MOC_CFD_Map_Total;
 	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
 	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
 	iMax_iAssembly = std::get<0>(tupIndex);
 	iMax_iCell = std::get<1>(tupIndex);
 	iMax_iMoc = std::get<2>(tupIndex);
 
-	m_MOC_CFD_MapWithID.resize(iMax_iAssembly);
+	MOC_CFD_Map_Total.resize(iMax_iAssembly);
 	for (int i = 0; i < iMax_iAssembly; i++)
 	{
-		m_MOC_CFD_MapWithID[i].resize(iMax_iCell);
+		MOC_CFD_Map_Total[i].resize(iMax_iCell);
 		for (int j = 0; j < iMax_iCell; j++)
 		{
-			m_MOC_CFD_MapWithID[i][j].resize(iMax_iMoc);
+			MOC_CFD_Map_Total[i][j].resize(iMax_iMoc);
 		}
 	}
 	std::string strFileName,line;
@@ -575,9 +582,9 @@ void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& material
 			int i, j, k, m, n;
 			double dValue;
 			stringstream stringline(line);
-			stringline >> i >> j >> k >> m >> n >> dValue;
+			stringline >> i >> j >> k >> dValue;
 			//std::cout << i << " " << j << " " << k << " " << m << " " << n << " " << dValue << std::endl;
-			m_MOC_CFD_MapWithID[i][j][k].emplace(std::make_pair(m, n), dValue);
+			MOC_CFD_Map_Total[i][j][k]=dValue;
 			//for debug
 			//if(i==8&&j==0&&k==2391)
 				//Logger::LogInfo(FormatStr("8 0 2391 MOC dValue=%.6lf", dValue));
@@ -589,12 +596,9 @@ void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& material
 	int sumOfZero = 0;
 	for (int j = 0; j < mocMesh.m_vSMocIndex.size(); j++)
 	{
-		double sumSumWeight = 0.0;
+		
 		SMocIndex smocTemp= mocMesh.m_vSMocIndex[j];
-		for (auto& iter : m_MOC_CFD_MapWithID[smocTemp.iAssemblyIndex][smocTemp.iCellIndex][smocTemp.iMocIndex])
-		{
-			sumSumWeight += iter.second;
-		}
+		double sumSumWeight = MOC_CFD_Map_Total[smocTemp.iAssemblyIndex][smocTemp.iCellIndex][smocTemp.iMocIndex];
 		//for debug
 		//if (smocTemp == SMocIndex(8, 0, 2391))
 			//Logger::LogInfo(FormatStr("8 0 2391 MOC sumSumWeight=%.6lf", sumSumWeight));
@@ -693,7 +697,6 @@ void ReceiveAndWriteMocMapValue(std::vector<std::string> materialList)
 			}
 		}
 		fMapFile.close();
-		//MOC_CFD_MapValue.clear();
 	}
 	MPI_Type_free(&mpiMocField_type);
 
@@ -846,10 +849,11 @@ int main(int argc, char** argv)
 			//solution 2
 			//FinalCFDFieldsToMOC();
 			//solution 1
+
 			std::vector<std::string> strMocFileName;
 			MOCMesh mocMesh_v(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);
 			MOCMesh mocMesh(strMocFileName, false);
-			
+
 			//mocMesh.SetDesityAndTemperatureToZero();
 			mocMesh.InitMOCFromInputFile(mocFieldFile);
 			ReceiveAndSetMocValue(mocMesh);
