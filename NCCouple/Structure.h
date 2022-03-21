@@ -61,9 +61,35 @@ struct STRMocField
 	double dTempValue, dDensityValue;
 	char cMaterialName[20], cTempName[20];
 };
+struct STRMocMapValue
+{
+	int iAssemblyIndex, iCellIndex, iMeshIndex;
+	double dMapValue;
+	STRMocMapValue()
+	{
+		iAssemblyIndex = -1;
+		iCellIndex = -1;
+		iMeshIndex = -1;
+		dMapValue = -1;
+	}
+	STRMocMapValue(int i, int j, int k,double dValue) :iAssemblyIndex(i), iCellIndex(j), iMeshIndex(k),dMapValue(dValue) {};
+	bool operator==(const STRMocMapValue& p) const
+	{
+		return iAssemblyIndex == p.iAssemblyIndex && iCellIndex == p.iCellIndex && iMeshIndex == p.iMeshIndex&& dMapValue==p.dMapValue;
+	};
+	void operator=(const STRMocMapValue& p)
+	{
+		iAssemblyIndex = p.iAssemblyIndex;
+		iCellIndex = p.iCellIndex;
+		iMeshIndex = p.iMeshIndex;
+		dMapValue = p.dMapValue;
+	};
 
+};
 void SendMocValueToMainProcess(const std::vector<STRMocField>& vMocField);
-void InitMocFieldToMpiType( MPI_Datatype& person_type);
+void InitMocFieldToMpiType( MPI_Datatype& mpiMocField_type);
+void SendMocMapValueToMainProcess(const std::vector<STRMocMapValue>& vMocMapValue);
+void InitMocMapValueToMpiType(MPI_Datatype& mpiMocMapValue_type);
 
 Vector UpdateMinLocation(Vector vPoint);
 int File_size(const char* filename);//get size(byte) of file
@@ -73,5 +99,6 @@ void MPI_WriteStream_To_File(std::string strFileName, stringstream& strTempStrea
 std::tuple<int, int, int>GetMaxIndexOfMoc();
 
 void WriteToLog(std::string strInfo, int iMpiID = 0);
+
 
 #endif

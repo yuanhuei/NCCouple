@@ -405,7 +405,8 @@ void Solver::Interception_fromMocToCFD
 )
 {
 
-	std::vector<double> targetValueField = targetMesh.GetValueVec(vt);
+	std::vector<double> targetValueField;
+	targetMesh.GetValueVec(vt,targetValueField);
 	for (int i = 0; i < targetMesh.GetMeshPointNum(); i++) 
 	{
 		double interValue = 0.0;
@@ -443,7 +444,8 @@ void Solver::Interception_fromCFDToMOC
 	//std::vector< SMocIndex>& vSMocIndex = targetMesh.m_vSMocIndex;
 	std::vector< SMocIndex> vSMocIndex;
 	GetMocIndexByMapValue(vSMocIndex);
-	std::vector<double> sourceValueField = sourceMesh.GetValueVec(vt);
+	std::vector<double> sourceValueField;
+	sourceMesh.GetValueVec(vt, sourceValueField);
 	double dMax = 0, dMin = 2;
 	for (int i = 0; i < vSMocIndex.size(); i++)
 	{
@@ -469,9 +471,7 @@ void Solver::Interception_fromCFDToMOC
 		if(dValue !=0)
 			targetMesh.SetValueAtIndex(vSMocIndex[i], interValue, vt);
 	}
-	std::cout << "the max dValue: " << dMax << " the Min: " << dMin << std::endl;
-
-
+	Logger::LogInfo(FormatStr("the max dValue:%.6lf the Min:%6.lf ", dMax, dMin));
 	return;
 }
 
@@ -516,7 +516,11 @@ void Solver::WriteMapInfortoFile()
 	}
 	CFDtoMOC_MapFile.close();
 	MOCtoCFD_MapFile.close();
-	MPI_WriteStream_To_File(("MapFile_" + materialName + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
+	//MPI_WriteStream_To_File(("MapFile_" + materialName + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
+	std::vector<STRMocMapValue> vMocMapValue;
+	SetMocMapValueToStruct(vMocMapValue);
+	SendMocMapValueToMainProcess(vMocMapValue);
+
 }
 
 void Solver::ReadMapInfor()

@@ -49,6 +49,27 @@ public:
 		}
 		return dValue;
 	}
+	void SetMocMapValueToStruct(std::vector<STRMocMapValue>& vMocMapValue)
+	{
+		for (int i = 0; i < m_MOC_CFD_Map.size(); i++)
+		{
+			for (int j = 0; j < m_MOC_CFD_Map[i].size(); j++)
+			{
+				for (int k = 0; k < m_MOC_CFD_Map[i][j].size(); k++)
+				{
+					double dValue = 0;
+					for (auto& iter : m_MOC_CFD_Map[i][j][k])
+					{
+						dValue += iter.second;
+					}
+					if (dValue != 0)
+					{
+						vMocMapValue.push_back(STRMocMapValue(i, j, k, dValue));
+					}
+				}
+			}
+		}
+	}
 private:
 	//void Interception(const GeneralMesh* sourceMesh, GeneralMesh* targetMesh, ValueType vt);
 	void Interception_fromMocToCFD

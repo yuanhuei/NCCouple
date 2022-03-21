@@ -615,6 +615,90 @@ void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& material
 	WriteToLog(FormatStr("sum of CFD->MOC weights ranges from %.6lf to %6lf", minSumWeight, maxSumWeight));
 	WriteToLog(FormatStr("%d MOC cells have no weights from CFD cells", sumOfZero));
 }
+void RemoveTemporaryFile_cfdtomoc(std::vector<std::string>& materialList)
+{
+	for (int i = 0; i < materialList.size(); i++)
+	{
+		for (int j = 1; j < g_iNumProcs; j++)
+		{
+			RemoveFile("MOC_VALUE_" + materialList[i] + "_" + std::to_string(j));
+			RemoveFile("CFD_VALUE_" + materialList[i] + "_" + std::to_string(j));
+		}
+	}
+}
+void RemoveTemporaryFile_moctocfd(std::vector<std::string>& materialList)
+{
+	for (int i = 0; i < materialList.size(); i++)
+	{
+		for (int j = 1; j < g_iNumProcs; j++)
+		{
+			RemoveFile("CFD_HeatPower_" + materialList[i] + "_" + std::to_string(j));
+		}
+	}
+}
+void ReceiveAndWriteMocMapValue(std::vector<std::string> materialList)
+{
+	MPI_Datatype mpiMocField_type;
+	std::vector<std::vector<std::vector<double>>> MOC_CFD_MapValue;
+	int iMax_iAssembly, iMax_iCell, iMax_iMoc;
+	std::tuple<int, int, int>tupIndex = GetMaxIndexOfMoc();
+	iMax_iAssembly = std::get<0>(tupIndex);
+	iMax_iCell = std::get<1>(tupIndex);
+	iMax_iMoc = std::get<2>(tupIndex);
+	MOC_CFD_MapValue.resize(iMax_iAssembly);
+	for (int i = 0; i < MOC_CFD_MapValue.size(); i++)
+	{
+		MOC_CFD_MapValue[i].resize(iMax_iCell);
+		for (int j = 0; j < iMax_iCell; j++)
+		{
+			MOC_CFD_MapValue[i][j].resize(iMax_iMoc);
+		}
+	}
+
+	InitMocMapValueToMpiType(mpiMocField_type);
+	std::vector<STRMocMapValue> vReciveField;
+	for (int i = 0; i < materialList.size(); i++)
+	{
+		for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++)
+		{
+			int iSize;
+			MPI_Recv(&iSize, 1, MPI_INT, iSourceID, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::cout << "Receive isize:" << iSize << "from process:" << iSourceID << std::endl;
+			vReciveField.resize(iSize);
+			MPI_Recv(&vReciveField[0], iSize, mpiMocField_type, iSourceID, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			//printf("MPI process %d received person:\n\t- iAssembly = %d\n\t- icell = %d\n\t- name = %s\n", my_rank, vReciveField[1].iAssemblyIndex,
+				//vReciveField[1].iCellIndex, vReciveField[1].cMaterialName);
+			std::cout << "Receive data from process: " << iSourceID << std::endl;
+			for (int k = 0; k < vReciveField.size(); k++)
+			{
+				STRMocMapValue structTemp = vReciveField[k];
+				MOC_CFD_MapValue[structTemp.iAssemblyIndex][structTemp.iCellIndex][structTemp.iMeshIndex] +=structTemp.dMapValue;
+
+			}
+			vReciveField.clear();
+		}
+		//output to file
+		ofstream fMapFile("MapFile_" + materialList[i] + "_MOCtoCFD");
+		for (int m = 0; m < MOC_CFD_MapValue.size(); m++)
+		{
+			for (int n = 0; n < MOC_CFD_MapValue[m].size(); n++)
+			{
+				for (int t = 0; t < MOC_CFD_MapValue[m][n].size(); t++)
+				{
+					double dValue = MOC_CFD_MapValue[m][n][t];
+					if (dValue != 0)
+						fMapFile << m << " " << n << " " << t << " " << dValue << std::endl;
+					MOC_CFD_MapValue[m][n][t] = 0;
+				}
+			}
+		}
+		fMapFile.close();
+		//MOC_CFD_MapValue.clear();
+	}
+	MPI_Type_free(&mpiMocField_type);
+
+
+}
 int main(int argc, char** argv)
 {
 	MPI_Status status;
@@ -732,9 +816,11 @@ int main(int argc, char** argv)
 			//solution 2
 			stringstream  MOCtoCFD_MapFile_stream;
 			MOCtoCFD_MapFile_stream << "";
-			for(int i=0;i< materialList.size();i++)
-				MPI_WriteStream_To_File(("MapFile_" + materialList[i] + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
+			//for(int i=0;i< materialList.size();i++)
+				//MPI_WriteStream_To_File(("MapFile_" + materialList[i] + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
 			//solution end
+
+			ReceiveAndWriteMocMapValue(materialList);
 
 			for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++) {
 				MPI_Recv(message, 100, MPI_CHAR, iSourceID, 99, MPI_COMM_WORLD, &status);
@@ -769,7 +855,8 @@ int main(int argc, char** argv)
 			
 			RenameFile(outMocFieldFile, GetFileNameOfPrevious(outMocFieldFile, "inp"));
 			mocMesh.OutputStatus(outMocFieldFile);
-			
+
+			RemoveTemporaryFile_cfdtomoc(materialList);
 			Logger::LogInfo("CFD to MOC finished.");
 			WriteToLog("cfdtomoc end.");
 		}
@@ -794,6 +881,8 @@ int main(int argc, char** argv)
 				Logger::LogInfo(FormatStr("Main process received message from No.%d process: %s\n", iSourceID, message));
 			}
 			MOCTOCFD_ValueValidation(mocMesh, materialList);
+
+			RemoveTemporaryFile_moctocfd(materialList);
 			Logger::LogInfo(" MOC to CFD finished.");
 			WriteToLog("moctocfd end.");
 		}

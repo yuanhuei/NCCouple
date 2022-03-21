@@ -153,6 +153,44 @@ void InitMocFieldToMpiType(MPI_Datatype &mpiMocField_type)
 	MPI_Type_create_struct(7, lengths, displacements, types, &mpiMocField_type);
 	MPI_Type_commit(&mpiMocField_type);
 }
+void SendMocMapValueToMainProcess(const std::vector<STRMocMapValue>& vMocMapValue)
+{
+	//STRMocField stField;
+	MPI_Datatype STRMocFieldMPIType;
+	InitMocMapValueToMpiType(STRMocFieldMPIType);
+
+
+	int iSize = vMocMapValue.size();
+	MPI_Send(&iSize, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	MPI_Send(&vMocMapValue[0], iSize, STRMocFieldMPIType, 0, 1, MPI_COMM_WORLD);
+
+	MPI_Type_free(&STRMocFieldMPIType);
+
+	return;
+}
+void InitMocMapValueToMpiType(MPI_Datatype& mpiMocMapValue_type)
+{
+	STRMocMapValue stField;
+	// Create the datatype
+
+	int lengths[4] = { 1, 1,1,1 };
+	MPI_Aint displacements[4];
+	MPI_Aint base_address;
+	MPI_Get_address(&stField, &base_address);
+	MPI_Get_address(&stField.iAssemblyIndex, &displacements[0]);
+	MPI_Get_address(&stField.iCellIndex, &displacements[1]);
+	MPI_Get_address(&stField.iMeshIndex, &displacements[2]);
+	MPI_Get_address(&stField.dMapValue, &displacements[3]);
+
+	displacements[0] = MPI_Aint_diff(displacements[0], base_address);
+	displacements[1] = MPI_Aint_diff(displacements[1], base_address);
+	displacements[2] = MPI_Aint_diff(displacements[2], base_address);
+	displacements[3] = MPI_Aint_diff(displacements[3], base_address);
+
+	MPI_Datatype types[4] = { MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE };
+	MPI_Type_create_struct(4, lengths, displacements, types, &mpiMocMapValue_type);
+	MPI_Type_commit(&mpiMocMapValue_type);
+}
 
 Vector UpdateMinLocation(Vector vPoint)
 {

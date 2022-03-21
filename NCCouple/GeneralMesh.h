@@ -138,14 +138,13 @@ public:
 			m_meshPointPtrVec[i]->SetValue(valueVec[i], vt);
 	}
 
-	std::vector<double> GetValueVec(ValueType vt) const
+	void GetValueVec(ValueType vt, std::vector<double>&res) const
 	{
-		std::vector<double> res(m_meshPointPtrVec.size());
+		res.resize(m_meshPointPtrVec.size());
 		for (size_t i = 0; i < m_meshPointPtrVec.size(); i++)
 		{
 			res[i] = m_meshPointPtrVec[i]->GetValue(vt);
 		}
-		return res;
 	}
 
 protected:
