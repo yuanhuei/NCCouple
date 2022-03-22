@@ -474,8 +474,8 @@ void Solver::Interception_fromCFDToMOC
 
 void Solver::WriteMapInfortoFile()
 {
-	ofstream CFDtoMOC_MapFile("MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
-	ofstream MOCtoCFD_MapFile("MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
+	ofstream CFDtoMOC_MapFile("./temp/MapFile_"+materialName+"_CFDtoMOC"+ "_"+std::to_string(g_iMpiID));
+	ofstream MOCtoCFD_MapFile("./temp/MapFile_"+materialName+"_MOCtoCFD"+ "_"+std::to_string(g_iMpiID));
 	stringstream MOCtoCFD_MapFile_stream;
 
 	CFDtoMOC_MapFile << m_CFD_MOC_Map.size() << std::endl;
@@ -521,7 +521,7 @@ void Solver::WriteMapInfortoFile()
 void Solver::ReadMapInfor()
 {
 	m_CFD_MOC_Map.resize(m_cfdMeshPtr->GetMeshPointNum());
-	std::string fileName = "MapFile_" + materialName + "_CFDtoMOC" + "_" + std::to_string(g_iMpiID);
+	std::string fileName = "./temp/MapFile_" + materialName + "_CFDtoMOC" + "_" + std::to_string(g_iMpiID);
 	ifstream infile(fileName);
 	if (!infile.is_open())
 	{
@@ -566,7 +566,7 @@ void Solver::ReadMapInfor()
 	}
 
 	stringstream strTemp;
-	fileName = "MapFile_" + materialName + "_MOCtoCFD";
+	fileName = "./temp/MapFile_" + materialName + "_MOCtoCFD";
 	MPI_OpenFile_To_Stream(fileName, strTemp);
 	Logger::LogInfo("reading MOC to CFD map file in material: " + materialName);
 	while (getline(strTemp, line))
@@ -580,7 +580,7 @@ void Solver::ReadMapInfor()
 
 	}
 
-	fileName = "MapFile_" + materialName + "_MOCtoCFD" + "_" + std::to_string(g_iMpiID);;
+	fileName = "./temp/MapFile_" + materialName + "_MOCtoCFD" + "_" + std::to_string(g_iMpiID);;
 	infile.open(fileName);
 	if (!infile.is_open())
 	{

@@ -370,8 +370,8 @@ void ClearMapFiles()
 	std::vector<std::string>& materialList = matches[0];
 	for (int i = 0;i < materialList.size();i++)
 	{
-		RemoveFile("MapFile_" + materialList[i] + "_CFDtoMOC");
-		RemoveFile("MapFile_" + materialList[i] + "_MOCtoCFD");
+		RemoveFile("./temp/MapFile_" + materialList[i] + "_CFDtoMOC");
+		RemoveFile("./temp/MapFile_" + materialList[i] + "_MOCtoCFD");
 	}
 	RemoveFile(configFile);
 	return;

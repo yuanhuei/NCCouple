@@ -14,6 +14,7 @@
 #else
 #include "boost/regex.hpp"
 #endif
+#include<sys/stat.h>
 //using namespace std;
 
 //#define PI 3.14159265358979323846
@@ -676,6 +677,19 @@ MOCMesh::MOCMesh(std::string meshFileName, std::string outAplFileName, MeshKerne
 }
 void MOCMesh::WriteMaxIndexToFile()
 {
+	/*
+	std::string dir = "temp";
+	struct  stat fileStat;
+
+#ifdef _WIN32
+	if (!((stat(dir.c_str(), &fileStat) == 0) && (fileStat.st_mode & _S_IFDIR)))
+#else
+	if (!((stat(dir.c_str(), &fileStat) == 0) && S_ISDIR(fileStat.st_mode)))
+#endif
+	{
+		system("mkdir temp");
+	}
+	*/
 	size_t iMaxCell = 0, iMaxMesh = 0;
 	for (int i = 0; i < m_vAssembly.size(); i++)
 	{
@@ -685,7 +699,7 @@ void MOCMesh::WriteMaxIndexToFile()
 			iMaxMesh = max(iMaxMesh, m_vAssembly[i].pAssembly_type->v_Cell[j].vMeshPointPtrVec.size());
 		}
 	}
-	ofstream MocMeshMaxSize_info("MocMeshMaxSize_info_" + std::to_string(g_iMpiID));
+	ofstream MocMeshMaxSize_info("./temp/MocMeshMaxSize_info_" + std::to_string(g_iMpiID));
 	MocMeshMaxSize_info << m_vAssembly.size() << " " << iMaxCell << " " << iMaxMesh << std::endl;
 }
 
@@ -1913,7 +1927,7 @@ void MOCMesh::ReadMapFile(const std::vector<std::string>& materialList)
 
 	for (int kk = 0; kk < materialList.size(); kk++)
 	{
-		std::string fileName = "MapFile_" + materialList[kk] + "_CFDtoMOC"+"_"+std::to_string(g_iMpiID);
+		std::string fileName = "./temp/MapFile_" + materialList[kk] + "_CFDtoMOC"+"_"+std::to_string(g_iMpiID);
 		ifstream infile(fileName);
 		if (!infile.is_open())
 		{

@@ -475,35 +475,6 @@ void MOCTOCFD_ValueValidation(MOCMesh& mocMesh, std::vector<std::string>& materi
 
 
 
-void Test()
-{
-	ifstream iFile("3_3cells.apl");
-	ofstream oFile("3_3cells_bin.apl",std::ios_base::binary);
-	std::string line;
-	while (getline(iFile, line))
-	{
-		oFile << line << std::endl;
-	}
-	iFile.close();
-	oFile.close();
-	int iFileSize = File_size("3_3cells.apl");
-
-	char* cFile = new char[iFileSize+1];
-	MPI_File fh;
-	MPI_Status status;
-	MPI_File_open(MPI_COMM_WORLD, "3_3cells.apl", MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
-	MPI_File_read_at_all(fh, 0, cFile, iFileSize, MPI_CHAR, &status);
-	cFile[iFileSize] = '\0';
-	stringstream ss;
-	ss << cFile;
-	oFile.open("3_3cells_bin_temp.apl");
-	getline(ss, line);
-	oFile << ss.str();
-	oFile.close();
-	MPI_File_close(&fh);
-	delete[] cFile;
-
-}
 void CaculateMinCoordinate()
 {
 	// recvied all min Coordinate from all cfd vtk file,caculuat the min x y z and send back
@@ -574,7 +545,7 @@ void CheckMocMappingWeights(MOCMesh& mocMesh, std::vector<std::string>& material
 	for (int i = 0; i < materialList.size(); i++)
 	{
 
-		strFileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+		strFileName = "./temp/MapFile_" + materialList[i] + "_MOCtoCFD";
 		iFile.open(strFileName);
 		Logger::LogInfo("reading MOC to CFD map file in material: " + materialList[i]);
 		while (getline(iFile, line))
@@ -682,7 +653,7 @@ void ReceiveAndWriteMocMapValue(std::vector<std::string> materialList)
 			vReciveField.clear();
 		}
 		//output to file
-		ofstream fMapFile("MapFile_" + materialList[i] + "_MOCtoCFD");
+		ofstream fMapFile("./temp/MapFile_" + materialList[i] + "_MOCtoCFD");
 		for (int m = 0; m < MOC_CFD_MapValue.size(); m++)
 		{
 			for (int n = 0; n < MOC_CFD_MapValue[m].size(); n++)
@@ -702,6 +673,68 @@ void ReceiveAndWriteMocMapValue(std::vector<std::string> materialList)
 
 
 }
+#include<sys/stat.h>
+void Test()
+{
+	std::string dir = "temp";
+	struct  stat fileStat;
+	//stat(dir.c_str(), &fileStat);
+	#ifdef _WIN32
+	if (!((stat(dir.c_str(), &fileStat) == 0) && (fileStat.st_mode & _S_IFDIR)))
+	#else
+	if (!((stat(dir.c_str(), &fileStat) == 0) && S_ISDIR(fileStat.st_mode)))
+	#endif
+	{
+		system("mkdir temp");
+	}
+	
+
+	ofstream oFile("./temp/temp.txt");
+	if(oFile)
+		oFile << "test" << std::endl;
+	oFile.close();
+	/*
+	ifstream iFile("3_3cells.apl");
+	ofstream oFile("3_3cells_bin.apl", std::ios_base::binary);
+	std::string line;
+	while (getline(iFile, line))
+	{
+		oFile << line << std::endl;
+	}
+	iFile.close();
+	oFile.close();
+	int iFileSize = File_size("3_3cells.apl");
+
+	char* cFile = new char[iFileSize + 1];
+	MPI_File fh;
+	MPI_Status status;
+	MPI_File_open(MPI_COMM_WORLD, "3_3cells.apl", MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+	MPI_File_read_at_all(fh, 0, cFile, iFileSize, MPI_CHAR, &status);
+	cFile[iFileSize] = '\0';
+	stringstream ss;
+	ss << cFile;
+	oFile.open("3_3cells_bin_temp.apl");
+	getline(ss, line);
+	oFile << ss.str();
+	oFile.close();
+	MPI_File_close(&fh);
+	delete[] cFile;
+	*/
+}
+void MkdirTemp()
+{
+	std::string dir = "temp";
+	struct  stat fileStat;
+
+#ifdef _WIN32
+	if (!((stat(dir.c_str(), &fileStat) == 0) && (fileStat.st_mode & _S_IFDIR)))
+#else
+	if (!((stat(dir.c_str(), &fileStat) == 0) && S_ISDIR(fileStat.st_mode)))
+#endif
+	{
+		system("mkdir temp");
+	}
+}
 int main(int argc, char** argv)
 {
 	MPI_Status status;
@@ -710,6 +743,8 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &g_iMpiID);
 	MPI_Comm_size(MPI_COMM_WORLD, &g_iNumProcs);
 	//for test
+	//Test();
+	//return 0;
 	//addbytes();
 	//for test
 	std::vector<std::string> parameterList;
@@ -812,17 +847,17 @@ int main(int argc, char** argv)
 			stringstream strTemp;
 			//MPI_File_open moc date file need all process involed 
 			MPI_OpenFile_To_Stream(mocMeshFile, strTemp);
-
+			MkdirTemp();
 			// recvied all min Coordinate from all cfd vtk file,caculuat the min x y z and send back
 			CaculateMinCoordinate();
 
 			//solution 2
-			stringstream  MOCtoCFD_MapFile_stream;
-			MOCtoCFD_MapFile_stream << "";
+			//stringstream  MOCtoCFD_MapFile_stream;
+			//MOCtoCFD_MapFile_stream << "";
 			//for(int i=0;i< materialList.size();i++)
 				//MPI_WriteStream_To_File(("MapFile_" + materialList[i] + "_MOCtoCFD"), MOCtoCFD_MapFile_stream);
 			//solution end
-
+			
 			ReceiveAndWriteMocMapValue(materialList);
 
 			for (int iSourceID = 1; iSourceID < g_iNumProcs; iSourceID++) {
@@ -843,7 +878,7 @@ int main(int argc, char** argv)
 			for (int i = 0; i < materialList.size(); i++)
 			{
 				stringstream strTemp;
-				std::string fileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+				std::string fileName = "./temp/MapFile_" + materialList[i] + "_MOCtoCFD";
 				MPI_OpenFile_To_Stream(fileName, strTemp);
 			}
 			//solution 2
@@ -878,7 +913,7 @@ int main(int argc, char** argv)
 			for (int i = 0; i < materialList.size(); i++)
 			{
 				stringstream strTemp;
-				std::string fileName = "MapFile_" + materialList[i] + "_MOCtoCFD";
+				std::string fileName = "./temp/MapFile_" + materialList[i] + "_MOCtoCFD";
 				MPI_OpenFile_To_Stream(fileName, strTemp);
 			}
 			MOCMesh mocMesh(mocMeshFile, outMocMeshFile, MeshKernelType::MHT_KERNEL,false);

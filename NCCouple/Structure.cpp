@@ -62,7 +62,7 @@ void ConvergeMocMapInfor()
 	{
 		for (int i = 1; i < g_iNumProcs; i++)
 		{
-			fileName = "MapFile_" + materialList[j] + "_MOCtoCFD"+"_"+std::to_string(i);
+			fileName = "./temp/MapFile_" + materialList[j] + "_MOCtoCFD"+"_"+std::to_string(i);
 			infile.open(fileName);
 			if (!infile.is_open())
 			{
@@ -82,7 +82,7 @@ void ConvergeMocMapInfor()
 			infile.close();
 
 		}
-		ofstream MOCtoCFD_MapFile("MapFile_" + materialList[j] + "_MOCtoCFD");
+		ofstream MOCtoCFD_MapFile("./temp/MapFile_" + materialList[j] + "_MOCtoCFD");
 		for (int i = 0; i < MOC_CFD_Map.size(); i++)
 		{
 			for (int m = 0; m < MOC_CFD_Map[i].size(); m++)
@@ -250,9 +250,9 @@ std::tuple<int, int, int>GetMaxIndexOfMoc()
 {
 	std::string fileName;
 	if(g_iMpiID==0)
-		fileName = "MocMeshMaxSize_info_"+std::to_string(1);
+		fileName = "./temp/MocMeshMaxSize_info_"+std::to_string(1);
 	else
-		fileName = "MocMeshMaxSize_info_" + std::to_string(g_iMpiID);
+		fileName = "./temp/MocMeshMaxSize_info_" + std::to_string(g_iMpiID);
 
 	ifstream infile_MocMeshMaxSize_info(fileName);
 	if (!infile_MocMeshMaxSize_info.is_open())
