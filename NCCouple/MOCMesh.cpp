@@ -1324,74 +1324,71 @@ void MOCMesh::InitMOCFromInputFile(std::string inputFileName) {
 
 	return;
 }
-
-void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName) 
+void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName, std::string heatPowerFileName_pre,double ratio)
 {
-	std::ifstream ifs(heatPowerFileName);
-	if (!ifs.is_open())
+
+	std::vector<std::vector<double>> vHeatPowerValue, vHeatPowerValue_pre;
+	for (int i = 0; i < 2; i++)
 	{
-		Logger::LogError("cannot find the moc data file:" + heatPowerFileName);
-		exit(EXIT_FAILURE);
-	}
-	std::vector<std::vector<double>> vHeatPowerValue;
-	//vHeatPowerValue.resize(m_vAssemblyField.size());
-	
-	string line;
-	while (getline(ifs, line))  //read mesh data
-	{
-	loop_:
-		int iPos = line.find("_");
-		if (iPos != std::string::npos)
-		{
-			int iAssembly_index = stod(line.substr(0, iPos));
-			int iNumb_Value = stod(line.substr(iPos + 1, line.length()));
-			std::vector<double> vValue;
-			//vValue.resize(iNumb_Value);
-
-			string tokenMeshId = "";
-			int out0 = 1;
-			std::streampos pos;
-			while (getline(ifs, line))
-			{
-				//pos = infile.tellg();
-				//getline(ifs, line);
-				//outFile << line << endl;
-				stringstream stringlineMeshID(line);
-				while (stringlineMeshID >> tokenMeshId)
-				{
-					if (tokenMeshId.find("_") != std::string::npos)
-					{
-						vHeatPowerValue.push_back(vValue);
-						//out0 = 0;
-						//stringlineMeshID >> token;
-						goto loop_;
-						//infile.seekg(pos);
-						break;
-					}
-					vValue.push_back(stod(tokenMeshId));
-				}
-				//out0 = 0;
-			}
-			vHeatPowerValue.push_back(vValue);
-
-			/*
-			for (int i = 0; i < iNumb_Value;i++)
-			{
-
-				getline(ifs, line);
-				vValue[i] = stod(line);
-			}*/
-			
-		}
+		std::ifstream ifs;
+		std::string strHeatPowerFileName = heatPowerFileName;
+		if (i == 1)
+			strHeatPowerFileName = heatPowerFileName_pre;
 		
+		ifs.open(strHeatPowerFileName);
+		if (!ifs.is_open())
+		{
+			Logger::LogError("cannot find the moc data file:" + strHeatPowerFileName);
+			exit(EXIT_FAILURE);
+		}
+		string line;
+		while (getline(ifs, line))  //read mesh data
+		{
+		loop_:
+			int iPos = line.find("_");
+			if (iPos != std::string::npos)
+			{
+				int iAssembly_index = stod(line.substr(0, iPos));
+				int iNumb_Value = stod(line.substr(iPos + 1, line.length()));
+				std::vector<double> vValue;
+
+				string tokenMeshId = "";
+				int out0 = 1;
+				std::streampos pos;
+				while (getline(ifs, line))
+				{
+					stringstream stringlineMeshID(line);
+					while (stringlineMeshID >> tokenMeshId)
+					{
+						if (tokenMeshId.find("_") != std::string::npos)
+						{
+							if (i == 0)
+								vHeatPowerValue.push_back(vValue);
+							else
+								vHeatPowerValue_pre.push_back(vValue);
+
+							goto loop_;
+							break;
+						}
+						vValue.push_back(stod(tokenMeshId));
+					}
+				}
+				if (i == 0)
+					vHeatPowerValue.push_back(vValue);
+				else
+					vHeatPowerValue_pre.push_back(vValue);
+			}
+		}
+		ifs.close();
 	}
-	/*
-	if (powerInput.size() != m_vSMocIndex.size())
+	for (int i = 0; i < vHeatPowerValue.size(); i++)
 	{
-		Logger::LogError("Wrong number in heatpower.txt");
-		exit(EXIT_FAILURE);
+		for (int j = 0; j < vHeatPowerValue[i].size(); j++)
+		{
+			vHeatPowerValue[i][j] = vHeatPowerValue[i][j] * ratio + vHeatPowerValue_pre[i][j] * (1-ratio);
+		}
 	}
-	*/
+
 	int kk = 0;
 	for (int i = 0; i < m_vAssemblyField.size(); i++)
 	{
@@ -1408,7 +1405,7 @@ void MOCMesh::InitMOCHeatPower(std::string heatPowerFileName)
 			}
 		}
 	}
-	ifs.close();	
+	
 }
 
 void MOCMesh::WriteTecplotFile

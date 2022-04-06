@@ -256,7 +256,9 @@ public:
 	//void ThreeDemMeshOutput(std::vector<std::string>& fileNameTransfer, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void ThreeDemMeshOutput(vector< shared_ptr<stringstream>>& vStreamTemperay, std::vector<Surface>& allMeshFaces, std::vector<std::string>& meshFaceTypeTransfer, int nFineMesh);   //output 3D mesh
 	void InitMOCFromInputFile(std::string inputFileName);
-	void InitMOCHeatPower(std::string heatPowerFileName);
+	void InitMOCHeatPower(std::string heatPowerFileName) {};
+	void InitMOCHeatPower(std::string heatPowerFileName, std::string heatPowerFileName_pre, double ratio);
+
 
 	void OutputStatus(std::string outputFileName) const override;
 	void WriteTecplotFile(std::string strFilename, std::string strMaterialType="");
