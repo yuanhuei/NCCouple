@@ -73,74 +73,11 @@ void MOC_APL_INP_FileTest()
 {
 	WarningContinue("MOC_APL_INP_FileTest");
 	MOCMesh mocMesh("3_3cells.apl", "3_3cells_out.apl", MeshKernelType::MHT_KERNEL);
-	//mocMesh.WriteSurfaceTecplotFile("filename.plt");
-	//MOCMesh mocMesh("pin_c1.apl", "pin_c1.inp", MeshKernelType::MHT_KERNEL); 
 	mocMesh.WriteTecplotFile("3_3cells_mMOD.plt","mMOD");
 	mocMesh.WriteTecplotFile("3_3cells_mFUEL.plt","mFUEL");
-	//mocMesh.WriteTecplotFile("3_3cells_mCLAD.plt", "mCLAD");
-	//mocMesh.WriteTecplotFile("mUO2", "c5g721_cell12_mUO2.plt");
-	//mocMesh.WriteTecplotFile("Zr4", "zr4.plt");
-	//mocMesh.WriteTecplotFile("UO2", "u2o.plt");
-	//mocMesh.InitMOCValue("pin_c1.inp","pin_c1.txt");
-	//mocMesh.OutputStatus("pin_c1_out.inp");
 	return;
 }
-void MapTest()
-{
-	//RegisterMapper("c5g72l.apl", "c5g72l_out.apl", "PIN9Coarse.msh");
-	//MOCFieldsToCFD();
 
-	std::string configFile = "MapFile_FileNames";
-	std::vector<std::vector<std::string> > matches = GetMatchList(configFile);
-	std::vector<std::string>& materialList = matches[0];
-	std::vector<std::string>& regionList = matches[1];
-	std::string mocMeshFile = GetFileName(configFile, "inputApl");
-	std::string outMocMeshFile = GetFileName(configFile, "outputApl");
-
-	MOCMesh mocMesh(mocMeshFile, outMocMeshFile);
-	std::vector<std::string> inputVTKList;
-	inputVTKList.push_back("fluid.vtk");
-	inputVTKList.push_back("solid.vtk");
-	Scalar ratio = GetValueInFile(configFile, "scaleRatio");
-	MHTVTKReader reader(inputVTKList, ratio);
-	for (size_t i = 0; i < inputVTKList.size(); i++)
-	{
-		Mesh* pmesh = reader.GetMeshListPtr()[i];
-		//read cfd mesh and create solver
-		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, i);
-		cfdMesh.WriteTecplotFile("cfd_50_"+std::to_string(i)+".plt");
-	}
-
-	/*
-	MHTVTKReader reader(cfdMeshFile, ratio);
-	for (size_t i = 0; i < regionList.size(); i++)
-	{
-		//if (i > 0)break;
-		int CFDMeshID = reader.GetIDOfRegion(regionList[i]);
-		Mesh* pmesh = reader.GetMeshListPtr()[CFDMeshID];
-		//read cfd mesh and create solver
-		CFDMesh cfdMesh(pmesh, MeshKernelType::MHT_KERNEL, CFDMeshID);
-		
-		std::vector<SMocIndex> thh;
-		for (int j = 0; j < 64; j++)
-		{
-			thh.push_back(SMocIndex(0, 51, j));
-		}
-		WriteTotecplot(mocMesh, cfdMesh, std::vector<int>{2559}, thh, "temp.plt");
-		
-		//std::string outfilename = "mesh_" + std::to_string(i) + ".plt";
-		//cfdMesh.WriteTecplotFile(outfilename);
-		Solver solverMapper(mocMesh, cfdMesh, materialList[i], true);
-		solverMapper.CheckMappingWeights();
-	}
-	*/
-
-	//InitCFDMeshValue(cfdMesh);
-	//solver.CFDtoMOCinterception(ValueType::DENSITY);
-
-	//mocMesh.OutputStatus("pin_c1.inp");
-
-}
 Scalar initialT(Scalar x, Scalar y, Scalar z)
 {
 	Vector PointCenter(x, y, z);
@@ -176,23 +113,6 @@ Scalar initialHeatPower(Scalar x, Scalar y, Scalar z)
 
 #include "./MHT_IO/VTKIO.h"
 #include <fstream>
-
-void VTKReaderTest()
-{
-	MHTVTKReader reader("pinWR.msh",1.0);
-	std::vector<std::string> fileName;
-	fileName.push_back("H2O.vtk");
-	fileName.push_back("Zr4.vtk");
-	std::vector<int> IDList;
-	IDList.push_back(0);
-	IDList.push_back(1);
-	std::vector<std::string> fieldName;
-	fieldName.push_back("heatpower");
-	reader.ReadVTKFile(fileName, IDList, fieldName);
-	reader.GetFieldIO(0).WriteTecplotField("heatpower_0.plt");
-	reader.GetFieldIO(1).WriteTecplotField("heatpower_1.plt");
-	return;
-}
 
 void EntranceOfRegister(std::vector<std::string>& fileNames)
 {
@@ -299,6 +219,7 @@ void RunWithParameters(std::vector<std::string>& parameters)
 	}
 	return;
 }
+
 void writeheatpower()
 {
 	std::ofstream ofs("heatpower_1cm.txt");
@@ -316,10 +237,6 @@ void writeheatpower()
 			}
 			ofs << std::endl;
 		}
-		//for (int k = 0; k < (iNum-40); k++)
-		//{
-			//ofs << iValue << "  ";
-		//}
 		ofs << std::endl;
 	}
 }
@@ -327,8 +244,8 @@ void writeheatpower()
 void VTKReadMeshTest()
 {
 	std::vector<std::string> vVTKname;
-	vVTKname.push_back("1_PART-FLUID_couple.vtk");
-	vVTKname.push_back("2_solid.vtk");
+	vVTKname.push_back("fluid.vtk");
+	vVTKname.push_back("solid.vtk");
 
 	std::vector<std::string> vFieldName;
 	vFieldName.push_back("temperature");
@@ -347,13 +264,13 @@ int main(int argc, char** argv)
 		//PolyhedronSet box(Vector(0, 0, 0), Vector(1, 1, 1));
 		//box.MHT::Polyhedron::Display();
 		//MOC_APL_INP_FileTest();
-		CFDFieldsToMOC();
+		//CFDFieldsToMOC();
 		//MOCFieldsToCFD();
 		//MapTest();
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
-		//VTKReadMeshTest();
+		VTKReadMeshTest();
 		//writeheatpower();
 		return 0;
 	}

@@ -18,8 +18,6 @@ public:
 	Cell* m_pCell = nullptr;
 	//index for MOC IDs written in an array
 	std::vector<std::vector<std::vector<int> > > v_MOCID;
-
-
 	//axis center of the tube
 	Vector axisPoint;
 	//axis normal of the tube
@@ -58,8 +56,7 @@ public:
 	std::tuple<int, int, int> GetIJKWithPoint(Scalar x, Scalar y, Scalar z);
 	//get the ID of the MOC cell containing a given point
 	int GetMOCIDWithPoint(Scalar x, Scalar y, Scalar z);
-	
-
+	//check the index create to make sure all cells are registered
 	void CheckIndex();
 	//a member function written for test
 	void Display();

@@ -8,6 +8,7 @@
 #include "../MHT_mesh/UnGridFactory.h"
 #include "../MHT_mesh/RegionConnection.h"
 #include "../MHT_common/SystemControl.h"
+#include "../Structure.h"
 #include <memory>
 #include <iomanip>
 class Mesh;
@@ -19,9 +20,6 @@ class MHTVTKReader
 {
 public:
 	MHTVTKReader();
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>vVTKFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
-	MHTVTKReader(std::string MshFileName, std::vector<std::string>& vFiedNameList, Scalar ratio);
-	MHTVTKReader(std::string MshFileName, Scalar ratio);
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, Scalar ratio);
 	MHTVTKReader(std::vector<std::string>& vtkFileNameList, std::vector<std::string>& vFiedNameList, Scalar ratio);
 	~MHTVTKReader();

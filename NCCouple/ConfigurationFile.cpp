@@ -107,6 +107,18 @@ void WriteConfigurationFile
 	config << "\t1000.0" << std::endl;
 	config << ")" << std::endl << std::endl;
 
+	//write MOC to CFD relax factor
+	config << "------MOCToCFDAlpha------" << std::endl;
+	config << "(" << std::endl;
+	config << "\t0.5" << std::endl;
+	config << ")" << std::endl << std::endl;
+
+	//write CFD to MOC relax factor
+	config << "------CFDToMOCAlpha------" << std::endl;
+	config << "(" << std::endl;
+	config << "\t0.5" << std::endl;
+	config << ")" << std::endl << std::endl;
+
 	//write material-region match list
 	config << "------matchList------" << std::endl;
 	config << "(" << std::endl;
