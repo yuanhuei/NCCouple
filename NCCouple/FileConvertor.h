@@ -34,6 +34,10 @@ void MOCFieldsToCFD();
 
 void CFDFieldsToMOC();
 
+void MOCFieldsToCFDWithRelaxation();
+
+void CFDFieldsToMOCWithRelaxation();
+
 void ClearMapFiles();
 
 #endif
