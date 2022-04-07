@@ -11,6 +11,7 @@
 #include "../Structure.h"
 #include <memory>
 #include <iomanip>
+#include <io.h>
 class Mesh;
 
 template<class Type>
@@ -37,6 +38,8 @@ public:
 	void WriteDataFile(std::string DataFileName);
 	void ReadVTKFile(std::vector<std::string>, std::vector<std::string>& vFiedNameList);		//read total region field
 	void ReadVTKFile(std::vector<std::string>, std::vector<int> vMeshID, std::vector<std::string>& vFiedNameList);		//read field by mesh ID
+	void ReadVTKFile(std::vector<std::string> inputVTKList, std::vector<std::string> inputPreviousVTKList, std::vector<std::string>& vFiedNameList,Scalar alpha = 0.5);
+
 	void DisplayCorrdinateRange();
 
 private:

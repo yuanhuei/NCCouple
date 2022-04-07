@@ -255,6 +255,23 @@ void VTKReadMeshTest()
 	mhtvtkreader.GetFieldIO(1).WriteTecplotField("temperature_1.plt");
 }
 
+void VTKDoubleFileRead()
+{
+	std::vector<std::string> vVTKname;
+	vVTKname.push_back("Fluid_0.vtk");
+
+	std::vector<std::string> vVTKPreviousname;
+	vVTKPreviousname.push_back("Fluid_1.vtk");
+
+	std::vector<std::string> vFieldName;
+	vFieldName.push_back("temperature");
+	MHTVTKReader mhtvtkreader(vVTKname, 1.0);
+
+	mhtvtkreader.ReadVTKFile(vVTKname,vVTKPreviousname, vFieldName,0.3);
+
+	mhtvtkreader.GetFieldIO(0).WriteTecplotField("temperature_0.plt");
+}
+
 int main(int argc, char** argv)
 {
 	//get processor ID
@@ -270,7 +287,8 @@ int main(int argc, char** argv)
 		//MOCMesh mocmesh = MOCMesh();
 		//mocmesh.InitMOCFromInputFile("c5g7.inp");
 		//CreateMapper();
-		VTKReadMeshTest();
+		//VTKReadMeshTest();
+		VTKDoubleFileRead();
 		//writeheatpower();
 		return 0;
 	}

@@ -254,6 +254,78 @@ void MHTVTKReader::ReadVTKFile(std::vector<std::string>vVTKFileName, std::vector
 	std::cout << "read file succeed" << std::endl;
 }
 
+void MHTVTKReader::ReadVTKFile(std::vector<std::string> inputVTKList, std::vector<std::string> inputPreviousVTKList, std::vector<std::string>& vFiedNameList, Scalar alpha)
+{
+	if (inputVTKList.size() != inputPreviousVTKList.size())
+	{
+		FatalError("you input name list current and previous size are not same ,please check.");
+	}
+
+
+
+	std::cout << "start Read Field" << std::endl;
+
+	v_FieldIO.resize(v_pmesh.size());
+
+	if (inputVTKList.size() != v_pmesh.size())
+	{
+		FatalError("mesh number not same with vtk file number");
+	}
+
+	for (size_t i = 0; i < v_pmesh.size(); i++)
+	{
+		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		{
+			if (0 != _access(inputVTKList[i].c_str(),0))
+			{
+				FatalError(inputVTKList[i]+" vtk file not exist");
+			}
+			if (0 != _access(inputPreviousVTKList[i].c_str(), 0))
+			{
+				FatalError(inputPreviousVTKList[i] + " vtk file not exist");
+			}
+
+
+			std::ifstream inFile(inputVTKList[i]);
+			ReadVTKMeshFormat(inFile);
+
+			std::ifstream inFilePrevious(inputPreviousVTKList[i]);
+			ReadVTKMeshFormat(inFilePrevious);
+
+			Field<Scalar> thisField(v_pmesh[i], 0.0, vFiedNameList[j]);
+			Field<Scalar> PreviousField(v_pmesh[i], 0.0, vFiedNameList[j]);
+			Field<Scalar> outField(v_pmesh[i], 0.0, vFiedNameList[j]);
+
+			thisField.ReadVTKGridField(inFile);
+			PreviousField.ReadVTKGridField(inFilePrevious);
+
+			for (size_t k = 0; k < thisField.elementField.v_value.size(); k++)
+			{
+				outField.elementField.v_value[k] = 
+					thisField.elementField.v_value[k] * alpha + PreviousField.elementField.v_value[k] * (1 - alpha);
+			}
+
+			vv_scalarFieldList[i].push_back(std::move(outField));
+		}
+
+	}
+	std::cout << "succeed" << std::endl;
+
+	for (size_t i = 0; i < v_pmesh.size(); i++)
+	{
+		for (size_t j = 0; j < vFiedNameList.size(); j++)
+		{
+			v_FieldIO[i].push_backScalarField(vv_scalarFieldList[i][j]);
+		}
+	}
+
+
+	std::cout << "read file succeed" << std::endl;
+
+
+}
+
+
 void MHTVTKReader::ReadMSHFile(std::string MeshFileName)
 {
 	std::cout << "start Read Mesh" << std::endl;
