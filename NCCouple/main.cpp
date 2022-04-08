@@ -146,7 +146,7 @@ void EntranceOfCFDToMOC(std::vector<std::string>& fileNames)
 		std::cout << "NCCouple cfdtomoc" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	CFDFieldsToMOC();
+	CFDFieldsToMOCWithRelaxation();
 	return;
 }
 
@@ -158,7 +158,7 @@ void EntranceOfMOCToCFD(std::vector<std::string>& fileNames)
 		std::cout << "NCCouple moctocfd" << std::endl;
 		Logger::LogError("inccorrect number of file names");
 	}
-	MOCFieldsToCFD();
+	MOCFieldsToCFDWithRelaxation();
 	return;
 }
 
