@@ -12,6 +12,10 @@ The two are intertwined. The reaction rate of the core is reflected in the heat-
 The temperature and density of the body will affect the reaction speed of the reactor
 The goal of this project is to provide middleware for the coupling of the MOC method and the CFD method based on their respective implementations.
 
+网格图：
+![输入图片说明](%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202d.png)
+
+![输入图片说明](%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%203d.png)
 #### 安装教程
 
 1.  xxxx
