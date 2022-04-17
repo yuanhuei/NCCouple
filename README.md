@@ -20,7 +20,7 @@ The goal of this project is to provide middleware for the coupling of the MOC me
 
 #### 使用说明
 
-1.  xxxx
+1.  分为并行版本和串行版本，并行版本使用了MPICH库，在网格数量超亿时进行分割，在超算上进行并行计算。
 2.  xxxx
 3.  xxxx
 
